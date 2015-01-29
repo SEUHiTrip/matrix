@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="abs__action_bar_default_height">56.0dip</dimen>
+    <dimen name="abs__action_bar_icon_vertical_padding">4.0dip</dimen>
+    <dimen name="abs__action_bar_title_text_size">18.0dip</dimen>
+    <dimen name="abs__action_bar_subtitle_text_size">14.0dip</dimen>
+    <dimen name="abs__action_bar_subtitle_top_margin">-3.0dip</dimen>
+    <dimen name="abs__action_bar_subtitle_bottom_margin">9.0dip</dimen>
+    <dimen name="abs__action_button_min_width">64.0dip</dimen>
+    <item type="dimen" name="abs__dialog_min_width_major">45.000004%</item>
+    <item type="dimen" name="abs__dialog_min_width_minor">72.0%</item>
+    <dimen name="server_pict_height">140.0dip</dimen>
+    <dimen name="server_label_font_height">26.0sp</dimen>
+    <dimen name="server_label_padding_top">15.0dip</dimen>
+    <dimen name="server_max_width">200.0dip</dimen>
+    <dimen name="server_side_padding">30.0dip</dimen>
+    <dimen name="server_top_padding">10.0dip</dimen>
+    <dimen name="server_bottom_padding">10.0dip</dimen>
+    <dimen name="top_label_height">24.0sp</dimen>
+    <dimen name="swipe_hint_height">50.0dip</dimen>
+    <dimen name="progress_margin">5.0dip</dimen>
+    <dimen name="add_server_image_height">180.0dip</dimen>
+    <dimen name="add_server_hint_font">20.0sp</dimen>
+    <dimen name="add_server_image_width">230.0dip</dimen>
+    <dimen name="add_server_image_margin">30.0dip</dimen>
+    <dimen name="add_server_button_margin_left">68.0dip</dimen>
+    <dimen name="add_server_ip_width">175.0dip</dimen>
+    <dimen name="add_server_port_width">70.0dip</dimen>
+    <dimen name="add_server_computer_width">270.0dip</dimen>
+    <dimen name="add_server_margin_side">25.0dip</dimen>
+    <dimen name="add_server_hint_margin_right">25.0dip</dimen>
+    <dimen name="add_server_controls_margin_top">25.0dip</dimen>
+    <dimen name="about_buttons_margin">15.0dip</dimen>
+    <dimen name="about_buttons_portrait_width">210.0dip</dimen>
+    <dimen name="about_buttons_mid_width">210.0dip</dimen>
+    <dimen name="add_server_controls_font">22.0sp</dimen>
+    <dimen name="add_server_copyright_font">16.0sp</dimen>
+    <dimen name="right_bar_buttons_margin">50.0dip</dimen>
+    <dimen name="logo_size">150.0dip</dimen>
+</resources>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item type="dimen" name="abs__dialog_min_width_major">55.000008%</item>
+    <item type="dimen" name="abs__dialog_min_width_minor">80.00001%</item>
+    <dimen name="server_pict_height">140.0dip</dimen>
+    <dimen name="server_label_font_height">26.0sp</dimen>
+    <dimen name="server_label_padding_top">15.0dip</dimen>
+    <dimen name="server_max_width">200.0dip</dimen>
+    <dimen name="server_side_padding">30.0dip</dimen>
+    <dimen name="server_top_padding">10.0dip</dimen>
+    <dimen name="server_bottom_padding">10.0dip</dimen>
+    <dimen name="top_label_height">24.0sp</dimen>
+    <dimen name="swipe_hint_height">50.0dip</dimen>
+    <dimen name="progress_margin">5.0dip</dimen>
+    <dimen name="add_server_image_height">170.0dip</dimen>
+    <dimen name="add_server_hint_font">18.0sp</dimen>
+    <dimen name="server_pict_width">180.0dip</dimen>
+    <dimen name="add_server_image_width">190.0dip</dimen>
+    <dimen name="add_server_image_margin">15.0dip</dimen>
+    <dimen name="add_server_button_margin_left">68.0dip</dimen>
+    <dimen name="add_server_ip_width">175.0dip</dimen>
+    <dimen name="add_server_port_width">70.0dip</dimen>
+    <dimen name="add_server_computer_width">270.0dip</dimen>
+    <dimen name="add_server_margin_side">20.0dip</dimen>
+    <dimen name="add_server_hint_margin_right">15.0dip</dimen>
+    <dimen name="add_server_controls_margin_top">10.0dip</dimen>
+    <dimen name="about_buttons_margin">15.0dip</dimen>
+    <dimen name="about_buttons_portrait_width">210.0dip</dimen>
+    <dimen name="about_buttons_mid_width">210.0dip</dimen>
+    <dimen name="add_server_controls_font">22.0sp</dimen>
+    <dimen name="add_server_copyright_font">16.0sp</dimen>
+    <dimen name="right_bar_buttons_margin">50.0dip</dimen>
+    <dimen name="logo_size">110.0dip</dimen>
+</resources>

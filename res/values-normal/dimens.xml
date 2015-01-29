@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="server_pict_height">90.0dip</dimen>
+    <dimen name="server_label_font_height">18.0sp</dimen>
+    <dimen name="server_label_padding_top">5.0dip</dimen>
+    <dimen name="server_max_width">170.0dip</dimen>
+    <dimen name="server_side_padding">15.0dip</dimen>
+    <dimen name="server_top_padding">7.0dip</dimen>
+    <dimen name="server_bottom_padding">7.0dip</dimen>
+    <dimen name="top_label_height">20.0sp</dimen>
+    <dimen name="swipe_hint_height">30.0dip</dimen>
+    <dimen name="progress_margin">2.0dip</dimen>
+    <dimen name="add_server_image_height">100.0dip</dimen>
+    <dimen name="add_server_hint_font">14.0sp</dimen>
+    <dimen name="server_pict_width">115.0dip</dimen>
+    <dimen name="add_server_image_width">120.0dip</dimen>
+    <dimen name="add_server_image_margin">10.0dip</dimen>
+    <dimen name="add_server_button_margin_left">68.0dip</dimen>
+    <dimen name="add_server_ip_width">155.0dip</dimen>
+    <dimen name="add_server_port_width">60.0dip</dimen>
+    <dimen name="add_server_computer_width">210.0dip</dimen>
+    <dimen name="add_server_margin_side">15.0dip</dimen>
+    <dimen name="add_server_hint_margin_right">8.0dip</dimen>
+    <dimen name="add_server_controls_margin_top">10.0dip</dimen>
+    <dimen name="about_buttons_margin">15.0dip</dimen>
+    <dimen name="about_buttons_portrait_width">135.0dip</dimen>
+    <dimen name="about_buttons_mid_width">145.0dip</dimen>
+    <dimen name="add_server_controls_font">18.0sp</dimen>
+    <dimen name="add_server_copyright_font">14.0sp</dimen>
+    <dimen name="right_bar_buttons_margin">20.0dip</dimen>
+    <dimen name="logo_size">75.0dip</dimen>
+</resources>

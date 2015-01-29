@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="add_server_ip_width">155.0dip</dimen>
+    <dimen name="add_server_computer_width">293.0dip</dimen>
+    <dimen name="about_buttons_margin">8.0dip</dimen>
+    <dimen name="add_server_hint_width">360.0dip</dimen>
+</resources>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="abs__background_holo_dark">#ff000000</color>
+    <color name="abs__background_holo_light">#fff3f3f3</color>
+    <color name="abs__bright_foreground_holo_dark">@color/abs__background_holo_light</color>
+    <color name="abs__bright_foreground_holo_light">@color/abs__background_holo_dark</color>
+    <color name="abs__bright_foreground_disabled_holo_dark">#ff4c4c4c</color>
+    <color name="abs__bright_foreground_disabled_holo_light">#ffb2b2b2</color>
+    <color name="abs__bright_foreground_inverse_holo_dark">@color/abs__bright_foreground_holo_light</color>
+    <color name="abs__bright_foreground_inverse_holo_light">@color/abs__bright_foreground_holo_dark</color>
+    <color name="abs__holo_blue_light">#ff33b5e5</color>
+    <color name="transparent">#ff544e4f</color>
+    <color name="randome">#ffffd400</color>
+    <color name="categories">#ffffd400</color>
+    <color name="mycameras">#ffffd400</color>
+    <color name="white">#ffffffff</color>
+    <color name="black">#ff000000</color>
+    <color name="orange">#ffffd400</color>
+    <color name="invisible">#00000000</color>
+    <color name="splash">#fffad50f</color>
+    <color name="galery">#ff494949</color>
+    <color name="shapelink">#ff5376d1</color>
+    <color name="about_text_color">#ff324150</color>
+    <color name="about_background_color">#fff5faff</color>
+    <color name="server_text_color">#ff3a3833</color>
+    <color name="hint_text_color">#ff969494</color>
+    <color name="progress_color">#ff969494</color>
+    <color name="warning_color">#ffbb2020</color>
+    <color name="pressed_idisplay_theme">#ccc3c3c3</color>
+</resources>

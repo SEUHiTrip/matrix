@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="add_server_computer_width">333.0dip</dimen>
+    <dimen name="add_server_hint_width">410.0dip</dimen>
+</resources>

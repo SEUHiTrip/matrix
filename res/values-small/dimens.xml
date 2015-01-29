@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="server_pict_height">70.0dip</dimen>
+    <dimen name="server_label_font_height">16.0sp</dimen>
+    <dimen name="server_label_padding_top">5.0dip</dimen>
+    <dimen name="server_max_width">100.0dip</dimen>
+    <dimen name="server_side_padding">15.0dip</dimen>
+    <dimen name="server_top_padding">5.0dip</dimen>
+    <dimen name="server_bottom_padding">3.0dip</dimen>
+    <dimen name="top_label_height">18.0sp</dimen>
+    <dimen name="swipe_hint_height">25.0dip</dimen>
+    <dimen name="progress_margin">1.0dip</dimen>
+    <dimen name="add_server_image_height">100.0dip</dimen>
+    <dimen name="add_server_hint_font">12.0sp</dimen>
+</resources>
