@@ -20,8 +20,10 @@ import com.idisplay.ServerInteractionManager.PingResponseListener;
 import com.idisplay.ServerInteractionManager.ServerInteractionManager;
 import com.idisplay.VirtualScreenDisplay.DataChannelConnectionListener;
 import com.idisplay.VirtualScreenDisplay.FPSCounter;
+import com.idisplay.VirtualScreenDisplay.ScreenConstants;
 import com.idisplay.VirtualScreenDisplay.ServerDeniedListner;
 import com.idisplay.VirtualScreenDisplay.UnexpectedErrorListner;
+import com.idisplay.VirtualScreenDisplay.VirtualScreenActivity;
 import com.idisplay.util.Logger;
 import com.idisplay.util.SettingsManager;
 import com.idisplay.util.Utils;
@@ -30,6 +32,7 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
+
 import javax.jmdns.impl.constants.DNSConstants;
 import org.apache.commons.lang.StringUtils;
 
@@ -178,8 +181,12 @@ public class ConnectionChannelManager implements AccessConfirmedListener, Conten
         cNSDictionary.getDict().insert("clientOrientationKey", new CFNumber(this.m_orientation.ordinal()));
         cNSDictionary.getDict().insert("MSMClientNumberPreferableCompressionKey", new CFNumber(10));
         if (!SettingsManager.getBoolean(SettingsManager.SMOOTH_VIDEO_KEY)) {
+        	Logger.d("FloatingFps set to 1");
             cNSDictionary.getDict().insert("FloatingFps", new CFNumber(1));
-        }
+        }else {
+        	Logger.d("FloatingFps set to smooth");
+//            cNSDictionary.getDict().insert("FloatingFps", new CFNumber(60));
+		}
         if (this.m_orientation == DeviceOrientation.Landscape) {
             cNSDictionary.getDict().insert(oScreenWidth, new CFNumber(this.m_height));
             cNSDictionary.getDict().insert(oScreenHeight, new CFNumber(this.m_width));
@@ -238,30 +245,27 @@ public class ConnectionChannelManager implements AccessConfirmedListener, Conten
         CFBaseTypes objectForKey2 = dict.getObjectForKey("serverInfo");
         this.m_serverInfo = new ServerInfo();
         this.m_serverInfo.initWithObject(objectForKey2);
-        Map hashMap = new HashMap();
-        hashMap.put("os-version", getServerOSName());
-        hashMap.put("server-version", this.m_serverInfo.serverVersion());
 
-//        if (!(processServerVersion(this.m_serverInfo.serverVersion(), this.m_serverInfo.OSName()) || VirtualScreenActivity.screenHandler == null)) {
-//            VirtualScreenActivity.screenHandler.sendEmptyMessage(ScreenConstants.VERSION_MISMATCH);
-//        }
-//        if (this.m_serverInfo.getHostType() == HostType.MSMWindowCapture) {
-//            Logger.z("invalid type");
-//            long currentTimeMillis = System.currentTimeMillis();
-//            try {
-//                if (VirtualScreenActivity.screenHandlerLock == null) {
-//                    VirtualScreenActivity.resetStartState();
-//                }
-//                VirtualScreenActivity.screenHandlerLock.await(30000, TimeUnit.MILLISECONDS);
-//            } catch (InterruptedException e) {
-//                Logger.e("screenHandlerLock interrupted");
-//            }
-//            Logger.z("waited " + (System.currentTimeMillis() - currentTimeMillis));
-//            if (VirtualScreenActivity.screenHandler != null) {
-//                Logger.z("screen handler not null");
-//                VirtualScreenActivity.screenHandler.sendEmptyMessage(ScreenConstants.SERVER_MODE_NOT_SUPPORTED);
-//            }
-//        }
+        if (!(processServerVersion(this.m_serverInfo.serverVersion(), this.m_serverInfo.OSName()) || VirtualScreenActivity.screenHandler == null)) {
+            VirtualScreenActivity.screenHandler.sendEmptyMessage(ScreenConstants.VERSION_MISMATCH);
+        }
+        if (this.m_serverInfo.getHostType() == HostType.MSMWindowCapture) {
+            Logger.z("invalid type");
+            long currentTimeMillis = System.currentTimeMillis();
+            try {
+                if (VirtualScreenActivity.screenHandlerLock == null) {
+                    VirtualScreenActivity.resetStartState();
+                }
+                VirtualScreenActivity.screenHandlerLock.await(30000, TimeUnit.MILLISECONDS);
+            } catch (InterruptedException e) {
+                Logger.e("screenHandlerLock interrupted");
+            }
+            Logger.z("waited " + (System.currentTimeMillis() - currentTimeMillis));
+            if (VirtualScreenActivity.screenHandler != null) {
+                Logger.z("screen handler not null");
+                VirtualScreenActivity.screenHandler.sendEmptyMessage(ScreenConstants.SERVER_MODE_NOT_SUPPORTED);
+            }
+        }
         Logger.d(this.className + ":received AccessConfirmed...protocol version = " + this.m_serverInfo.hostDataProtocol());
         Logger.d(this.className + ": Host name: " + this.m_serverInfo.hostName() + " OS: " + this.m_serverInfo.OSName() + "(" + this.m_serverInfo.OSVersion() + ")");
         Logger.d(this.className + ": Server iDisplay version: " + this.m_serverInfo.serverVersion());

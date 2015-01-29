@@ -89,9 +89,9 @@ public class ReadImagesTask extends Thread {
         }
         int length = videoDetails.m_videoData.length - videoDetails.mVideoDataOffset;
         videoDetails.m_decompressLength = length;
-        Object obj = new Object[length];
+        byte[] obj = new byte[length];
         System.arraycopy(videoDetails.m_videoData, videoDetails.mVideoDataOffset, obj, 0, length);
-        return (byte[]) obj;
+        return obj;
     }
 
     @TargetApi(11)
@@ -100,7 +100,6 @@ public class ReadImagesTask extends Thread {
     }
 
     private void renderProcessedData(int i, Object obj) {
-    	Logger.d("renderProcessedData");
         VirtualScreenActivity.onDataAvailable(i, obj);
     }
 
@@ -118,7 +117,6 @@ public class ReadImagesTask extends Thread {
             try {
                 VideoDetails videoDetails = (VideoDetails) this.imageQueue.take();
                 if (!this.m_stopProcess && videoDetails != null) {
-                	Logger.e("ReadImagesTask: got a image type = "+getCompression(videoDetails.m_compressionAlgo).ordinal());
                     ok = false;
                     i=0;
                     switch (getCompression(videoDetails.m_compressionAlgo).ordinal()) {
@@ -144,14 +142,11 @@ public class ReadImagesTask extends Thread {
                         	byte[] unpackedLZJB = getUnpackedLZJB(videoDetails, true);
                         	i = 2;
                             if (unpackedLZJB != null) {
-                            	Logger.d("unpackedLZJB != null");
                                 rLEImage = new RLEImage(unpackedLZJB, videoDetails.m_decompressLength, videoDetails.m_imageWidth, videoDetails.m_imageHeight, videoDetails.m_rowBytes / 4);
                                 i = 2;
                                 //ok = videoDetails.m_imageWidth <= 0 && videoDetails.m_imageHeight > 0;
                                 ok = true;
-                            	Logger.d("unpackedLZJB ok = "+ok);
                                 obj = rLEImage;
-
                             }
                             break;
 //                        case 3:
@@ -183,14 +178,14 @@ public class ReadImagesTask extends Thread {
                             }
                     }
                     
-                    Logger.d("i:"+i+" ok:"+ok+" obj:"+obj);
+                    //Logger.d("i:"+i+" ok:"+ok+" obj:"+obj);
                     
                     if (ok) {
                         renderProcessedData(i, obj);
 					}
-                    ByteBufferPool.put(videoDetails.m_videoData);
-                    if (this.bTooManyFrames) {
-                    }
+//                    ByteBufferPool.put(videoDetails.m_videoData);
+//                    if (this.bTooManyFrames) {
+//                    }
                 }
             } catch (Throwable e) {
                 Logger.e("InterruptedException in read task ", e);

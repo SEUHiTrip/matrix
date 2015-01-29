@@ -102,8 +102,7 @@ public class FPSCounter {
     }
 
     private static void sendFPStoServer(long j) {
-        // TODO
-    	//ConnectionActivity.ccMngr.sendFPS((int) j);
+    	ConnectionActivity.ccMngr.sendFPS((int) j);
     }
 
     public static void setSimpleFpsAck(boolean z) {

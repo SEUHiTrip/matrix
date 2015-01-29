@@ -138,6 +138,9 @@ public class DataChannelManager implements VideoDataReceivedListener, OnOrientat
             i5 = mSMImageHeader.compression & 255;
             i3 = mSMImageHeader.rowBytes;
             i2 = mSMImageHeader.imageOffset;
+
+//            Logger.d("i5:"+i5);
+            
             if (!(this.m_width == mSMImageHeader.width && this.m_height == mSMImageHeader.height)) {
                 this.m_width = mSMImageHeader.width;
                 this.m_height = mSMImageHeader.height;

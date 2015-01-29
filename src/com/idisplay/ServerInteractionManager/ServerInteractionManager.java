@@ -129,43 +129,6 @@ public class ServerInteractionManager implements AcceptSocketDataListener {
     }
 
     private void processTelemetry(int i, byte[] bArr) {
-    	
-//    	CFStringBaseT stringBaseT = new CFStringBaseT();
-//    	CFBaseTypes m_plist = Tester.__CFTryParseBinaryPlist(bArr, i, stringBaseT);
-//        if (m_plist == null) {
-//            Logger.e("m_plist is null "+stringBaseT.toString());
-//        }
-//    	try {
-//
-//            if (m_plist.getType() == CFTypeID.kPlistDictionary) {
-//                Logger.e("kPlistDictionary");
-//
-//                CFDictionary dictionary = m_plist.dictionary();
-//                if (dictionary.getStringForKey("$archiver").equals("NSKeyedArchiver")) {
-//                    Logger.e("NSKeyedArchiver");
-//
-//                    CFBaseTypes objectForKey = dictionary.getObjectForKey("$objects");
-//                    
-//                    if (objectForKey.getType() == CFTypeID.kPlistArray) {
-//                        Logger.e("kPlistArray");
-//
-//                        CFArray m_objects = (CFArray) objectForKey;
-//                        objectForKey = dictionary.getObjectForKey("$top");
-//                        if (objectForKey.getType() == CFTypeID.kPlistDictionary) {
-//                            Logger.e("kPlistDictionary");
-//                        	
-////                            Object m_root = replaceUIDWithRef(objectForKey).dictionary().getObjectForKey("root");
-////                            if (this.m_root.getType() != CFTypeID.kPlistNull) {
-////                                return true;
-////                            }
-//                        }
-//                    }
-//                }
-//            }
-//        } catch (Throwable e) {
-//            Logger.e(getClass().getName(), e);
-//        }
-//    	
         CMSMMessagePacket decodeData = decodeData(i, bArr);
         if (decodeData != null) {
             Logger.d(this.className + ":methodToCall " + decodeData.getMethodName());

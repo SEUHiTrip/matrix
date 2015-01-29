@@ -335,7 +335,7 @@ public class ConnectionActivity extends Activity implements UnexpectedErrorListn
         if (Utils.isValidIP(str2)) {
             Display defaultDisplay = getWindowManager().getDefaultDisplay();
             float zoom = SettingsManager.getZoom();
-            ccMngr.setDisplayDetails((((int) (((float) defaultDisplay.getWidth()) / zoom)) / 2) * 2, (((int) (((float) defaultDisplay.getHeight()) / zoom)) / 2) * 2, deviceOrientation);
+            ccMngr.setDisplayDetails(540, 960, DeviceOrientation.Portrait);
             ccMngr.setServerDeniedListner(this);
             initCodecs();
             new ConnectTask(str2, str, j).execute(new String[]{str2, String.valueOf(j)});
@@ -347,6 +347,7 @@ public class ConnectionActivity extends Activity implements UnexpectedErrorListn
     }
 
     private void initCodecs() {
+    	Logger.d(className+": initCodes");
         VP8Decoder.getInstance().reInit();
     }
 

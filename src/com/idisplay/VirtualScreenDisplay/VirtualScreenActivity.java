@@ -507,7 +507,7 @@ public class VirtualScreenActivity extends Activity implements OnZoomListener, I
     }
 
     private void onDataAvailableHandler(int i, Object obj) {
-    	Logger.d("onDataAvailableHandler: type:"+i+" obj:"+obj);
+//    	Logger.d("onDataAvailableHandler: type:"+i+" obj:"+obj);
         switch (i) {
             case 0:
                 Logger.e("data without type!");

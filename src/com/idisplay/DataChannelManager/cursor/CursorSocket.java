@@ -1,6 +1,8 @@
 package com.idisplay.DataChannelManager.cursor;
 
 import android.util.Log;
+
+import com.idisplay.VirtualScreenDisplay.VirtualScreenActivity;
 import com.idisplay.util.ImageContainer;
 import com.idisplay.util.Utils;
 import java.nio.ByteBuffer;
@@ -76,8 +78,8 @@ public abstract class CursorSocket {
                             inflater.end();
                             ByteBuffer wrap = ByteBuffer.wrap(bArr2);
                             wrap.order(ByteOrder.LITTLE_ENDIAN);
-                            // TODO
-//                            VirtualScreenActivity.onCursorImgChange(new ImageContainer(wrap, TwoByteArrayToInt2, TwoByteArrayToInt3));
+
+                            VirtualScreenActivity.onCursorImgChange(new ImageContainer(wrap, TwoByteArrayToInt2, TwoByteArrayToInt3));
                         } catch (Throwable e) {
                             Log.e("UDP", "Decompress image EXCEPTION. width=" + TwoByteArrayToInt2 + " height=" + TwoByteArrayToInt3 + " compSize=" + i4 + " uncSize=" + i5 + " packSize" + TwoByteArrayToInt, e);
                             inflater.end();
@@ -89,8 +91,7 @@ public abstract class CursorSocket {
                 } else {
                     i = i3;
                 }
-                // TODO
-//                VirtualScreenActivity.onCursorPositionChange(i, i2);
+                VirtualScreenActivity.onCursorPositionChange(i, i2);
             }
         }
     }

@@ -25,11 +25,8 @@ public class MainActivity extends Activity {
 			
 			@Override
 			public void onClick(View v) {
-				// TODO Auto-generated method stub
-				Intent intent = new Intent(getApplicationContext(), ConnectionActivity.class);
-				
+				Intent intent = new Intent(getApplicationContext(), ConnectionActivity.class);				
 				startActivity(intent);
-				
 				finish();
 			}
 		});

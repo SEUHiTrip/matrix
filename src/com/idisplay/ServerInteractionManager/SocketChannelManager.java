@@ -1,8 +1,5 @@
 package com.idisplay.ServerInteractionManager;
 
-import android.annotation.TargetApi;
-import android.os.StrictMode;
-import android.os.StrictMode.ThreadPolicy;
 import com.idisplay.Audio.AudioChannel;
 import com.idisplay.VirtualScreenDisplay.ConnectionActivity;
 import com.idisplay.VirtualScreenDisplay.ThreadEvent;
@@ -80,12 +77,12 @@ public class SocketChannelManager {
                         this.actualData = ByteBufferPool.get(access$100);
                         try {
                             dataInputStream.readFully(this.actualData, 0, access$100);
+                            ConnectionActivity.ccMngr.sendFrameReceived();
+                            SocketChannelManager.this.onAcceptSocketData(access$100, this.actualData);
                         } catch (Throwable e) {
                             Logger.e(getName() + ": Can't read data", e);
                         }
 
-                        ConnectionActivity.ccMngr.sendFrameReceived();
-                        SocketChannelManager.this.onAcceptSocketData(access$100, this.actualData);
                         if (!ConnectionActivity.isVirtualScreenShown()) {
                             try {
                                 Logger.e(getName() + ": Waiting for Virtual screen to be shown");
