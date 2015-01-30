@@ -78,7 +78,7 @@ public class ReadImagesTask extends Thread {
             case 8:
                 return Compression.VP8;
             default:
-                Logger.e("Unsupported Format " + i);
+                //Logger.e("Unsupported Format " + i);
                 return Compression.VP8;
         }
     }

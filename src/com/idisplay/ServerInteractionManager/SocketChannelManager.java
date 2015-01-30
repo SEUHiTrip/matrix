@@ -166,7 +166,6 @@ public class SocketChannelManager {
                                 SocketChannelManager.this.remoteSocketClosedNotified = true;
                                 SocketChannelManager.this.stopProcess = true;
                                 break;
-//                                Logger.d(getName() + ": Stopping socket Listener 2");
                             }
                         }
                         

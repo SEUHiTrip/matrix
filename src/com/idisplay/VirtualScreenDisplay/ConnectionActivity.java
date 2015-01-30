@@ -8,56 +8,98 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.telephony.TelephonyManager;
 import android.text.Html;
-import android.view.ContextMenu;
-import android.view.ContextMenu.ContextMenuInfo;
-import android.view.Display;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.TextView;
 import com.idisplay.ConnectionChannelManager.ConnectionChannelManager;
 import com.idisplay.ConnectionChannelManager.ConnectionChannelManager.DeviceOrientation;
 import com.idisplay.ServerInteractionManager.SocketChannelManager;
-import com.idisplay.base.IDisplayApp;
-import com.idisplay.util.FontUtils;
 import com.idisplay.util.Logger;
 import com.idisplay.util.ServerItem;
 import com.idisplay.util.SettingsManager;
 import com.idisplay.util.Utils;
 import com.idisplay.vp8.VP8Decoder;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import javax.jmdns.ServiceInfo;
 import javolution.xml.stream.XMLStreamConstants;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.spi.ErrorCode;
-import org.apache.log4j.spi.Filter;
-
 import seu.lab.matrix.R;
 
 public class ConnectionActivity extends Activity implements UnexpectedErrorListner, ServerDeniedListner {
     public static final int USB_PORT = -1;
-    public static ConnectionChannelManager ccMngr;
-    static String className;
-    private static boolean isAccessConfirmed;
-    private static boolean isVirtualScreenShown;
-    static LaunchThread launchThread;
-    public static ListScreenHandler listScreenHandler;
-    static boolean serverListScreenShown;
-    private boolean connected;
+    
+    public static ConnectionChannelManager ccMngr = null;
+    static String className = "ConnectionActivity";
+    private static boolean isAccessConfirmed = false;
+    private static boolean isVirtualScreenShown = false;
+    static LaunchThread launchThread = null;
+    public static ListScreenHandler listScreenHandler = null;
+    static boolean serverListScreenShown = false;
+    private boolean connected = false;
+    private ConnectionMode currentMode;
     protected ServiceInfo info;
 
     ServerItem usbServerItem = null;
     
     public CountDownLatch lounchLock;
-    private boolean mBlockAutoConnect;
     private boolean user_cancel_action;
 
+    public enum ConnectionType{
+    	Single, Duel
+    }
+    
+    public static class ConnectionMode implements Parcelable{
+    	ConnectionType type;
+    	int width;
+    	int height;
+    	
+    	public static final Parcelable.Creator<ConnectionMode> CREATOR = new Creator<ConnectionMode>(){
+
+			@Override
+			public ConnectionMode createFromParcel(Parcel source) {
+				// 必须按成员变量声明的顺序读取数据，不然会出现获取数据出错
+				ConnectionMode m = new ConnectionMode(source.readInt());
+				return m;
+			}
+
+			@Override
+			public ConnectionMode[] newArray(int arg0) {
+				return new ConnectionMode[arg0];
+			}
+    	};
+    	
+    	public ConnectionMode(int type) {
+			switch (type) {
+			case 0:
+				this.type = ConnectionType.Single;
+				height = 960;
+				width = 960;
+				break;
+			case 1:
+			default:
+				this.type = ConnectionType.Duel;
+				height = 960;
+				width = 1920;
+				break;
+			}
+		}
+    	
+		@Override
+		public int describeContents() {
+			return 0;
+		}
+		@Override
+		public void writeToParcel(Parcel dest, int flags) {
+			dest.writeInt(type.ordinal());
+		}
+    }
+    
     class ConnectTask extends AsyncTask<String, Void, Boolean> {
         final /* synthetic */ String val$compName;
         final /* synthetic */ String val$ipAddress;
@@ -120,11 +162,9 @@ public class ConnectionActivity extends Activity implements UnexpectedErrorListn
             if (ccMngr.isHandshakeDone()) {
                 Logger.i(className + ":Handshake Done");
                 ccMngr.setisHandshakeDone(false);
-                Map hashMap;
                 if (isAccessConfirmed) {
                     Logger.d("access confirmed launch thread");
-                    hashMap = new HashMap();
-                    hashMap.put("result", "ok");
+
                     ConnectionActivity.this.connected = true;
                     isAccessConfirmed = false;
 
@@ -140,8 +180,6 @@ public class ConnectionActivity extends Activity implements UnexpectedErrorListn
                     isVirtualScreenShown = true;
                     return;
                 }
-                hashMap = new HashMap();
-                hashMap.put("result", "server-denied");
                 Logger.w(className + ":Server denied");
 
                 ConnectionActivity.this.connected = false;
@@ -151,8 +189,6 @@ public class ConnectionActivity extends Activity implements UnexpectedErrorListn
             }
             Logger.i(className + ":Handshake Error");
 
-            Map hashMap2 = new HashMap();
-            hashMap2.put("result", ConnectionActivity.this.user_cancel_action ? "user-cancel" : "unable-to-connect");
             if (!ConnectionActivity.this.user_cancel_action) {
                 Logger.w(className + ":UNABLE TO CONNECT");
                 ConnectionActivity.this.user_cancel_action = false;
@@ -184,7 +220,6 @@ public class ConnectionActivity extends Activity implements UnexpectedErrorListn
         }
 
         public void handleMessage(Message message) {
-            //Html.fromHtml(ConnectionActivity.this.getString(R.string.connecting_message_string));
             switch (message.what) {
                 case 0:
                     break;
@@ -206,13 +241,8 @@ public class ConnectionActivity extends Activity implements UnexpectedErrorListn
                     }
                 case 3:
                     break;
-
                 case 4:
-                    if (!serverListScreenShown) {
-//                        ConnectionActivity.this.stopSearchAnimation();
-                    }
-                    break;
-
+                	break;
                 case 5:
                     Logger.d("SHOW_UNABLE_TO_CONNECT_ERROR");
                     SettingsManager.clearServerAutoconnectOptions();
@@ -226,22 +256,16 @@ public class ConnectionActivity extends Activity implements UnexpectedErrorListn
                     Logger.e(className + ":Server Denied calling stopProcess");
                     ccMngr.stopProcesses();
                     break;
-
                 case 10:
                     Logger.e(className + ":Connection Failed calling stopProcess");
                     ccMngr.stopProcesses();
                     break;
-
                 case 11:
                     ConnectionActivity.this.connected = false;
-
                     break;
-
                 case 12:
                     ConnectionActivity.this.connected = false;
                     break;
-
-
                 case 13:
                     ServerItem serverItem = (ServerItem) message.obj;
                     Logger.d(className + ":In HandleMessage CONNECT_TO_SERVER" + serverItem);
@@ -249,36 +273,19 @@ public class ConnectionActivity extends Activity implements UnexpectedErrorListn
                     ConnectionActivity.this.connected = false;
                     ConnectionActivity.this.connectToServer(serverItem.getServerName(), serverItem.getHost(), (long) serverItem.getPort());
                     break;
-
                 case 16:
-				Html.fromHtml(String.format(ConnectionActivity.this.getString(R.string.connect_to_usb_server), new Object[]{"<a href=\"http://www.shape.ag/idisplay\">http://www.shape.ag/idisplay</a>"}));
-                break;
-
+                	break;
                 case 18:
-
                     Logger.e(className + ":Connection Failed calling stopProcess");
                     ccMngr.stopProcesses();
                     break;
-
                default:
                     break;
             }
         }
     }
 
-    static {
-        className = "ConnectionActivity";
-        ccMngr = null;
-        serverListScreenShown = false;
-        launchThread = null;
-        isVirtualScreenShown = false;
-    }
-
     public ConnectionActivity() {
-        this.connected = false;
-        this.mBlockAutoConnect = false;
-        this.user_cancel_action = false;
-        
         usbServerItem = ServerItem.CreateUsbItem(ConnectionActivity.this);
     }
 
@@ -305,37 +312,11 @@ public class ConnectionActivity extends Activity implements UnexpectedErrorListn
             listScreenHandler.sendEmptyMessage(1);
             return;
         }
-        
-        DeviceOrientation deviceOrientation;
-        int i = getResources().getConfiguration().orientation;
-        Map hashMap = new HashMap();
-        switch (i) {
-            case ErrorCode.GENERIC_FAILURE:
-                hashMap.put("orientation", "ORIENTATION_UNDEFINED");
-                deviceOrientation = DeviceOrientation.Undefined;
-                break;
-            case Filter.ACCEPT:
-                hashMap.put("orientation", "ORIENTATION_PORTRAIT");
-                deviceOrientation = DeviceOrientation.Portrait;
-                break;
-            case ErrorCode.FLUSH_FAILURE:
-                hashMap.put("orientation", "ORIENTATION_LANDSCAPE");
-                deviceOrientation = DeviceOrientation.Landscape;
-                break;
-            case ErrorCode.CLOSE_FAILURE:
-                hashMap.put("orientation", "ORIENTATION_SQUARE");
-                deviceOrientation = DeviceOrientation.Square;
-                break;
-            default:
-                deviceOrientation = DeviceOrientation.Landscape;
-                break;
-        }
-        hashMap.put("via-usb", StringUtils.EMPTY + (j == -1));
-        
+           
         if (Utils.isValidIP(str2)) {
-            Display defaultDisplay = getWindowManager().getDefaultDisplay();
-            float zoom = SettingsManager.getZoom();
-            ccMngr.setDisplayDetails(540, 960, DeviceOrientation.Portrait);
+            getWindowManager().getDefaultDisplay();
+            SettingsManager.getZoom();
+            ccMngr.setDisplayDetails(currentMode.width, currentMode.height, DeviceOrientation.Landscape);
             ccMngr.setServerDeniedListner(this);
             initCodecs();
             new ConnectTask(str2, str, j).execute(new String[]{str2, String.valueOf(j)});
@@ -343,7 +324,6 @@ public class ConnectionActivity extends Activity implements UnexpectedErrorListn
         }
         
         this.connected = false;
-
     }
 
     private void initCodecs() {
@@ -356,30 +336,28 @@ public class ConnectionActivity extends Activity implements UnexpectedErrorListn
     }
 
     public void OnUnexpectedError(boolean z, String str) {
+    	Logger.e("OnUnexpectedError"+str);
     }
 
     public void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         Logger.d(className + " OnCreate of ConnectionActivity");
         setContentView(R.layout.connection_screen);
-        Map hashMap = new HashMap();
-        hashMap.put("app-version", IDisplayApp.getInstance().getBranch());
-        hashMap.put("autoconnect-enabled", StringUtils.EMPTY + SettingsManager.getBoolean(SettingsManager.AUTOCONNECT_KEY));
-        hashMap.put("start-after-crash", StringUtils.EMPTY + false);
+
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
             if (extras.isEmpty()) {
                 Logger.d("start with: empty extract");
             } else {
                 Logger.d("start with: " + extras.toString());
+                currentMode = (ConnectionMode) extras.getParcelable("mode");
+                Logger.d("currentMode: "+currentMode.width+"x"+currentMode.height);
             }
         }
         if (extras == null || !extras.getBoolean("DENY")) {
-            this.mBlockAutoConnect = false;
         } else {
             Logger.d(className + ":OnCreate got Unexpected error on Virtual screen or reconnect");
             SettingsManager.clearServerAutoconnectOptions();
-            this.mBlockAutoConnect = true;
         }
         TelephonyManager telephonyManager = (TelephonyManager) getSystemService("phone");
         ccMngr = new ConnectionChannelManager();
@@ -430,8 +408,6 @@ public class ConnectionActivity extends Activity implements UnexpectedErrorListn
     }
 
     protected void onStop() {
-//    	ccMngr.stopProcesses();
-
         super.onStop();
         Logger.d(className + ":OnStop");
     }

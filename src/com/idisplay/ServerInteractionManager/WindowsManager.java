@@ -9,9 +9,6 @@ import com.idisplay.CoreFoundation.CFDictionary;
 import com.idisplay.CoreFoundation.CFNull;
 import com.idisplay.CoreFoundation.CNSDictionary;
 import com.idisplay.CoreFoundation.NSArray;
-import com.idisplay.ServerInteractionManager.WindowsManager.IAppContainer;
-import com.idisplay.ServerInteractionManager.WindowsManager.IGroupContainer;
-import com.idisplay.ServerInteractionManager.WindowsManager.IWindowContainer;
 import com.idisplay.util.Logger;
 import java.util.ArrayList;
 

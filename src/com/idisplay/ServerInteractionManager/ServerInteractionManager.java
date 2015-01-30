@@ -2,16 +2,12 @@ package com.idisplay.ServerInteractionManager;
 
 import com.idisplay.CoreFoundation.CFBaseTypes;
 import com.idisplay.CoreFoundation.CFBaseTypes.CFTypeID;
-import com.idisplay.CoreFoundation.BinaryPList;
-import com.idisplay.CoreFoundation.CFArray;
 import com.idisplay.CoreFoundation.CFCustomClass;
 import com.idisplay.CoreFoundation.CFDate;
-import com.idisplay.CoreFoundation.CFDictionary;
 import com.idisplay.CoreFoundation.CFStringBaseT;
 import com.idisplay.CoreFoundation.CKeyedArchiver;
 import com.idisplay.CoreFoundation.CKeyedUnarchiver;
 import com.idisplay.CoreFoundation.CMSMMessagePacket;
-import com.idisplay.CoreFoundation.Tester;
 import com.idisplay.CoreFoundation.CMSMMessagePacket.MSMMessageType;
 import com.idisplay.CoreFoundation.MSMKeyboardEventPacket;
 import com.idisplay.CoreFoundation.MSMTouchEventPacket;

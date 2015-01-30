@@ -27,8 +27,6 @@ import com.idisplay.VirtualScreenDisplay.VirtualScreenActivity;
 import com.idisplay.util.Logger;
 import com.idisplay.util.SettingsManager;
 import com.idisplay.util.Utils;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
@@ -185,7 +183,7 @@ public class ConnectionChannelManager implements AccessConfirmedListener, Conten
             cNSDictionary.getDict().insert("FloatingFps", new CFNumber(1));
         }else {
         	Logger.d("FloatingFps set to smooth");
-//            cNSDictionary.getDict().insert("FloatingFps", new CFNumber(60));
+//            cNSDictionary.getDict().insert("FloatingFps", new CFNumber(30));
 		}
         if (this.m_orientation == DeviceOrientation.Landscape) {
             cNSDictionary.getDict().insert(oScreenWidth, new CFNumber(this.m_height));

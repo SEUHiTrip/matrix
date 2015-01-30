@@ -11,12 +11,21 @@
         android:text="hello world" />
 
     <Button
-        android:id="@+id/connect_btn"
+        android:id="@+id/connect_btn_single"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_below="@+id/textView1"
         android:layout_marginTop="22dp"
-        android:text="Button" />
+        android:text="Single" />
 
+    <Button
+        android:id="@+id/connect_btn_duel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/connect_btn_single"
+        android:layout_marginTop="16dp"
+        android:text="Duel" />
+    
 </RelativeLayout>

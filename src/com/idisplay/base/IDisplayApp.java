@@ -1,8 +1,6 @@
 package com.idisplay.base;
 
 import android.app.Application;
-import android.os.Build;
-import android.os.Build.VERSION;
 import android.os.Looper;
 import android.util.DisplayMetrics;
 import android.util.Printer;
@@ -13,9 +11,6 @@ import org.apache.commons.lang.StringUtils;
 
 public class IDisplayApp extends Application {
     public static final short FIRST_START_DATE = (short) 11;
-    public static boolean IS_GINGERBREAD = false;
-    public static boolean IS_HONEY_COMB = false;
-    public static boolean IS_ICS = false;
     public static final short IS_RATED = (short) 12;
     public static final short O_DEVICE = (short) 8;
     public static final short O_IMEI = (short) 9;
@@ -27,39 +22,9 @@ public class IDisplayApp extends Application {
     public static final short O_SKIP_REGISTRATION = (short) 7;
     public static final short STARTS_APP_COUNT = (short) 10;
     private static IDisplayApp instance;
-    public static boolean isGoogleTV;
-    public static boolean isKindleFire;
-    public static boolean isNook;
-
-    static {
-        IS_GINGERBREAD = false;
-        IS_HONEY_COMB = false;
-        IS_ICS = false;
-        isGoogleTV = false;
-        isNook = false;
-        isKindleFire = false;
-    }
 
     public IDisplayApp() {
-        boolean z = false;
         instance = this;
-        IS_GINGERBREAD = VERSION.SDK_INT >= 9;
-        IS_HONEY_COMB = VERSION.SDK_INT >= 11;
-        if (VERSION.SDK_INT >= 14) {
-            z = true;
-        }
-        IS_ICS = z;
-        if (Build.PRODUCT.equals("zoom2") || Build.PRODUCT.contains("NOOK")) {
-            isNook = true;
-            Logger.d("Detect Nook, Build.PRODUCT = " + Build.PRODUCT);
-        }
-        if (Build.MODEL.contains("Kindle Fire")) {
-            isKindleFire = true;
-            Logger.d("Detect Kindle Fire, Build.MODEL = " + Build.MODEL);
-        }
-        if (isNook && isKindleFire) {
-            Logger.d("it is nook or it is kindle?");
-        }
     }
 
     private void dumpMainLooper(String str) {
@@ -96,7 +61,7 @@ public class IDisplayApp extends Application {
                 }
             }
             if (instance == null) {
-                IDisplayApp iDisplayApp = new IDisplayApp();
+            	instance = new IDisplayApp();
             }
         }
         return instance;
@@ -123,15 +88,7 @@ public class IDisplayApp extends Application {
         Logger.initLogger(this);
         Logger.i("---------------------------------\nStarting iDisplay app, v" + Utils.getApplicationVersion());
         dumpMainLooper("onCreate");
-//        if (SettingsManager.isFirstStart()) {
-//            Logger.i("Initing default zoom");
-//            SettingsManager.initZoomValue();
-//            RMS.setInt(IS_RATED, 0);
-//            SettingsManager.disableFirstStart();
-//        }
-//        if (getPackageManager().hasSystemFeature("com.google.android.tv")) {
-//            isGoogleTV = true;
-//        }
+
         Thread.setDefaultUncaughtExceptionHandler(new TopExceptionHandler(this));
     }
 }
