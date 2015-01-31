@@ -19,6 +19,8 @@ public class MainActivity extends Activity {
 		
 		Button single = (Button) findViewById(R.id.connect_btn_single);
 		Button duel = (Button) findViewById(R.id.connect_btn_duel);
+		Button cardboardButton = (Button) findViewById(R.id.cardboard_btn);
+		
 		single.setOnClickListener(new OnClickListener() {
 			
 			@Override
@@ -41,5 +43,14 @@ public class MainActivity extends Activity {
 			}
 		});
 		
+		cardboardButton.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				Intent intent = new Intent(getApplicationContext(), MatrixActivity.class);
+				startActivity(intent);
+				finish();
+			}
+		});
 	}
 }

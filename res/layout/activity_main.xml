@@ -27,5 +27,14 @@
         android:layout_below="@+id/connect_btn_single"
         android:layout_marginTop="16dp"
         android:text="Duel" />
+
+    <Button
+        android:id="@+id/cardboard_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/connect_btn_duel"
+        android:layout_marginTop="24dp"
+        android:text="Cardboard" />
     
 </RelativeLayout>
