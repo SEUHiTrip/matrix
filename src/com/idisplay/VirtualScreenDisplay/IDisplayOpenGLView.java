@@ -68,7 +68,6 @@ public class IDisplayOpenGLView extends GLSurfaceView implements Renderer, Obser
     private int mStrideY;
     private float mTopEdge;
     private int mWidth;
-    private MiniMapProcessor miniMapProcessor;
     private float ratio;
     String vertexShaderCode;
 
@@ -92,11 +91,8 @@ public class IDisplayOpenGLView extends GLSurfaceView implements Renderer, Obser
         this.mShowCursor = false;
         this.indices = new byte[]{(byte) 0, (byte) 1, (byte) 3, (byte) 0, (byte) 3, (byte) 2};
         this.mNotNativeRatio = false;
-        if (miniMapProcessor == null) {
-            throw new IllegalArgumentException("miniMapProcessor is null");
-        }
+
         this.mOnMeasureListener = onMeasureListener;
-        this.miniMapProcessor = miniMapProcessor;
         setEGLContextClientVersion(ErrorCode.FLUSH_FAILURE);
         if (Runtime.getRuntime().availableProcessors() != 1) {
             z = false;
@@ -272,7 +268,6 @@ public class IDisplayOpenGLView extends GLSurfaceView implements Renderer, Obser
         GLES20.glBindTexture(3553, this.buffer[3]);
         decodeResource = BitmapFactory.decodeResource(getResources(), R.drawable.cloth_texture);
         GLES20.glTexImage2D(3553, 0, 6408, decodeResource.getWidth(), decodeResource.getHeight(), 0, 6408, 5121, Utils.loadTextureFromBitmap(decodeResource));
-        this.miniMapProcessor.updateRenderer(new MiniMapRenderer(this.e, this.vertexShaderCode, this.indices, this.indexBuffer, getWidth(), getHeight(), this.mState, this.buffer, getResources()));
     }
 
     private void updateScreenVerticles(float f, float f2, float f3) {
@@ -384,7 +379,6 @@ public class IDisplayOpenGLView extends GLSurfaceView implements Renderer, Obser
                 GLES20.glVertexAttribPointer(glGetAttribLocation, ErrorCode.FLUSH_FAILURE, 5126, false, 0, this.e);
                 gl10.glDrawElements(ErrorCode.FILE_OPEN_FAILURE, this.indices.length, 5121, this.indexBuffer);
             }
-            this.miniMapProcessor.getRenderer().onDrawFrame(gl10, this.ratio);
         }
     }
 
@@ -482,9 +476,6 @@ public class IDisplayOpenGLView extends GLSurfaceView implements Renderer, Obser
     public void update(Observable observable, Object obj) {
         updateScreenVerticles(this.mState.getZoom(), this.mState.getPanX(), this.mState.getPanY());
         setCursorPosition(this.mCursorX, this.mCursorY);
-        if (this.miniMapProcessor.getRenderer() != null) {
-            this.miniMapProcessor.getRenderer().updatePanZoom();
-        }
         requestRender();
     }
 }

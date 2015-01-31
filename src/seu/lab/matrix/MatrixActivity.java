@@ -20,7 +20,6 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import javax.microedition.khronos.egl.EGLConfig;
 
-
 public class MatrixActivity extends CardboardActivity implements CardboardView.StereoRenderer {
 
     private static final String TAG = "MainActivity";
@@ -151,7 +150,6 @@ public class MatrixActivity extends CardboardActivity implements CardboardView.S
         mModelFloor = new float[16];
         mHeadView = new float[16];
         mVibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-
 
         mOverlayView = (CardboardOverlayView) findViewById(R.id.overlay);
         mOverlayView.show3DToast("Pull the magnet when you find an object.");
