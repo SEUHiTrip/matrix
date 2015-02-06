@@ -22,7 +22,7 @@ import javax.microedition.khronos.egl.EGLConfig;
 
 public class MatrixActivity extends CardboardActivity implements CardboardView.StereoRenderer {
 
-    private static final String TAG = "MainActivity";
+    private static final String TAG = "MatrixActivity";
 
     private static final float Z_NEAR = 0.1f;
     private static final float Z_FAR = 100.0f;
@@ -331,6 +331,8 @@ public class MatrixActivity extends CardboardActivity implements CardboardView.S
      */
     @Override
     public void onDrawEye(Eye eye) {
+    	Log.e(TAG, "on draw eye");
+    	
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
         checkGLError("mColorParam");
@@ -353,6 +355,7 @@ public class MatrixActivity extends CardboardActivity implements CardboardView.S
         Matrix.multiplyMM(mModelViewProjection, 0, perspective, 0,
             mModelView, 0);
         drawFloor();
+		
     }
 
     @Override

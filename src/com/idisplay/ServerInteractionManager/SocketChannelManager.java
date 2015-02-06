@@ -3,7 +3,6 @@ package com.idisplay.ServerInteractionManager;
 import com.idisplay.Audio.AudioChannel;
 import com.idisplay.VirtualScreenDisplay.ConnectionActivity;
 import com.idisplay.VirtualScreenDisplay.ThreadEvent;
-import com.idisplay.VirtualScreenDisplay.VirtualScreenActivity;
 import com.idisplay.util.ByteBufferPool;
 import com.idisplay.util.Logger;
 import java.io.DataInputStream;
@@ -18,6 +17,8 @@ import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import org.apache.log4j.Level;
 import org.apache.log4j.spi.ErrorCode;
+
+import seu.lab.matrix.ScreenMatrixActivity;
 
 public class SocketChannelManager {
     private static ServerSocket USBCommandsSocket;
@@ -66,8 +67,8 @@ public class SocketChannelManager {
                         Logger.e(getName() + ": Disconnect. Data length is to big. length = " + access$100);
                         if (!SocketChannelManager.this.stopProcess) {
 
-                            if (VirtualScreenActivity.screenHandler != null) {
-                                VirtualScreenActivity.screenHandler.sendEmptyMessage(ErrorCode.ADDRESS_PARSE_FAILURE);
+                            if (ScreenMatrixActivity.screenHandler != null) {
+                                ScreenMatrixActivity.screenHandler.sendEmptyMessage(ErrorCode.ADDRESS_PARSE_FAILURE);
                             }
                             SocketChannelManager.this.stopProcess = true;
                             return;
@@ -94,8 +95,8 @@ public class SocketChannelManager {
                     } else {
                         Logger.e(getName() + ": Disconnect. Data length is <= 0. length = " + access$100);
 
-                        if (VirtualScreenActivity.screenHandler != null) {
-                            VirtualScreenActivity.screenHandler.sendEmptyMessage(17);
+                        if (ScreenMatrixActivity.screenHandler != null) {
+                            ScreenMatrixActivity.screenHandler.sendEmptyMessage(17);
                         }
                         SocketChannelManager.this.remoteSocketClosedNotified = true;
                         SocketChannelManager.this.stopProcess = true;
@@ -105,8 +106,8 @@ public class SocketChannelManager {
                     if (!SocketChannelManager.this.stopProcess) {
                         Logger.e(getName(), e22);
                         
-                        if (VirtualScreenActivity.screenHandler != null) {
-                            VirtualScreenActivity.screenHandler.sendEmptyMessage(ErrorCode.ADDRESS_PARSE_FAILURE);
+                        if (ScreenMatrixActivity.screenHandler != null) {
+                            ScreenMatrixActivity.screenHandler.sendEmptyMessage(ErrorCode.ADDRESS_PARSE_FAILURE);
                         }
                         SocketChannelManager.this.stopProcess = true;
                     }
@@ -137,8 +138,8 @@ public class SocketChannelManager {
                 } catch (Throwable e) {
                     Logger.e(getName() + ": Can't read size", e);
                     if (!SocketChannelManager.this.stopProcess) {
-                        if (VirtualScreenActivity.screenHandler != null) {
-                            VirtualScreenActivity.screenHandler.sendEmptyMessage(ErrorCode.ADDRESS_PARSE_FAILURE);
+                        if (ScreenMatrixActivity.screenHandler != null) {
+                            ScreenMatrixActivity.screenHandler.sendEmptyMessage(ErrorCode.ADDRESS_PARSE_FAILURE);
                         }
                         SocketChannelManager.this.stopProcess = true;
                     }
@@ -146,8 +147,8 @@ public class SocketChannelManager {
                 if (access$100 > 10000000) {
                     Logger.e(getName() + ": Disconnect. Data length is to big. length = " + access$100);
                     if (!SocketChannelManager.this.stopProcess) {
-                        if (VirtualScreenActivity.screenHandler != null) {
-                            VirtualScreenActivity.screenHandler.sendEmptyMessage(ErrorCode.ADDRESS_PARSE_FAILURE);
+                        if (ScreenMatrixActivity.screenHandler != null) {
+                            ScreenMatrixActivity.screenHandler.sendEmptyMessage(ErrorCode.ADDRESS_PARSE_FAILURE);
                         }
                         SocketChannelManager.this.stopProcess = true;
                         return;
@@ -162,7 +163,7 @@ public class SocketChannelManager {
                         } catch (Throwable e3) {
                             Logger.e(getName() + ": Can't read data", e3);
                             if (!SocketChannelManager.this.remoteSocketClosedNotified) {
-                            	VirtualScreenActivity.setSocketConnectionClosedFromRemote();
+                            	ScreenMatrixActivity.setSocketConnectionClosedFromRemote();
                                 SocketChannelManager.this.remoteSocketClosedNotified = true;
                                 SocketChannelManager.this.stopProcess = true;
                                 break;
@@ -176,8 +177,8 @@ public class SocketChannelManager {
 
                 } else {
                     Logger.e(getName() + ": Disconnect. Data length is 0. length = " + access$100);
-                    if (VirtualScreenActivity.screenHandler != null) {
-                        VirtualScreenActivity.screenHandler.sendEmptyMessage(17);
+                    if (ScreenMatrixActivity.screenHandler != null) {
+                        ScreenMatrixActivity.screenHandler.sendEmptyMessage(17);
                     }
 
                     SocketChannelManager.this.remoteSocketClosedNotified = true;

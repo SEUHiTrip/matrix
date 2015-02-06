@@ -7,19 +7,15 @@ import android.graphics.BitmapFactory.Options;
 import com.idisplay.DataChannelManager.DataChannelManager.Compression;
 import com.idisplay.VirtualScreenDisplay.FPSCounter;
 import com.idisplay.VirtualScreenDisplay.ThreadEvent;
-import com.idisplay.VirtualScreenDisplay.VirtualScreenActivity;
 import com.idisplay.util.ArrayImageContainer;
-import com.idisplay.util.BitmapPool;
-import com.idisplay.util.ByteBufferPool;
 import com.idisplay.util.Logger;
 import com.idisplay.util.RLEImage;
 import com.idisplay.vp8.VP8Decoder;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.concurrent.LinkedBlockingQueue;
-import javolution.xml.stream.XMLStreamConstants;
-import org.apache.log4j.spi.ErrorCode;
-import org.apache.log4j.spi.Filter;
+
+import seu.lab.matrix.ScreenMatrixActivity;
 
 public class ReadImagesTask extends Thread {
     static final int MAX_QUEUE_SIZE = 30;
@@ -100,7 +96,7 @@ public class ReadImagesTask extends Thread {
     }
 
     private void renderProcessedData(int i, Object obj) {
-        VirtualScreenActivity.onDataAvailable(i, obj);
+        ScreenMatrixActivity.onDataAvailable(i, obj);
     }
 
     public void clearImageQueue() {

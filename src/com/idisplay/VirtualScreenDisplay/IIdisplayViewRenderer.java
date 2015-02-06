@@ -5,7 +5,7 @@ import com.idisplay.util.ArrayImageContainer;
 import javax.microedition.khronos.opengles.GL10;
 
 public interface IIdisplayViewRenderer {
-    void fillTextures(GL10 gl10, int i, int[] iArr);
+    void fillTextures(int i, int[] iArr);
 
     String getFragmentShader();
 

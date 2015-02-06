@@ -8,11 +8,8 @@ import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLSurfaceView.Renderer;
 import android.util.Log;
-import android.view.View.MeasureSpec;
 import com.idisplay.util.ArrayImageContainer;
-import com.idisplay.util.BatteryLevelReceiver;
 import com.idisplay.util.ImageContainer;
-import com.idisplay.util.SettingsManager;
 import com.idisplay.util.Utils;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -21,7 +18,7 @@ import java.util.Observable;
 import java.util.Observer;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
-import org.apache.commons.lang.SystemUtils;
+
 import org.apache.log4j.spi.ErrorCode;
 
 import seu.lab.matrix.R;
@@ -43,7 +40,6 @@ public class IDisplayOpenGLView extends GLSurfaceView implements Renderer, Obser
     private boolean isCursorDirty;
     private boolean isDirty;
     private int mBackgroundProgram;
-    private int mBatteryProgram;
     IIdisplayViewRendererContainer mContainer;
     private int mCursorHeigth;
     private ImageContainer mCursorImage;
@@ -60,7 +56,6 @@ public class IDisplayOpenGLView extends GLSurfaceView implements Renderer, Obser
     IIdisplayViewRenderer mRenderer;
     private boolean mRendererChanged;
     private float mRightEdge;
-    private boolean mShowBattery;
     private boolean mShowCursor;
     private boolean mSingleCodeDevice;
     private ZoomState mState;
@@ -256,7 +251,6 @@ public class IDisplayOpenGLView extends GLSurfaceView implements Renderer, Obser
             GLES20.glTexParameteri(3553, 10241, 9729);
         }
         this.mProgram = Programs.loadProgram(this.vertexShaderCode, this.mRenderer.getFragmentShader());
-        this.mBatteryProgram = Programs.loadProgram(this.vertexShaderCode, this.fragmentBatteryShaderCode);
         this.mCursorProgram = Programs.loadProgram(this.vertexShaderCode, this.fragmentCursorShaderCode);
         this.mBackgroundProgram = Programs.loadProgram(this.vertexShaderCode, this.fragmentBackgroundShaderCode);
         GLES20.glActiveTexture(33985);
@@ -327,11 +321,11 @@ public class IDisplayOpenGLView extends GLSurfaceView implements Renderer, Obser
                 glGetAttribLocation = GLES20.glGetAttribLocation(this.mBackgroundProgram, "inputTextureCoordinate");
                 GLES20.glEnableVertexAttribArray(glGetAttribLocation);
                 GLES20.glVertexAttribPointer(glGetAttribLocation, ErrorCode.FLUSH_FAILURE, 5126, false, 0, this.backgroundTexture);
-                gl10.glDrawElements(ErrorCode.FILE_OPEN_FAILURE, this.indices.length, 5121, this.indexBuffer);
+                GLES20.glDrawElements(ErrorCode.FILE_OPEN_FAILURE, this.indices.length, 5121, this.indexBuffer);
             }
             GLES20.glUseProgram(this.mProgram);
             if (this.isDirty) {
-                this.mRenderer.fillTextures(gl10, this.mProgram, this.buffer);
+                this.mRenderer.fillTextures(this.mProgram, this.buffer);
             }
             this.isDirty = false;
             glGetAttribLocation = GLES20.glGetAttribLocation(this.mProgram, "position");
@@ -342,7 +336,7 @@ public class IDisplayOpenGLView extends GLSurfaceView implements Renderer, Obser
             GLES20.glVertexAttribPointer(glGetAttribLocation2, ErrorCode.FLUSH_FAILURE, 5126, false, 0, this.b);
             GLES20.glUniform1f(GLES20.glGetUniformLocation(this.mProgram, "rightEdge"), this.mRightEdge);
             GLES20.glUniform1f(GLES20.glGetUniformLocation(this.mProgram, "topEdge"), this.mTopEdge);
-            gl10.glDrawElements(ErrorCode.FILE_OPEN_FAILURE, this.indices.length, 5121, this.indexBuffer);
+            GLES20.glDrawElements(ErrorCode.FILE_OPEN_FAILURE, this.indices.length, 5121, this.indexBuffer);
             if (this.mShowCursor) {
                 GLES20.glUseProgram(this.mCursorProgram);
                 GLES20.glUniform1i(GLES20.glGetUniformLocation(this.mCursorProgram, "cursorFrame"), 0);
@@ -352,32 +346,7 @@ public class IDisplayOpenGLView extends GLSurfaceView implements Renderer, Obser
                 glGetAttribLocation = GLES20.glGetAttribLocation(this.mCursorProgram, "inputTextureCoordinate");
                 GLES20.glEnableVertexAttribArray(glGetAttribLocation);
                 GLES20.glVertexAttribPointer(glGetAttribLocation, ErrorCode.FLUSH_FAILURE, 5126, false, 0, this.e);
-                gl10.glDrawElements(ErrorCode.FILE_OPEN_FAILURE, this.indices.length, 5121, this.indexBuffer);
-            }
-            if (this.mShowBattery) {
-                GLES20.glUseProgram(this.mBatteryProgram);
-                GLES20.glUniform1i(GLES20.glGetUniformLocation(this.mBatteryProgram, "batteryFrame"), 1);
-                float batteryLavel = 0.063f + (0.8f * ((float) BatteryLevelReceiver.getBatteryLavel()));
-                GLES20.glUniform1f(GLES20.glGetUniformLocation(this.mBatteryProgram, "chargePos"), batteryLavel);
-                float f = 1.0f;
-                float f2 = 1.0f;
-                if (((double) batteryLavel) < 0.5d) {
-                    f2 = (2.0f * batteryLavel) - 0.2f;
-                    if (f2 <= 0.0f) {
-                        f2 = 0.0f;
-                    }
-                } else {
-                    f = 1.0f - (batteryLavel * 2.0f);
-                }
-                GLES20.glUniform1f(GLES20.glGetUniformLocation(this.mBatteryProgram, "rColor"), f);
-                GLES20.glUniform1f(GLES20.glGetUniformLocation(this.mBatteryProgram, "gColor"), f2);
-                glGetAttribLocation = GLES20.glGetAttribLocation(this.mBatteryProgram, "position");
-                GLES20.glEnableVertexAttribArray(glGetAttribLocation);
-                GLES20.glVertexAttribPointer(glGetAttribLocation, ErrorCode.FLUSH_FAILURE, 5126, false, 0, this.d);
-                glGetAttribLocation = GLES20.glGetAttribLocation(this.mBatteryProgram, "inputTextureCoordinate");
-                GLES20.glEnableVertexAttribArray(glGetAttribLocation);
-                GLES20.glVertexAttribPointer(glGetAttribLocation, ErrorCode.FLUSH_FAILURE, 5126, false, 0, this.e);
-                gl10.glDrawElements(ErrorCode.FILE_OPEN_FAILURE, this.indices.length, 5121, this.indexBuffer);
+                GLES20.glDrawElements(ErrorCode.FILE_OPEN_FAILURE, this.indices.length, 5121, this.indexBuffer);
             }
         }
     }
@@ -394,15 +363,14 @@ public class IDisplayOpenGLView extends GLSurfaceView implements Renderer, Obser
 
     public void onSurfaceChanged(GL10 gl10, int i, int i2) {
         this.ratio = (float) Math.sqrt(((double) i) / ((double) i2));
-        gl10.glViewport(0, 0, i, i2);
-        gl10.glEnable(3042);
-        gl10.glBlendFunc(1, 771);
-        this.mShowBattery = SettingsManager.getBatteryWidgetEnabled();
+        GLES20.glViewport(0, 0, i, i2);
+        GLES20.glEnable(3042);
+        GLES20.glBlendFunc(1, 771);
         this.mRendererChanged = true;
         this.isDirty = true;
     }
 
-    public void onSurfaceCreated(GL10 gl10, EGLConfig eGLConfig) {
+    public void onSurfaceCreated(GL10 GLES20, EGLConfig eGLConfig) {
         updateScreenVerticles(1.0f, 0.0f, 0.0f);
         this.mShowCursor = false;
     }
@@ -464,7 +432,7 @@ public class IDisplayOpenGLView extends GLSurfaceView implements Renderer, Obser
         this.mRenderer = new OpenGlYuvView(this.mContainer);
         this.mRendererChanged = true;
     }
-
+    
     public void setZoomState(ZoomState zoomState) {
         if (this.mState != null) {
             this.mState.deleteObserver(this);
@@ -473,6 +441,7 @@ public class IDisplayOpenGLView extends GLSurfaceView implements Renderer, Obser
         this.mState.addObserver(this);
     }
 
+	@Override
     public void update(Observable observable, Object obj) {
         updateScreenVerticles(this.mState.getZoom(), this.mState.getPanX(), this.mState.getPanY());
         setCursorPosition(this.mCursorX, this.mCursorY);

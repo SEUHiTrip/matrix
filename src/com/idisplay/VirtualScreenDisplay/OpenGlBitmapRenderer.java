@@ -34,7 +34,7 @@ public class OpenGlBitmapRenderer implements IIdisplayViewRenderer {
         return this.mData;
     }
 
-    public void fillTextures(GL10 gl10, int i, int[] iArr) {
+    public void fillTextures(int i, int[] iArr) {
         if (!this.mBitmap.isRecycled()) {
             convertTextureData();
             GLES20.glActiveTexture(33988);

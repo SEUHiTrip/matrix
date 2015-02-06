@@ -23,7 +23,6 @@ import com.idisplay.VirtualScreenDisplay.FPSCounter;
 import com.idisplay.VirtualScreenDisplay.ScreenConstants;
 import com.idisplay.VirtualScreenDisplay.ServerDeniedListner;
 import com.idisplay.VirtualScreenDisplay.UnexpectedErrorListner;
-import com.idisplay.VirtualScreenDisplay.VirtualScreenActivity;
 import com.idisplay.util.Logger;
 import com.idisplay.util.SettingsManager;
 import com.idisplay.util.Utils;
@@ -33,6 +32,8 @@ import java.util.concurrent.TimeUnit;
 
 import javax.jmdns.impl.constants.DNSConstants;
 import org.apache.commons.lang.StringUtils;
+
+import seu.lab.matrix.ScreenMatrixActivity;
 
 public class ConnectionChannelManager implements AccessConfirmedListener, ContentServiceAccessibleOnPortListener, PingResponseListener {
     private static CFDate datePingResponse;
@@ -244,24 +245,24 @@ public class ConnectionChannelManager implements AccessConfirmedListener, Conten
         this.m_serverInfo = new ServerInfo();
         this.m_serverInfo.initWithObject(objectForKey2);
 
-        if (!(processServerVersion(this.m_serverInfo.serverVersion(), this.m_serverInfo.OSName()) || VirtualScreenActivity.screenHandler == null)) {
-            VirtualScreenActivity.screenHandler.sendEmptyMessage(ScreenConstants.VERSION_MISMATCH);
+        if (!(processServerVersion(this.m_serverInfo.serverVersion(), this.m_serverInfo.OSName()) || ScreenMatrixActivity.screenHandler == null)) {
+            ScreenMatrixActivity.screenHandler.sendEmptyMessage(ScreenConstants.VERSION_MISMATCH);
         }
         if (this.m_serverInfo.getHostType() == HostType.MSMWindowCapture) {
             Logger.z("invalid type");
             long currentTimeMillis = System.currentTimeMillis();
             try {
-                if (VirtualScreenActivity.screenHandlerLock == null) {
-                    VirtualScreenActivity.resetStartState();
+                if (ScreenMatrixActivity.screenHandlerLock == null) {
+                    ScreenMatrixActivity.resetStartState();
                 }
-                VirtualScreenActivity.screenHandlerLock.await(30000, TimeUnit.MILLISECONDS);
+                ScreenMatrixActivity.screenHandlerLock.await(30000, TimeUnit.MILLISECONDS);
             } catch (InterruptedException e) {
                 Logger.e("screenHandlerLock interrupted");
             }
             Logger.z("waited " + (System.currentTimeMillis() - currentTimeMillis));
-            if (VirtualScreenActivity.screenHandler != null) {
+            if (ScreenMatrixActivity.screenHandler != null) {
                 Logger.z("screen handler not null");
-                VirtualScreenActivity.screenHandler.sendEmptyMessage(ScreenConstants.SERVER_MODE_NOT_SUPPORTED);
+                ScreenMatrixActivity.screenHandler.sendEmptyMessage(ScreenConstants.SERVER_MODE_NOT_SUPPORTED);
             }
         }
         Logger.d(this.className + ":received AccessConfirmed...protocol version = " + this.m_serverInfo.hostDataProtocol());

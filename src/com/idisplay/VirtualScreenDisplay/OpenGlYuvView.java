@@ -5,7 +5,6 @@ import android.opengl.GLES20;
 import com.idisplay.util.ArrayImageContainer;
 import com.idisplay.util.Logger;
 import java.nio.ByteBuffer;
-import javax.microedition.khronos.opengles.GL10;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.log4j.spi.ErrorCode;
 
@@ -26,7 +25,7 @@ public class OpenGlYuvView implements IIdisplayViewRenderer {
         this.mContainer = iIdisplayViewRendererContainer;
     }
 
-    public void fillTextures(GL10 gl10, int i, int[] iArr) {
+    public void fillTextures(int i, int[] iArr) {
         if (this.mArrayImageContainer != null) {
             int strideX = this.mArrayImageContainer.getStrideX() * this.mArrayImageContainer.getStrideY();
             GLES20.glActiveTexture(33988);

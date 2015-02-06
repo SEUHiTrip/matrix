@@ -176,7 +176,6 @@ public class DataChannelManager implements VideoDataReceivedListener, OnOrientat
         Logger.d(this.className + ":connectToPort");
         this.dataSIM = new ServerInteractionManager();
         this.dataSIM.setVideoDataAvailableListener(this);
-//        VirtualScreenActivity.setOrientationChangeListner(this);
         return this.dataSIM.connectToPort(i);
     }
 
