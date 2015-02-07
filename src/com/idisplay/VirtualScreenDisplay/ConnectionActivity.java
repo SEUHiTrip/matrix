@@ -45,7 +45,7 @@ public class ConnectionActivity extends Activity implements UnexpectedErrorListn
     public static ListScreenHandler listScreenHandler = null;
     static boolean serverListScreenShown = false;
     private boolean connected = false;
-    public static ConnectionMode currentMode;
+    public static ConnectionMode currentMode = new ConnectionMode(ConnectionType.Single.ordinal());
     protected ServiceInfo info;
 
     ServerItem usbServerItem = null;
@@ -81,14 +81,14 @@ public class ConnectionActivity extends Activity implements UnexpectedErrorListn
 			switch (type) {
 			case 0:
 				this.type = ConnectionType.Single;
-				height = 960;
-				width = 960;
+				height = 1024;
+				width = 1024;
 				break;
 			case 1:
 			default:
 				this.type = ConnectionType.Duel;
-				height = 1920;
-				width = 960;
+				height = 2048;
+				width = 1024;
 				break;
 			}
 		}

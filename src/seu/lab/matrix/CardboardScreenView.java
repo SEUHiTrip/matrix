@@ -36,8 +36,8 @@ import com.idisplay.util.ImageContainer;
 import com.idisplay.util.Logger;
 import com.idisplay.util.Utils;
 
-public class CardboardScreenView extends CardboardView implements CardboardView.StereoRenderer,
-		Observer {
+public class CardboardScreenView extends CardboardView implements
+		CardboardView.StereoRenderer, Observer {
 
 	private final static String TAG = "CardboardScreenView";
 
@@ -65,7 +65,7 @@ public class CardboardScreenView extends CardboardView implements CardboardView.
 	private int mCursorWidth;
 	float mCursorX;
 	float mCursorY;
-	private int mHeight;
+	private int mHeight = 1024;
 	private boolean mNotNativeRatio;
 	private OnMeasureListener mOnMeasureListener;
 	private int mProgram;
@@ -75,13 +75,13 @@ public class CardboardScreenView extends CardboardView implements CardboardView.
 	private boolean mShowCursor;
 	private boolean mSingleCodeDevice;
 	private ZoomState mState;
-	private int mStrideX;
-	private int mStrideY;
+	private int mStrideX = 1024;
+	private int mStrideY = 1024;
 	private float mTopEdge;
-	private int mWidth;
+	private int mWidth = 1024;
 	private float ratio;
 	String vertexShaderCode;
-	
+
 	public CardboardScreenView(Context context) {
 		super(context);
 	}
@@ -90,8 +90,8 @@ public class CardboardScreenView extends CardboardView implements CardboardView.
 			OnMeasureListener onMeasureListener) {
 		super(context);
 
-		Logger.d(TAG ," CardboardScreenView init");
-		
+		Logger.d(TAG, " CardboardScreenView init");
+
 		boolean z = true;
 		this.vertexShaderCode = "precision highp float;\nattribute vec4 position;\nattribute vec4 inputTextureCoordinate;\nvarying vec2 textureCoordinate;\nvoid main() {\ngl_Position = position;\ntextureCoordinate = inputTextureCoordinate.xy;\n}";
 		this.fragmentCursorShaderCode = "precision highp float;\nvarying highp vec2 textureCoordinate;\nuniform sampler2D cursorFrame;\nvoid main(void) {\ngl_FragColor = (texture2D(cursorFrame, textureCoordinate));\n}";
@@ -115,26 +115,26 @@ public class CardboardScreenView extends CardboardView implements CardboardView.
 		this.indexBuffer = ByteBuffer.allocateDirect(this.indices.length);
 		this.indexBuffer.put(this.indices);
 		this.indexBuffer.position(0);
-		
+
 		setRenderer(this);
-		setDistortionCorrectionEnabled(false);
+		//setDistortionCorrectionEnabled(false);
 		setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
-		
+
 		this.mContainer = new IIdisplayViewRendererContainer() {
 			public int getDataHeight() {
-				return mHeight;
+				return 1024;
 			}
 
 			public int getDataStrideX() {
-				return mStrideX;
+				return 1024;
 			}
 
 			public int getDataStrideY() {
-				return mStrideY;
+				return 1024;
 			}
 
 			public int getDataWidth() {
-				return mWidth;
+				return 1024;
 			}
 
 			public void renderDataUpdated(boolean z) {
@@ -150,19 +150,19 @@ public class CardboardScreenView extends CardboardView implements CardboardView.
 			}
 
 			public void setDataHeight(int i) {
-				mHeight = i;
+				mHeight = 1024;
 			}
 
 			public void setDataStrideX(int i) {
-				mStrideX = i;
+				mStrideX = 1024;
 			}
 
 			public void setDataStrideY(int i) {
-				mStrideY = i;
+				mStrideY = 1024;
 			}
 
 			public void setDataWidth(int i) {
-				mWidth = i;
+				mWidth = 1024;
 			}
 		};
 		float[] fArr = new float[] { 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
@@ -179,47 +179,45 @@ public class CardboardScreenView extends CardboardView implements CardboardView.
 		this.background.put(fArr);
 		this.background.position(0);
 		this.mRenderer = new OpenGlYuvView(this.mContainer);
-		
+
 	}
 
+	@Override
+	public void onNewFrame(HeadTransform headTransform) {
+		checkGLError("onReadyToDraw");
+	}
 
-    @Override
-    public void onNewFrame(HeadTransform headTransform) {    	
-        checkGLError("onReadyToDraw");
-    }
+	@Override
+	public void onDrawEye(Eye eye) {
+		Log.e(TAG, "on draw eye");
 
+		GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
-    @Override
-    public void onDrawEye(Eye eye) {
-    	Log.e(TAG, "on draw eye");
-    	
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
+		checkGLError("mColorParam");
 
-        checkGLError("mColorParam");
-        
-        onDrawFrame(eye);
-        
-    }
+		onDrawFrame(eye);
 
-    @Override
-    public void onFinishFrame(Viewport viewport) {
-    	
-    }
+	}
+
+	@Override
+	public void onFinishFrame(Viewport viewport) {
+
+	}
 
 	@Override
 	public void onRendererShutdown() {
-		//Logger.d(TAG, "onRendererShutdown");
+		// Logger.d(TAG, "onRendererShutdown");
 	}
 
 	@Override
 	public void onSurfaceChanged(int arg0, int arg1) {
-		//Logger.d(TAG, "onSurfaceChanged");
+		// Logger.d(TAG, "onSurfaceChanged");
 		onSurfaceChanged(null, arg0, arg1);
 	}
 
 	@Override
 	public void onSurfaceCreated(EGLConfig eGLConfig) {
-		//Logger.d(TAG, "onSurfaceCreated");
+		// Logger.d(TAG, "onSurfaceCreated");
 		onSurfaceCreated(null, eGLConfig);
 	}
 
@@ -238,8 +236,8 @@ public class CardboardScreenView extends CardboardView implements CardboardView.
 	}
 
 	private void reInitTextureBuffer() {
-		float width = (float) 960;//TODO getWidth();
-		float height = (float) 960;//TODO getHeight();
+		float width = (float) 1024;// TODO getWidth();
+		float height = (float) 1024;// TODO getHeight();
 		reInitTextureBuffer(width, height);
 		reInitCursorCalculation(width, height);
 		reinitBackgroundTexture(width, height);
@@ -330,21 +328,9 @@ public class CardboardScreenView extends CardboardView implements CardboardView.
 				this.fragmentCursorShaderCode);
 		this.mBackgroundProgram = Programs.loadProgram(this.vertexShaderCode,
 				this.fragmentBackgroundShaderCode);
-//		GLES20.glActiveTexture(33985);
-//		GLES20.glBindTexture(3553, this.buffer[1]);
-//		Bitmap decodeResource = BitmapFactory.decodeResource(getResources(),
-//				R.drawable.battery);
-//		GLES20.glTexImage2D(3553, 0, 6408, decodeResource.getWidth(),
-//				decodeResource.getHeight(), 0, 6408, 5121,
-//				Utils.loadTextureFromBitmap(decodeResource));
+
 		this.isCursorDirty = true;
-//		GLES20.glActiveTexture(33987);
-//		GLES20.glBindTexture(3553, this.buffer[3]);
-//		decodeResource = BitmapFactory.decodeResource(getResources(),
-//				R.drawable.cloth_texture);
-//		GLES20.glTexImage2D(3553, 0, 6408, decodeResource.getWidth(),
-//				decodeResource.getHeight(), 0, 6408, 5121,
-//				Utils.loadTextureFromBitmap(decodeResource));
+
 	}
 
 	private void updateScreenVerticles(float f, float f2, float f3) {
@@ -376,7 +362,7 @@ public class CardboardScreenView extends CardboardView implements CardboardView.
 		return this.mRenderer.isYuvRenderer();
 	}
 
-	public void onDrawFrame(Eye eye) {		
+	public void onDrawFrame(Eye eye) {
 		if (this.mRenderer.isRenderDataAvaliable()) {
 			int glGetAttribLocation;
 			if (this.mRendererChanged) {
@@ -384,7 +370,8 @@ public class CardboardScreenView extends CardboardView implements CardboardView.
 				this.mRendererChanged = false;
 			}
 			if (this.isCursorDirty) {
-				if(eye.getType() == Eye.Type.RIGHT)this.isCursorDirty = false;
+				if (eye.getType() == Eye.Type.RIGHT)
+					this.isCursorDirty = false;
 				GLES20.glActiveTexture(33984);
 				GLES20.glBindTexture(3553, this.buffer[0]);
 				if (this.mCursorImage == null) {
@@ -406,30 +393,32 @@ public class CardboardScreenView extends CardboardView implements CardboardView.
 			GLES20.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 			GLES20.glClearDepthf(1.0f);
 			GLES20.glClear(16640);
-//			if (this.mState.getKeyboardShown() || this.mNotNativeRatio) {
-//				GLES20.glUseProgram(this.mBackgroundProgram);
-//				GLES20.glUniform1i(GLES20.glGetUniformLocation(
-//						this.mBackgroundProgram, "cursorFrame"),
-//						ErrorCode.CLOSE_FAILURE);
-//				glGetAttribLocation = GLES20.glGetAttribLocation(
-//						this.mBackgroundProgram, "position");
-//				GLES20.glEnableVertexAttribArray(glGetAttribLocation);
-//				GLES20.glVertexAttribPointer(glGetAttribLocation,
-//						ErrorCode.FLUSH_FAILURE, 5126, false, 0,
-//						this.background);
-//				glGetAttribLocation = GLES20.glGetAttribLocation(
-//						this.mBackgroundProgram, "inputTextureCoordinate");
-//				GLES20.glEnableVertexAttribArray(glGetAttribLocation);
-//				GLES20.glVertexAttribPointer(glGetAttribLocation,
-//						ErrorCode.FLUSH_FAILURE, 5126, false, 0,
-//						this.backgroundTexture);
-//				GLES20.glDrawElements(ErrorCode.FILE_OPEN_FAILURE,
-//						this.indices.length, 5121, this.indexBuffer);
-//			}
+			// if (this.mState.getKeyboardShown() || this.mNotNativeRatio) {
+			// GLES20.glUseProgram(this.mBackgroundProgram);
+			// GLES20.glUniform1i(GLES20.glGetUniformLocation(
+			// this.mBackgroundProgram, "cursorFrame"),
+			// ErrorCode.CLOSE_FAILURE);
+			// glGetAttribLocation = GLES20.glGetAttribLocation(
+			// this.mBackgroundProgram, "position");
+			// GLES20.glEnableVertexAttribArray(glGetAttribLocation);
+			// GLES20.glVertexAttribPointer(glGetAttribLocation,
+			// ErrorCode.FLUSH_FAILURE, 5126, false, 0,
+			// this.background);
+			// glGetAttribLocation = GLES20.glGetAttribLocation(
+			// this.mBackgroundProgram, "inputTextureCoordinate");
+			// GLES20.glEnableVertexAttribArray(glGetAttribLocation);
+			// GLES20.glVertexAttribPointer(glGetAttribLocation,
+			// ErrorCode.FLUSH_FAILURE, 5126, false, 0,
+			// this.backgroundTexture);
+			// GLES20.glDrawElements(ErrorCode.FILE_OPEN_FAILURE,
+			// this.indices.length, 5121, this.indexBuffer);
+			// }
 			GLES20.glUseProgram(this.mProgram);
 			if (this.isDirty) {
-				this.mRenderer.fillTexturesWithEye(this.mProgram, this.buffer, eye);
-				if(eye.getType() == Eye.Type.RIGHT)this.isDirty = false;
+				this.mRenderer.fillTexturesWithEye(this.mProgram, this.buffer,
+						eye);
+				if (eye.getType() == Eye.Type.RIGHT)
+					this.isDirty = false;
 			}
 			glGetAttribLocation = GLES20.glGetAttribLocation(this.mProgram,
 					"position");
@@ -580,54 +569,57 @@ public class CardboardScreenView extends CardboardView implements CardboardView.
 		setCursorPosition(this.mCursorX, this.mCursorY);
 		requestRender();
 	}
-	
-    private static void checkGLError(String label) {
-        int error;
-        while ((error = GLES20.glGetError()) != GLES20.GL_NO_ERROR) {
-            Log.e(TAG, label + ": glError " + error);
-            throw new RuntimeException(label + ": glError " + error);
-        }
-    }
-    
-    private int loadGLShader(int type, int resId) {
-        String code = readRawTextFile(resId);
-        int shader = GLES20.glCreateShader(type);
-        GLES20.glShaderSource(shader, code);
-        GLES20.glCompileShader(shader);
 
-        // Get the compilation status.
-        final int[] compileStatus = new int[1];
-        GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, compileStatus, 0);
+	private static void checkGLError(String label) {
+		int error;
+		while ((error = GLES20.glGetError()) != GLES20.GL_NO_ERROR) {
+			Log.e(TAG, label + ": glError " + error);
+			throw new RuntimeException(label + ": glError " + error);
+		}
+	}
 
-        // If the compilation failed, delete the shader.
-        if (compileStatus[0] == 0) {
-            Log.e(TAG, "Error compiling shader: " + GLES20.glGetShaderInfoLog(shader));
-            GLES20.glDeleteShader(shader);
-            shader = 0;
-        }
+	private int loadGLShader(int type, int resId) {
+		String code = readRawTextFile(resId);
+		int shader = GLES20.glCreateShader(type);
+		GLES20.glShaderSource(shader, code);
+		GLES20.glCompileShader(shader);
 
-        if (shader == 0) {
-            throw new RuntimeException("Error creating shader.");
-        }
+		// Get the compilation status.
+		final int[] compileStatus = new int[1];
+		GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, compileStatus, 0);
 
-        return shader;
-    }
-    
-    private String readRawTextFile(int resId) {
-        InputStream inputStream = getResources().openRawResource(resId);
-        try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                sb.append(line).append("\n");
-            }
-            reader.close();
-            return sb.toString();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-    
+		// If the compilation failed, delete the shader.
+		if (compileStatus[0] == 0) {
+			Log.e(TAG,
+					"Error compiling shader: "
+							+ GLES20.glGetShaderInfoLog(shader));
+			GLES20.glDeleteShader(shader);
+			shader = 0;
+		}
+
+		if (shader == 0) {
+			throw new RuntimeException("Error creating shader.");
+		}
+
+		return shader;
+	}
+
+	private String readRawTextFile(int resId) {
+		InputStream inputStream = getResources().openRawResource(resId);
+		try {
+			BufferedReader reader = new BufferedReader(new InputStreamReader(
+					inputStream));
+			StringBuilder sb = new StringBuilder();
+			String line;
+			while ((line = reader.readLine()) != null) {
+				sb.append(line).append("\n");
+			}
+			reader.close();
+			return sb.toString();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
 }

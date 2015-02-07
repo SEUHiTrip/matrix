@@ -1,6 +1,5 @@
 package com.idisplay.VirtualScreenDisplay;
 
-import android.R.integer;
 import android.graphics.Bitmap;
 import android.opengl.GLES20;
 
@@ -41,16 +40,15 @@ public class OpenGlYuvView implements IIdisplayViewRenderer {
 		if (this.mArrayImageContainer != null) {
 			int x = mArrayImageContainer.getStrideX();
 			int y = mArrayImageContainer.getStrideY();
-			
-			Logger.d(x+"x"+y);
-			
+			int len = x * y;
+
 			if (ConnectionActivity.currentMode.type == ConnectionActivity.ConnectionType.Single) {
-				simpleFillTextures(i, iArr, 0, x * y, x, y);
+				simpleFillTextures(i, iArr, 0, len, x, y);
 			} else {
 				if (eye.getType() == Eye.Type.LEFT) {
-					simpleFillTextures(i, iArr, 0, x * y / 2, x, y / 2);
+					simpleFillTextures(i, iArr, 0, len >> 1, x, y >> 1);
 				} else if (eye.getType() == Eye.Type.RIGHT) {
-					simpleFillTextures(i, iArr, x * y / 2, x * y / 2, x, y / 2);
+					simpleFillTextures(i, iArr, len >> 1, len >> 1, x, y >> 1);
 				}
 			}
 		}
@@ -58,9 +56,6 @@ public class OpenGlYuvView implements IIdisplayViewRenderer {
 
 	public void simpleFillTextures(int i, int[] iArr, int start, int count,
 			int width, int height) {
-		// Logger.d("y" + mArrayImageContainer.getDataY().length + "u"
-		// + mArrayImageContainer.getDataU().length + "v"
-		// + mArrayImageContainer.getDataV().length);
 
 		GLES20.glActiveTexture(33988);
 		GLES20.glBindTexture(3553, iArr[4]);
