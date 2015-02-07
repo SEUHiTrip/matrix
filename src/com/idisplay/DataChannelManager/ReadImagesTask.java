@@ -173,9 +173,7 @@ public class ReadImagesTask extends Thread {
                                 Logger.w("ReadImagesTasksignalled to start append queue");
                             }
                     }
-                    
-                    //Logger.d("i:"+i+" ok:"+ok+" obj:"+obj);
-                    
+                                      
                     if (ok) {
                         renderProcessedData(i, obj);
 					}

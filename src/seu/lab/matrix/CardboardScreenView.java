@@ -9,7 +9,6 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.Random;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 import org.apache.log4j.spi.ErrorCode;
@@ -19,7 +18,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
-import android.opengl.Matrix;
 import android.util.Log;
 import com.google.vrtoolkit.cardboard.CardboardView;
 import com.google.vrtoolkit.cardboard.Eye;
@@ -52,7 +50,6 @@ public class CardboardScreenView extends CardboardView implements CardboardView.
 	private FloatBuffer d;
 	private FloatBuffer e;
 	private String fragmentBackgroundShaderCode;
-	private String fragmentBatteryShaderCode;
 	private String fragmentCursorShaderCode;
 	private ByteBuffer indexBuffer;
 	private byte[] indices;
@@ -99,7 +96,6 @@ public class CardboardScreenView extends CardboardView implements CardboardView.
 		this.vertexShaderCode = "precision highp float;\nattribute vec4 position;\nattribute vec4 inputTextureCoordinate;\nvarying vec2 textureCoordinate;\nvoid main() {\ngl_Position = position;\ntextureCoordinate = inputTextureCoordinate.xy;\n}";
 		this.fragmentCursorShaderCode = "precision highp float;\nvarying highp vec2 textureCoordinate;\nuniform sampler2D cursorFrame;\nvoid main(void) {\ngl_FragColor = (texture2D(cursorFrame, textureCoordinate));\n}";
 		this.fragmentBackgroundShaderCode = "precision highp float;\nvarying highp vec2 textureCoordinate;\nuniform sampler2D cursorFrame;\nuniform float rightEdge;\nuniform float topEdge;\nvoid main(void) {\ngl_FragColor = (texture2D(cursorFrame, textureCoordinate));\n}";
-		this.fragmentBatteryShaderCode = "precision highp float;\nvarying highp vec2 textureCoordinate;\nuniform float chargePos;\nuniform float rColor;\nuniform float gColor;\nuniform sampler2D batteryFrame;\nvoid main(void) {\nhighp vec4 bt = texture2D(batteryFrame, textureCoordinate); \nif (textureCoordinate[0] < chargePos && bt[3] < 0.8){\ngl_FragColor = vec4(rColor, gColor, 0.0, 0.3);\n} else {\nif (bt[3] > 0.1){\nbt[3] = 0.3;\n}\ngl_FragColor = bt;\n}\n}";
 		this.mSingleCodeDevice = false;
 		this.isDirty = false;
 		this.isCursorDirty = true;
@@ -121,7 +117,7 @@ public class CardboardScreenView extends CardboardView implements CardboardView.
 		this.indexBuffer.position(0);
 		
 		setRenderer(this);
-		
+		setDistortionCorrectionEnabled(false);
 		setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 		
 		this.mContainer = new IIdisplayViewRendererContainer() {
@@ -188,8 +184,7 @@ public class CardboardScreenView extends CardboardView implements CardboardView.
 
 
     @Override
-    public void onNewFrame(HeadTransform headTransform) {
-
+    public void onNewFrame(HeadTransform headTransform) {    	
         checkGLError("onReadyToDraw");
     }
 
@@ -202,7 +197,7 @@ public class CardboardScreenView extends CardboardView implements CardboardView.
 
         checkGLError("mColorParam");
         
-        onDrawFrame(null);
+        onDrawFrame(eye);
         
     }
 
@@ -335,21 +330,21 @@ public class CardboardScreenView extends CardboardView implements CardboardView.
 				this.fragmentCursorShaderCode);
 		this.mBackgroundProgram = Programs.loadProgram(this.vertexShaderCode,
 				this.fragmentBackgroundShaderCode);
-		GLES20.glActiveTexture(33985);
-		GLES20.glBindTexture(3553, this.buffer[1]);
-		Bitmap decodeResource = BitmapFactory.decodeResource(getResources(),
-				R.drawable.battery);
-		GLES20.glTexImage2D(3553, 0, 6408, decodeResource.getWidth(),
-				decodeResource.getHeight(), 0, 6408, 5121,
-				Utils.loadTextureFromBitmap(decodeResource));
+//		GLES20.glActiveTexture(33985);
+//		GLES20.glBindTexture(3553, this.buffer[1]);
+//		Bitmap decodeResource = BitmapFactory.decodeResource(getResources(),
+//				R.drawable.battery);
+//		GLES20.glTexImage2D(3553, 0, 6408, decodeResource.getWidth(),
+//				decodeResource.getHeight(), 0, 6408, 5121,
+//				Utils.loadTextureFromBitmap(decodeResource));
 		this.isCursorDirty = true;
-		GLES20.glActiveTexture(33987);
-		GLES20.glBindTexture(3553, this.buffer[3]);
-		decodeResource = BitmapFactory.decodeResource(getResources(),
-				R.drawable.cloth_texture);
-		GLES20.glTexImage2D(3553, 0, 6408, decodeResource.getWidth(),
-				decodeResource.getHeight(), 0, 6408, 5121,
-				Utils.loadTextureFromBitmap(decodeResource));
+//		GLES20.glActiveTexture(33987);
+//		GLES20.glBindTexture(3553, this.buffer[3]);
+//		decodeResource = BitmapFactory.decodeResource(getResources(),
+//				R.drawable.cloth_texture);
+//		GLES20.glTexImage2D(3553, 0, 6408, decodeResource.getWidth(),
+//				decodeResource.getHeight(), 0, 6408, 5121,
+//				Utils.loadTextureFromBitmap(decodeResource));
 	}
 
 	private void updateScreenVerticles(float f, float f2, float f3) {
@@ -381,7 +376,7 @@ public class CardboardScreenView extends CardboardView implements CardboardView.
 		return this.mRenderer.isYuvRenderer();
 	}
 
-	public void onDrawFrame(GL10 gl10) {
+	public void onDrawFrame(Eye eye) {		
 		if (this.mRenderer.isRenderDataAvaliable()) {
 			int glGetAttribLocation;
 			if (this.mRendererChanged) {
@@ -389,7 +384,7 @@ public class CardboardScreenView extends CardboardView implements CardboardView.
 				this.mRendererChanged = false;
 			}
 			if (this.isCursorDirty) {
-				this.isCursorDirty = false;
+				if(eye.getType() == Eye.Type.RIGHT)this.isCursorDirty = false;
 				GLES20.glActiveTexture(33984);
 				GLES20.glBindTexture(3553, this.buffer[0]);
 				if (this.mCursorImage == null) {
@@ -411,31 +406,31 @@ public class CardboardScreenView extends CardboardView implements CardboardView.
 			GLES20.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 			GLES20.glClearDepthf(1.0f);
 			GLES20.glClear(16640);
-			if (this.mState.getKeyboardShown() || this.mNotNativeRatio) {
-				GLES20.glUseProgram(this.mBackgroundProgram);
-				GLES20.glUniform1i(GLES20.glGetUniformLocation(
-						this.mBackgroundProgram, "cursorFrame"),
-						ErrorCode.CLOSE_FAILURE);
-				glGetAttribLocation = GLES20.glGetAttribLocation(
-						this.mBackgroundProgram, "position");
-				GLES20.glEnableVertexAttribArray(glGetAttribLocation);
-				GLES20.glVertexAttribPointer(glGetAttribLocation,
-						ErrorCode.FLUSH_FAILURE, 5126, false, 0,
-						this.background);
-				glGetAttribLocation = GLES20.glGetAttribLocation(
-						this.mBackgroundProgram, "inputTextureCoordinate");
-				GLES20.glEnableVertexAttribArray(glGetAttribLocation);
-				GLES20.glVertexAttribPointer(glGetAttribLocation,
-						ErrorCode.FLUSH_FAILURE, 5126, false, 0,
-						this.backgroundTexture);
-				GLES20.glDrawElements(ErrorCode.FILE_OPEN_FAILURE,
-						this.indices.length, 5121, this.indexBuffer);
-			}
+//			if (this.mState.getKeyboardShown() || this.mNotNativeRatio) {
+//				GLES20.glUseProgram(this.mBackgroundProgram);
+//				GLES20.glUniform1i(GLES20.glGetUniformLocation(
+//						this.mBackgroundProgram, "cursorFrame"),
+//						ErrorCode.CLOSE_FAILURE);
+//				glGetAttribLocation = GLES20.glGetAttribLocation(
+//						this.mBackgroundProgram, "position");
+//				GLES20.glEnableVertexAttribArray(glGetAttribLocation);
+//				GLES20.glVertexAttribPointer(glGetAttribLocation,
+//						ErrorCode.FLUSH_FAILURE, 5126, false, 0,
+//						this.background);
+//				glGetAttribLocation = GLES20.glGetAttribLocation(
+//						this.mBackgroundProgram, "inputTextureCoordinate");
+//				GLES20.glEnableVertexAttribArray(glGetAttribLocation);
+//				GLES20.glVertexAttribPointer(glGetAttribLocation,
+//						ErrorCode.FLUSH_FAILURE, 5126, false, 0,
+//						this.backgroundTexture);
+//				GLES20.glDrawElements(ErrorCode.FILE_OPEN_FAILURE,
+//						this.indices.length, 5121, this.indexBuffer);
+//			}
 			GLES20.glUseProgram(this.mProgram);
 			if (this.isDirty) {
-				this.mRenderer.fillTextures(this.mProgram, this.buffer);
+				this.mRenderer.fillTexturesWithEye(this.mProgram, this.buffer, eye);
+				if(eye.getType() == Eye.Type.RIGHT)this.isDirty = false;
 			}
-			this.isDirty = false;
 			glGetAttribLocation = GLES20.glGetAttribLocation(this.mProgram,
 					"position");
 			int glGetAttribLocation2 = GLES20.glGetAttribLocation(

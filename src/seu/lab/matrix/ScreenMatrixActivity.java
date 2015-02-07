@@ -278,6 +278,7 @@ public class ScreenMatrixActivity extends CardboardActivity {
 		this.mZoomView.setZoomState(this.mZoomState);
         setCardboardView(mZoomView);
         setContentView(mZoomView);
+        
     }
 
 	@Override

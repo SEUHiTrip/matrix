@@ -2,6 +2,8 @@ package com.idisplay.VirtualScreenDisplay;
 
 import android.graphics.Bitmap;
 import android.opengl.GLES20;
+
+import com.google.vrtoolkit.cardboard.Eye;
 import com.idisplay.util.ArrayImageContainer;
 import com.idisplay.util.Utils;
 import com.idisplay.vp8.NativeUtils;
@@ -92,4 +94,9 @@ public class OpenGlBitmapRenderer implements IIdisplayViewRenderer {
     public void setPixels(ArrayImageContainer arrayImageContainer) {
         throw new NotImplementedException("set pixels not implemented");
     }
+
+	@Override
+	public void fillTexturesWithEye(int i, int[] iArr, Eye eye) {
+		fillTextures(i, iArr);
+	}
 }
