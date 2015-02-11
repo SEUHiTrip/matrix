@@ -36,5 +36,24 @@
         android:layout_below="@+id/connect_btn_duel"
         android:layout_marginTop="24dp"
         android:text="Cardboard" />
+
+    <Button
+        android:id="@+id/connect_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/cardboard_btn"
+        android:layout_marginTop="34dp"
+        android:text="Connect" />
+
+    <ImageView
+        android:id="@+id/image_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/connect_btn"
+        android:layout_marginLeft="17dp"
+        android:layout_marginTop="60dp"
+        android:src="@android:drawable/btn_star_big_off" />
     
 </RelativeLayout>
