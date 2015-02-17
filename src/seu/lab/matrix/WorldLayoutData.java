@@ -73,12 +73,12 @@ public final class WorldLayoutData {
 
     public static final float[] CUBE_COLORS = new float[] {
             // front, green
-            0f, 0.5273f, 0.2656f, 1.0f,
-            0f, 0.5273f, 0.2656f, 1.0f,
-            0f, 0.5273f, 0.2656f, 1.0f,
-            0f, 0.5273f, 0.2656f, 1.0f,
-            0f, 0.5273f, 0.2656f, 1.0f,
-            0f, 0.5273f, 0.2656f, 1.0f,
+    		1.0f, 1.0f, 1.0f, 1.0f,
+    		1.0f, 1.0f, 1.0f, 1.0f,
+    		1.0f, 1.0f, 1.0f, 1.0f,
+    		1.0f, 1.0f, 1.0f, 1.0f,
+    		1.0f, 1.0f, 1.0f, 1.0f,
+    		1.0f, 1.0f, 1.0f, 1.0f,
 
             // right, blue
             0.0f, 0.3398f, 0.9023f, 1.0f,
@@ -222,6 +222,12 @@ public final class WorldLayoutData {
     };
 
     public static final float[] FLOOR_COORDS = new float[] {
+//            20f, 0, -20f,
+//            -20f, 0, -20f,
+//            -20f, 0, 20f,
+//            20f, 0, -20f,
+//            -20f, 0, 20f,
+//            20f, 0, 20f,
             200f, 0, -200f,
             -200f, 0, -200f,
             -200f, 0, 200f,
@@ -246,5 +252,55 @@ public final class WorldLayoutData {
             0.0f, 0.3398f, 0.9023f, 1.0f,
             0.0f, 0.3398f, 0.9023f, 1.0f,
             0.0f, 0.3398f, 0.9023f, 1.0f,
+    };
+
+    public static final float[] TEXTURE_COORDINATES = new float[] {
+		// Front face
+		0.0f, 0.0f, 				
+		0.0f, 1.0f,
+		1.0f, 0.0f,
+		0.0f, 1.0f,
+		1.0f, 1.0f,
+		1.0f, 0.0f,				
+		
+		// Right face 
+		-1.0f, -1.0f, 				
+		-1.0f, -1.0f, 				
+		-1.0f, -1.0f, 				
+		-1.0f, -1.0f, 				
+		-1.0f, -1.0f, 				
+		-1.0f, -1.0f, 				
+		
+		// Back face 
+		-1.0f, -1.0f, 				
+		-1.0f, -1.0f, 				
+		-1.0f, -1.0f, 				
+		-1.0f, -1.0f, 				
+		-1.0f, -1.0f, 				
+		-1.0f, -1.0f, 	
+		
+		// Left face 
+		-1.0f, -1.0f, 				
+		-1.0f, -1.0f, 				
+		-1.0f, -1.0f, 				
+		-1.0f, -1.0f, 				
+		-1.0f, -1.0f, 				
+		-1.0f, -1.0f, 	
+		
+		// Top face 
+		-1.0f, -1.0f, 				
+		-1.0f, -1.0f, 				
+		-1.0f, -1.0f, 				
+		-1.0f, -1.0f, 				
+		-1.0f, -1.0f, 				
+		-1.0f, -1.0f, 	
+		
+		// Bottom face 
+		-1.0f, -1.0f, 				
+		-1.0f, -1.0f, 				
+		-1.0f, -1.0f, 				
+		-1.0f, -1.0f, 				
+		-1.0f, -1.0f, 				
+		-1.0f, -1.0f, 	
     };
 }

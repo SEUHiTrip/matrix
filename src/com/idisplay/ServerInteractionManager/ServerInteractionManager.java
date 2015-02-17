@@ -18,6 +18,8 @@ import com.idisplay.util.Logger;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import seu.lab.matrix.AbstractScreenMatrixActivity;
+
 public class ServerInteractionManager implements AcceptSocketDataListener {
     private static final byte[] mFpsArray;
     private AccessConfirmedListener accessConfirmedListener;

@@ -8,6 +8,8 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.zip.Inflater;
 
+import seu.lab.matrix.AbstractScreenMatrixActivity;
+import seu.lab.matrix.MainActivity;
 import seu.lab.matrix.ScreenMatrixActivity;
 
 public abstract class CursorSocket {
@@ -79,8 +81,8 @@ public abstract class CursorSocket {
                             inflater.end();
                             ByteBuffer wrap = ByteBuffer.wrap(bArr2);
                             wrap.order(ByteOrder.LITTLE_ENDIAN);
-
-                            ScreenMatrixActivity.onCursorImgChange(new ImageContainer(wrap, TwoByteArrayToInt2, TwoByteArrayToInt3));
+                            
+                        	AbstractScreenMatrixActivity.onCursorImgChange(new ImageContainer(wrap, TwoByteArrayToInt2, TwoByteArrayToInt3));
                         } catch (Throwable e) {
                             Log.e("UDP", "Decompress image EXCEPTION. width=" + TwoByteArrayToInt2 + " height=" + TwoByteArrayToInt3 + " compSize=" + i4 + " uncSize=" + i5 + " packSize" + TwoByteArrayToInt, e);
                             inflater.end();
@@ -92,7 +94,7 @@ public abstract class CursorSocket {
                 } else {
                     i = i3;
                 }
-                ScreenMatrixActivity.onCursorPositionChange(i, i2);
+                AbstractScreenMatrixActivity.onCursorPositionChange(i, i2);
             }
         }
     }

@@ -11,6 +11,8 @@ import android.util.Log;
 import com.idisplay.util.ArrayImageContainer;
 import com.idisplay.util.ImageContainer;
 import com.idisplay.util.Utils;
+import com.learnopengles.android.common.RawResourceReader;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -32,9 +34,6 @@ public class IDisplayOpenGLView extends GLSurfaceView implements Renderer, Obser
     private FloatBuffer c;
     private FloatBuffer d;
     private FloatBuffer e;
-    private String fragmentBackgroundShaderCode;
-    private String fragmentBatteryShaderCode;
-    private String fragmentCursorShaderCode;
     private ByteBuffer indexBuffer;
     private byte[] indices;
     private boolean isCursorDirty;
@@ -64,7 +63,7 @@ public class IDisplayOpenGLView extends GLSurfaceView implements Renderer, Obser
     private float mTopEdge;
     private int mWidth;
     private float ratio;
-    String vertexShaderCode;
+	private Context mContext;
 
     public static interface OnMeasureListener {
         public void onMeasure();
@@ -73,12 +72,10 @@ public class IDisplayOpenGLView extends GLSurfaceView implements Renderer, Obser
     public IDisplayOpenGLView(Context context, MiniMapProcessor miniMapProcessor, OnMeasureListener onMeasureListener) {
         super(context);
 
+        mContext = context;
+        
     	boolean z = true;
-        this.vertexShaderCode = "precision highp float;\nattribute vec4 position;\nattribute vec4 inputTextureCoordinate;\nvarying vec2 textureCoordinate;\nvoid main() {\ngl_Position = position;\ntextureCoordinate = inputTextureCoordinate.xy;\n}";
-        this.fragmentCursorShaderCode = "precision highp float;\nvarying highp vec2 textureCoordinate;\nuniform sampler2D cursorFrame;\nvoid main(void) {\ngl_FragColor = (texture2D(cursorFrame, textureCoordinate));\n}";
-        this.fragmentBackgroundShaderCode = "precision highp float;\nvarying highp vec2 textureCoordinate;\nuniform sampler2D cursorFrame;\nuniform float rightEdge;\nuniform float topEdge;\nvoid main(void) {\ngl_FragColor = (texture2D(cursorFrame, textureCoordinate));\n}";
-        this.fragmentBatteryShaderCode = "precision highp float;\nvarying highp vec2 textureCoordinate;\nuniform float chargePos;\nuniform float rColor;\nuniform float gColor;\nuniform sampler2D batteryFrame;\nvoid main(void) {\nhighp vec4 bt = texture2D(batteryFrame, textureCoordinate); \nif (textureCoordinate[0] < chargePos && bt[3] < 0.8){\ngl_FragColor = vec4(rColor, gColor, 0.0, 0.3);\n} else {\nif (bt[3] > 0.1){\nbt[3] = 0.3;\n}\ngl_FragColor = bt;\n}\n}";
-        this.mSingleCodeDevice = false;
+    	this.mSingleCodeDevice = false;
         this.isDirty = false;
         this.isCursorDirty = true;
         this.mCursorX = -2.0f;
@@ -155,7 +152,7 @@ public class IDisplayOpenGLView extends GLSurfaceView implements Renderer, Obser
         this.background = allocateDirect.asFloatBuffer();
         this.background.put(fArr);
         this.background.position(0);
-        this.mRenderer = new OpenGlYuvView(this.mContainer);
+        this.mRenderer = new OpenGlYuvViewRenderer(this.mContainer, mContext);
     }
 
     private void reInitCursorCalculation(float f, float f2) {
@@ -250,9 +247,23 @@ public class IDisplayOpenGLView extends GLSurfaceView implements Renderer, Obser
             GLES20.glTexParameteri(3553, 10240, 9729);
             GLES20.glTexParameteri(3553, 10241, 9729);
         }
-        this.mProgram = Programs.loadProgram(this.vertexShaderCode, this.mRenderer.getFragmentShader());
-        this.mCursorProgram = Programs.loadProgram(this.vertexShaderCode, this.fragmentCursorShaderCode);
-        this.mBackgroundProgram = Programs.loadProgram(this.vertexShaderCode, this.fragmentBackgroundShaderCode);
+
+		String vertexShaderCode = RawResourceReader
+				.readTextFileFromRawResource(mContext, R.raw.idisplay_vertex);
+		String fragmentCursorShaderCode = RawResourceReader
+				.readTextFileFromRawResource(mContext,
+						R.raw.idisplay_cursor_fragment);
+		String fragmentBackgroundShaderCode = RawResourceReader
+				.readTextFileFromRawResource(mContext,
+						R.raw.idisplay_background_fragment);
+
+		this.mProgram = Programs.loadProgram(vertexShaderCode,
+				mRenderer.getFragmentShader());
+		this.mCursorProgram = Programs.loadProgram(vertexShaderCode,
+				fragmentCursorShaderCode);
+		this.mBackgroundProgram = Programs.loadProgram(vertexShaderCode,
+				fragmentBackgroundShaderCode);
+
         GLES20.glActiveTexture(33985);
         GLES20.glBindTexture(3553, this.buffer[1]);
         Bitmap decodeResource = BitmapFactory.decodeResource(getResources(), R.drawable.battery);
@@ -429,7 +440,7 @@ public class IDisplayOpenGLView extends GLSurfaceView implements Renderer, Obser
     }
 
     public void setYuvRenderer() {
-        this.mRenderer = new OpenGlYuvView(this.mContainer);
+        this.mRenderer = new OpenGlYuvViewRenderer(this.mContainer, mContext);
         this.mRendererChanged = true;
     }
     

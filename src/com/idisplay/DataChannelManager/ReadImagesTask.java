@@ -15,6 +15,8 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import seu.lab.matrix.AbstractScreenMatrixActivity;
+import seu.lab.matrix.MainActivity;
 import seu.lab.matrix.ScreenMatrixActivity;
 
 public class ReadImagesTask extends Thread {
@@ -28,7 +30,7 @@ public class ReadImagesTask extends Thread {
     private LinkedBlockingQueue<VideoDetails> imageQueue;
     private volatile boolean m_stopProcess;
     private volatile boolean waiting_for_data;
-
+    
     public ReadImagesTask(CleanupThread cleanupThread) {
         this.APPEND_QUEUE_WAIT = new ThreadEvent();
         this.bTooManyFrames = false;
@@ -38,6 +40,7 @@ public class ReadImagesTask extends Thread {
         this.cleanup = null;
         this.className = "ReadImagesTask";
         this.cleanup = cleanupThread;
+        
     }
 
     private void addVideoDetails(VideoDetails videoDetails) {
@@ -96,7 +99,7 @@ public class ReadImagesTask extends Thread {
     }
 
     private void renderProcessedData(int i, Object obj) {
-        ScreenMatrixActivity.onDataAvailable(i, obj);
+		AbstractScreenMatrixActivity.onDataAvailable(i, obj);
     }
 
     public void clearImageQueue() {

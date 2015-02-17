@@ -33,7 +33,8 @@ import java.util.concurrent.TimeUnit;
 import javax.jmdns.impl.constants.DNSConstants;
 import org.apache.commons.lang.StringUtils;
 
-import seu.lab.matrix.ScreenMatrixActivity;
+import seu.lab.matrix.AbstractScreenMatrixActivity;
+import seu.lab.matrix.MainActivity;
 
 public class ConnectionChannelManager implements AccessConfirmedListener, ContentServiceAccessibleOnPortListener, PingResponseListener {
     private static CFDate datePingResponse;
@@ -245,24 +246,24 @@ public class ConnectionChannelManager implements AccessConfirmedListener, Conten
         this.m_serverInfo = new ServerInfo();
         this.m_serverInfo.initWithObject(objectForKey2);
 
-        if (!(processServerVersion(this.m_serverInfo.serverVersion(), this.m_serverInfo.OSName()) || ScreenMatrixActivity.screenHandler == null)) {
-            ScreenMatrixActivity.screenHandler.sendEmptyMessage(ScreenConstants.VERSION_MISMATCH);
+        if (!(processServerVersion(this.m_serverInfo.serverVersion(), this.m_serverInfo.OSName()) || AbstractScreenMatrixActivity.getScreenHandler() == null)) {
+            AbstractScreenMatrixActivity.getScreenHandler().sendEmptyMessage(ScreenConstants.VERSION_MISMATCH);
         }
         if (this.m_serverInfo.getHostType() == HostType.MSMWindowCapture) {
             Logger.z("invalid type");
             long currentTimeMillis = System.currentTimeMillis();
             try {
-                if (ScreenMatrixActivity.screenHandlerLock == null) {
-                    ScreenMatrixActivity.resetStartState();
+                if (AbstractScreenMatrixActivity.getScreenHandlerLock() == null) {
+                	AbstractScreenMatrixActivity.resetStartState();
                 }
-                ScreenMatrixActivity.screenHandlerLock.await(30000, TimeUnit.MILLISECONDS);
+                AbstractScreenMatrixActivity.getScreenHandlerLock().await(30000, TimeUnit.MILLISECONDS);
             } catch (InterruptedException e) {
                 Logger.e("screenHandlerLock interrupted");
             }
             Logger.z("waited " + (System.currentTimeMillis() - currentTimeMillis));
-            if (ScreenMatrixActivity.screenHandler != null) {
+            if (AbstractScreenMatrixActivity.getScreenHandler() != null) {
                 Logger.z("screen handler not null");
-                ScreenMatrixActivity.screenHandler.sendEmptyMessage(ScreenConstants.SERVER_MODE_NOT_SUPPORTED);
+                AbstractScreenMatrixActivity.getScreenHandler().sendEmptyMessage(ScreenConstants.SERVER_MODE_NOT_SUPPORTED);
             }
         }
         Logger.d(this.className + ":received AccessConfirmed...protocol version = " + this.m_serverInfo.hostDataProtocol());

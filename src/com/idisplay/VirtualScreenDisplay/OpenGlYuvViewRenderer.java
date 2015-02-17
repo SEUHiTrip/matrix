@@ -1,25 +1,32 @@
 package com.idisplay.VirtualScreenDisplay;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.opengl.GLES20;
 
 import com.google.vrtoolkit.cardboard.Eye;
 import com.idisplay.util.ArrayImageContainer;
 import com.idisplay.util.Logger;
+import com.learnopengles.android.common.RawResourceReader;
+import com.learnopengles.android.common.ShaderHelper;
+
 import java.nio.ByteBuffer;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.log4j.spi.ErrorCode;
 
-public class OpenGlYuvView implements IIdisplayViewRenderer {
+import seu.lab.matrix.R;
+
+public class OpenGlYuvViewRenderer implements IIdisplayViewRenderer {
 	int cnt;
 	long current;
 	String fragmentShaderCode;
 	private ArrayImageContainer mArrayImageContainer;
 	IIdisplayViewRendererContainer mContainer;
 
-	public OpenGlYuvView(
-			IIdisplayViewRendererContainer iIdisplayViewRendererContainer) {
-		this.fragmentShaderCode = "precision highp float;\nvarying highp vec2 textureCoordinate;\nuniform sampler2D videoFrame;\nuniform sampler2D videoFrame2;\nuniform sampler2D videoFrame3;\nuniform float rightEdge;\nuniform float topEdge;\nvoid main(void) {\nif(textureCoordinate.x < 0.0 || textureCoordinate.x > rightEdge || textureCoordinate.y < 0.0 || textureCoordinate.y > topEdge){\ngl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);\n} else {\nhighp vec3 yuv;\nhighp vec3 rgb; \nhighp float nx,ny; \nnx=(textureCoordinate.x);\nny=(textureCoordinate.y);\nyuv.x = texture2D( videoFrame, textureCoordinate ).r; \nyuv.y = texture2D( videoFrame2, vec2(nx,ny)).r-0.5; \nyuv.z = texture2D( videoFrame3, vec2(nx,ny)).r-0.5; \nrgb = mat3(1, 1, 1, 0, -.34414, 1.772, 1.402, -.71414, 0) * yuv; \ngl_FragColor = vec4(rgb, 1); \n}\n}";
+	public OpenGlYuvViewRenderer(
+			IIdisplayViewRendererContainer iIdisplayViewRendererContainer,
+			Context mContext) {
+		this.fragmentShaderCode = RawResourceReader.readTextFileFromRawResource(mContext, R.raw.idisplay_yuv_fragment);
 		this.current = System.currentTimeMillis();
 		this.cnt = 0;
 		if (iIdisplayViewRendererContainer == null) {
@@ -83,11 +90,11 @@ public class OpenGlYuvView implements IIdisplayViewRenderer {
 	}
 
 	public String getFragmentShader() {
-		return this.fragmentShaderCode;
+		return fragmentShaderCode;
 	}
 
 	public int getNumOfTextures() {
-		return ErrorCode.CLOSE_FAILURE;
+		return 3;
 	}
 
 	public boolean isBitmapRenderer() {

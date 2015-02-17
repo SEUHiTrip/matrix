@@ -30,7 +30,9 @@ import javolution.xml.stream.XMLStreamConstants;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.spi.ErrorCode;
 
-import seu.lab.matrix.CardboardScreenView;
+import seu.lab.matrix.AbstractScreenMatrixActivity;
+import seu.lab.matrix.IdisplayCardboardScreenView;
+import seu.lab.matrix.MainActivity;
 import seu.lab.matrix.R;
 import seu.lab.matrix.ScreenMatrixActivity;
 
@@ -58,7 +60,7 @@ public class ConnectionActivity extends Activity implements UnexpectedErrorListn
     }
     
     public static class ConnectionMode implements Parcelable{
-    	ConnectionType type;
+    	public ConnectionType type;
     	int width;
     	int height;
     	
@@ -121,7 +123,7 @@ public class ConnectionActivity extends Activity implements UnexpectedErrorListn
             Logger.d("ConnectTask: start doInBackground");
             
             ConnectionActivity.this.lounchLock = new CountDownLatch(1);
-            ScreenMatrixActivity.resetStartState(); // TODO VirtualScreenActivity.resetStartState();
+        	AbstractScreenMatrixActivity.resetStartState(); // TODO VirtualScreenActivity.resetStartState();
             boolean connectToServer = ccMngr.connectToServer(strArr[0], Integer.parseInt(strArr[1]));
             Logger.d("connect to server " + connectToServer);
 
@@ -174,7 +176,7 @@ public class ConnectionActivity extends Activity implements UnexpectedErrorListn
                     listScreenHandler.sendEmptyMessage(1);
                     Logger.i(className + ":AccessConfirmed launching Vir Scr");
                     Intent intent = new Intent();
-                    intent.setClass(ConnectionActivity.this, ScreenMatrixActivity.class); // TODO VirtualScreenActivity.class);
+                    intent.setClass(ConnectionActivity.this, MainActivity.iDisplayerClass); // TODO VirtualScreenActivity.class);
                     Logger.i(className + ":Before ActivityFinish");
                     ConnectionActivity.this.finish();
                     Logger.i(className + ":After ActivityFinish");

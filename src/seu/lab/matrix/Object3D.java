@@ -3,6 +3,11 @@ package seu.lab.matrix;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+
+import com.google.vrtoolkit.cardboard.Eye;
+
+import android.R.integer;
+import android.content.Context;
 import android.opengl.GLES20;
 
 public abstract class Object3D {
@@ -10,7 +15,8 @@ public abstract class Object3D {
     protected static String TAG = "MatrixActivity";
 	
 	protected static final int COORDS_PER_VERTEX = 3;
-    
+    protected static final int mBytesPerFloat = 4;
+	
     protected int mProgram;
     protected int mPositionParam;
     protected int mNormalParam;
@@ -67,6 +73,6 @@ public abstract class Object3D {
         
 	}
 	
-	public abstract void initParams();
-	public abstract void draw(float[] mMVP, float[] mLightPosInEyeSpace, float[] mModelView);
+	public abstract void initParams(Context context);
+	public abstract void draw(float[] mMVP, float[] mLightPosInEyeSpace, float[] mModelView, Eye eye);
 }

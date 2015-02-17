@@ -27,7 +27,7 @@ import com.idisplay.VirtualScreenDisplay.FPSCounter;
 import com.idisplay.VirtualScreenDisplay.IIdisplayViewRenderer;
 import com.idisplay.VirtualScreenDisplay.IIdisplayViewRendererContainer;
 import com.idisplay.VirtualScreenDisplay.OpenGlBitmapRenderer;
-import com.idisplay.VirtualScreenDisplay.OpenGlYuvView;
+import com.idisplay.VirtualScreenDisplay.OpenGlYuvViewRenderer;
 import com.idisplay.VirtualScreenDisplay.Programs;
 import com.idisplay.VirtualScreenDisplay.ZoomState;
 import com.idisplay.VirtualScreenDisplay.IDisplayOpenGLView.OnMeasureListener;
@@ -35,8 +35,9 @@ import com.idisplay.util.ArrayImageContainer;
 import com.idisplay.util.ImageContainer;
 import com.idisplay.util.Logger;
 import com.idisplay.util.Utils;
+import com.learnopengles.android.common.RawResourceReader;
 
-public class CardboardScreenView extends CardboardView implements
+public class IdisplayCardboardScreenView extends CardboardView implements
 		CardboardView.StereoRenderer, Observer {
 
 	private final static String TAG = "CardboardScreenView";
@@ -49,8 +50,7 @@ public class CardboardScreenView extends CardboardView implements
 	private FloatBuffer c;
 	private FloatBuffer d;
 	private FloatBuffer e;
-	private String fragmentBackgroundShaderCode;
-	private String fragmentCursorShaderCode;
+
 	private ByteBuffer indexBuffer;
 	private byte[] indices;
 	private boolean isCursorDirty;
@@ -80,22 +80,22 @@ public class CardboardScreenView extends CardboardView implements
 	private float mTopEdge;
 	private int mWidth = 1024;
 	private float ratio;
-	String vertexShaderCode;
 
-	public CardboardScreenView(Context context) {
+	Context mContext;
+
+	public IdisplayCardboardScreenView(Context context) {
 		super(context);
 	}
 
-	public CardboardScreenView(Context context,
+	public IdisplayCardboardScreenView(Context context,
 			OnMeasureListener onMeasureListener) {
 		super(context);
 
 		Logger.d(TAG, " CardboardScreenView init");
 
+		mContext = context;
+
 		boolean z = true;
-		this.vertexShaderCode = "precision highp float;\nattribute vec4 position;\nattribute vec4 inputTextureCoordinate;\nvarying vec2 textureCoordinate;\nvoid main() {\ngl_Position = position;\ntextureCoordinate = inputTextureCoordinate.xy;\n}";
-		this.fragmentCursorShaderCode = "precision highp float;\nvarying highp vec2 textureCoordinate;\nuniform sampler2D cursorFrame;\nvoid main(void) {\ngl_FragColor = (texture2D(cursorFrame, textureCoordinate));\n}";
-		this.fragmentBackgroundShaderCode = "precision highp float;\nvarying highp vec2 textureCoordinate;\nuniform sampler2D cursorFrame;\nuniform float rightEdge;\nuniform float topEdge;\nvoid main(void) {\ngl_FragColor = (texture2D(cursorFrame, textureCoordinate));\n}";
 		this.mSingleCodeDevice = false;
 		this.isDirty = false;
 		this.isCursorDirty = true;
@@ -117,7 +117,7 @@ public class CardboardScreenView extends CardboardView implements
 		this.indexBuffer.position(0);
 
 		setRenderer(this);
-		//setDistortionCorrectionEnabled(false);
+		// setDistortionCorrectionEnabled(false);
 		setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 
 		this.mContainer = new IIdisplayViewRendererContainer() {
@@ -178,7 +178,7 @@ public class CardboardScreenView extends CardboardView implements
 		this.background = allocateDirect.asFloatBuffer();
 		this.background.put(fArr);
 		this.background.position(0);
-		this.mRenderer = new OpenGlYuvView(this.mContainer);
+		this.mRenderer = new OpenGlYuvViewRenderer(this.mContainer, mContext);
 
 	}
 
@@ -322,12 +322,22 @@ public class CardboardScreenView extends CardboardView implements
 			GLES20.glTexParameteri(3553, 10240, 9729);
 			GLES20.glTexParameteri(3553, 10241, 9729);
 		}
-		this.mProgram = Programs.loadProgram(this.vertexShaderCode,
-				this.mRenderer.getFragmentShader());
-		this.mCursorProgram = Programs.loadProgram(this.vertexShaderCode,
-				this.fragmentCursorShaderCode);
-		this.mBackgroundProgram = Programs.loadProgram(this.vertexShaderCode,
-				this.fragmentBackgroundShaderCode);
+
+		String vertexShaderCode = RawResourceReader
+				.readTextFileFromRawResource(mContext, R.raw.idisplay_vertex);
+		String fragmentCursorShaderCode = RawResourceReader
+				.readTextFileFromRawResource(mContext,
+						R.raw.idisplay_cursor_fragment);
+		String fragmentBackgroundShaderCode = RawResourceReader
+				.readTextFileFromRawResource(mContext,
+						R.raw.idisplay_background_fragment);
+
+		this.mProgram = Programs.loadProgram(vertexShaderCode,
+				mRenderer.getFragmentShader());
+		this.mCursorProgram = Programs.loadProgram(vertexShaderCode,
+				fragmentCursorShaderCode);
+		this.mBackgroundProgram = Programs.loadProgram(vertexShaderCode,
+				fragmentBackgroundShaderCode);
 
 		this.isCursorDirty = true;
 
@@ -393,26 +403,7 @@ public class CardboardScreenView extends CardboardView implements
 			GLES20.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 			GLES20.glClearDepthf(1.0f);
 			GLES20.glClear(16640);
-			// if (this.mState.getKeyboardShown() || this.mNotNativeRatio) {
-			// GLES20.glUseProgram(this.mBackgroundProgram);
-			// GLES20.glUniform1i(GLES20.glGetUniformLocation(
-			// this.mBackgroundProgram, "cursorFrame"),
-			// ErrorCode.CLOSE_FAILURE);
-			// glGetAttribLocation = GLES20.glGetAttribLocation(
-			// this.mBackgroundProgram, "position");
-			// GLES20.glEnableVertexAttribArray(glGetAttribLocation);
-			// GLES20.glVertexAttribPointer(glGetAttribLocation,
-			// ErrorCode.FLUSH_FAILURE, 5126, false, 0,
-			// this.background);
-			// glGetAttribLocation = GLES20.glGetAttribLocation(
-			// this.mBackgroundProgram, "inputTextureCoordinate");
-			// GLES20.glEnableVertexAttribArray(glGetAttribLocation);
-			// GLES20.glVertexAttribPointer(glGetAttribLocation,
-			// ErrorCode.FLUSH_FAILURE, 5126, false, 0,
-			// this.backgroundTexture);
-			// GLES20.glDrawElements(ErrorCode.FILE_OPEN_FAILURE,
-			// this.indices.length, 5121, this.indexBuffer);
-			// }
+
 			GLES20.glUseProgram(this.mProgram);
 			if (this.isDirty) {
 				this.mRenderer.fillTexturesWithEye(this.mProgram, this.buffer,
@@ -550,7 +541,7 @@ public class CardboardScreenView extends CardboardView implements
 	}
 
 	public void setYuvRenderer() {
-		this.mRenderer = new OpenGlYuvView(this.mContainer);
+		this.mRenderer = new OpenGlYuvViewRenderer(this.mContainer, mContext);
 		this.mRendererChanged = true;
 	}
 

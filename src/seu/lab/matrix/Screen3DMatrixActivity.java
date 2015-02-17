@@ -1,32 +1,42 @@
 package seu.lab.matrix;
 
-import com.google.vrtoolkit.cardboard.CardboardActivity;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
+import java.util.Observable;
+import java.util.Observer;
 import com.google.vrtoolkit.cardboard.CardboardView;
 import com.google.vrtoolkit.cardboard.Eye;
 import com.google.vrtoolkit.cardboard.HeadTransform;
 import com.google.vrtoolkit.cardboard.Viewport;
+import com.idisplay.VirtualScreenDisplay.ConnectionActivity;
+import com.idisplay.VirtualScreenDisplay.FPSCounter;
+import com.idisplay.VirtualScreenDisplay.IIdisplayViewRendererContainer;
+import com.idisplay.VirtualScreenDisplay.Programs;
+import com.idisplay.VirtualScreenDisplay.ZoomState;
+import com.idisplay.util.ArrayImageContainer;
+import com.idisplay.util.BitmapPool;
+import com.idisplay.util.ImageContainer;
+import com.idisplay.util.Logger;
+import com.idisplay.util.RLEImage;
 import com.learnopengles.android.common.GLCommon;
 import com.learnopengles.android.common.RawResourceReader;
 import com.learnopengles.android.common.ShaderHelper;
 
+import android.R.integer;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.Vibrator;
 import android.util.Log;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
 import javax.microedition.khronos.egl.EGLConfig;
 
-public class MatrixActivity extends CardboardActivity implements
-		CardboardView.StereoRenderer {
+import org.apache.commons.lang.NotImplementedException;
+
+public class Screen3DMatrixActivity extends AbstractScreenMatrixActivity
+		implements CardboardView.StereoRenderer{
 
 	private static final String TAG = "MatrixActivity";
 
@@ -45,7 +55,7 @@ public class MatrixActivity extends CardboardActivity implements
 
 	private final float[] mLightPosInEyeSpace = new float[4];
 
-	private Cube cube;
+	private ScreenCube cube;
 	private Floor floor;
 
 	private float[] mCamera;
@@ -62,6 +72,12 @@ public class MatrixActivity extends CardboardActivity implements
 	private Vibrator mVibrator;
 	private CardboardOverlayView mOverlayView;
 
+
+
+	public Screen3DMatrixActivity() {
+
+	}
+	
 	/**
 	 * Sets the view to our CardboardView and initializes the transformation
 	 * matrices we will use to render our scene.
@@ -74,9 +90,9 @@ public class MatrixActivity extends CardboardActivity implements
 		CardboardView cardboardView = (CardboardView) findViewById(R.id.cardboard_view);
 		cardboardView.setRenderer(this);
 		setCardboardView(cardboardView);
-		
-		//cardboardView.setDistortionCorrectionEnabled(false);
-		
+
+		// cardboardView.setDistortionCorrectionEnabled(false);
+
 		mCamera = new float[16];
 		mView = new float[16];
 		mModelViewProjection = new float[16];
@@ -113,18 +129,23 @@ public class MatrixActivity extends CardboardActivity implements
 		
 		// Use culling to remove back faces.
 		GLES20.glEnable(GLES20.GL_CULL_FACE);
-		
+
 		// Enable depth testing
 		GLES20.glEnable(GLES20.GL_DEPTH_TEST);
+		
+//		GLES20.glEnable(3042);
+//
+//		GLES20.glBlendFunc(1, 771);
 		
 		GLES20.glClearColor(0.1f, 0.1f, 0.1f, 0.5f); // Dark background so text
 														// shows up well.
 		int vertexShader = ShaderHelper.compileShader(GLES20.GL_VERTEX_SHADER,
 				RawResourceReader.readTextFileFromRawResource(
 						getApplicationContext(), R.raw.light_vertex));
-		int texVertexShader = ShaderHelper.compileShader(GLES20.GL_VERTEX_SHADER,
-				RawResourceReader.readTextFileFromRawResource(
-						getApplicationContext(), R.raw.tex_light_vertex));
+		int texVertexShader = ShaderHelper.compileShader(
+				GLES20.GL_VERTEX_SHADER, RawResourceReader
+						.readTextFileFromRawResource(getApplicationContext(),
+								R.raw.tex_light_vertex));
 		int gridShader = ShaderHelper.compileShader(GLES20.GL_FRAGMENT_SHADER,
 				RawResourceReader.readTextFileFromRawResource(
 						getApplicationContext(), R.raw.grid_fragment));
@@ -133,11 +154,16 @@ public class MatrixActivity extends CardboardActivity implements
 						.readTextFileFromRawResource(getApplicationContext(),
 								R.raw.passthrough_fragment));
 
-		cube = new Cube(WorldLayoutData.CUBE_COORDS,
+		int screenYUVShader = ShaderHelper.compileShader(
+				GLES20.GL_FRAGMENT_SHADER, RawResourceReader
+						.readTextFileFromRawResource(getApplicationContext(),
+								R.raw.matrix_yuv_fragment));
+		
+		cube = new ScreenCube(WorldLayoutData.CUBE_COORDS,
 				WorldLayoutData.CUBE_COLORS, WorldLayoutData.CUBE_NORMALS,
 				WorldLayoutData.CUBE_FOUND_COLORS,
 				WorldLayoutData.TEXTURE_COORDINATES, texVertexShader,
-				passthroughShader);
+				screenYUVShader);
 
 		GLCommon.checkGLError("Cube program");
 
@@ -155,8 +181,6 @@ public class MatrixActivity extends CardboardActivity implements
 
 		GLCommon.checkGLError("Floor program params");
 
-		GLES20.glEnable(GLES20.GL_DEPTH_TEST);
-
 		GLCommon.checkGLError("onSurfaceCreated");
 	}
 
@@ -168,7 +192,6 @@ public class MatrixActivity extends CardboardActivity implements
 	 */
 	@Override
 	public void onNewFrame(HeadTransform headTransform) {
-
 		// Build the camera matrix and apply it to the ModelView.
 		Matrix.setLookAtM(mCamera, 0, 0.0f, 0.0f, CAMERA_Z, 0.0f, 0.0f, 0.0f,
 				0.0f, 1.0f, 0.0f);
@@ -262,4 +285,52 @@ public class MatrixActivity extends CardboardActivity implements
 		return Math.abs(pitch) < PITCH_LIMIT && Math.abs(yaw) < YAW_LIMIT;
 	}
 
+	@Override
+	public void onInstanceCursorImgChange(ImageContainer imageContainer) {
+		cube.onInstanceCursorImgChange(imageContainer);
+	}
+
+	@Override
+	public void onInstanceCursorPositionChange(int i, int i2) {
+		cube.onInstanceCursorPositionChange(i, i2);
+	}
+
+	@Override
+	public void onInstanceDataAvailable(int i, Object obj) {
+		onInstanceDataAvailableHandler(i, obj);
+	}
+
+	@Override
+	protected void onInstanceDataAvailableHandler(int i, Object obj) {
+		switch (i) {
+		case 0:
+			break;
+		case 1:
+			break;
+		case 2:
+			break;
+		case 4:
+			ArrayImageContainer arrayImageContainer = (ArrayImageContainer) obj;
+			cube.setPixels(arrayImageContainer);
+			return;
+		default:
+			Logger.d("Unknown format of picture " + i);
+			break;
+		}
+
+	}
+
+	@Override
+	protected Bitmap setDiffImage(Bitmap bitmap, RLEImage rLEImage) throws Exception {
+		throw new Exception("setDiffImage not implemneted");
+	}
+
+
+//	@Override
+//	public void update(Observable observable, Object obj) {
+//		updateScreenVerticles(mState.getZoom(), mState.getPanX(),
+//				mState.getPanY());
+//		setCursorPosition(mCursorX, mCursorY);
+//		// requestRender();
+//	}
 }

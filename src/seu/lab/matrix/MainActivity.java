@@ -1,17 +1,12 @@
 package seu.lab.matrix;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import com.android.volley.Request.Method;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response.ErrorListener;
 import com.android.volley.Response.Listener;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageRequest;
-import com.android.volley.toolbox.JsonArrayRequest;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
 import com.idisplay.VirtualScreenDisplay.ConnectionActivity;
@@ -31,6 +26,8 @@ import android.widget.ImageView;
 public class MainActivity extends Activity {
 
 	public static final String TAG = "MainActivity";
+
+	public static Class<?> iDisplayerClass = Screen3DMatrixActivity.class;
 	
 	private RequestQueue mQueue = null;
 

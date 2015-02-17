@@ -1,5 +1,8 @@
 package seu.lab.matrix;
 
+import com.google.vrtoolkit.cardboard.Eye;
+
+import android.content.Context;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 
@@ -7,7 +10,6 @@ public class Floor extends Object3D {
 
 	public float[] mModelFloor = new float[16];
 	public float mFloorDepth = 20f;
-
 	
 	public Floor(float[] _COORDS, float[] _COLORS, float[] _NORMALS,
 			int _vertexShader, int _fragShader) {
@@ -16,7 +18,14 @@ public class Floor extends Object3D {
 	}
 
 	@Override
-	public void initParams() {
+	public void initParams(Context context) {
+
+	}
+
+	@Override
+	public void draw(float[] mMVP, float[] mLightPosInEyeSpace, float[] mModelView, Eye eye) {
+        GLES20.glUseProgram(mProgram);
+
         mModelParam = GLES20.glGetUniformLocation(mProgram, "u_Model");
         mModelViewParam = GLES20.glGetUniformLocation(mProgram, "u_MVMatrix");
         mModelViewProjectionParam = GLES20.glGetUniformLocation(mProgram, "u_MVP");
@@ -33,12 +42,7 @@ public class Floor extends Object3D {
 		Matrix.setIdentityM(mModelFloor, 0);
 		Matrix.translateM(mModelFloor, 0, 0, -mFloorDepth, 0); // Floor appears
 																// below user.
-	}
-
-	@Override
-	public void draw(float[] mMVP, float[] mLightPosInEyeSpace, float[] mModelView) {
-        GLES20.glUseProgram(mProgram);
-
+        
         // Set ModelView, MVP, position, normals, and color.
         GLES20.glUniform3fv(mLightPosParam, 1, mLightPosInEyeSpace, 0);
         GLES20.glUniformMatrix4fv(mModelParam, 1, false, mModelFloor, 0);

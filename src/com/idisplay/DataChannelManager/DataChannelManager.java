@@ -16,6 +16,9 @@ import com.idisplay.util.Logger;
 import javolution.xml.stream.XMLStreamConstants;
 import org.apache.log4j.spi.ErrorCode;
 
+import seu.lab.matrix.AbstractScreenMatrixActivity;
+import seu.lab.matrix.MainActivity;
+
 public class DataChannelManager implements VideoDataReceivedListener, OnOrientationChangeListner, TouchEventSendListener, KeyEventSendListener {
     private static boolean m_MAC_server;
     private String className;

@@ -18,6 +18,7 @@ import java.net.UnknownHostException;
 import org.apache.log4j.Level;
 import org.apache.log4j.spi.ErrorCode;
 
+import seu.lab.matrix.AbstractScreenMatrixActivity;
 import seu.lab.matrix.ScreenMatrixActivity;
 
 public class SocketChannelManager {
@@ -40,6 +41,8 @@ public class SocketChannelManager {
     private Socket serverSocket;
     private volatile boolean stopProcess;
 
+    private AbstractScreenMatrixActivity iDisplayer;
+    
     private class ListenToDataSocket extends Thread {
         private final int INITIAL_DATA_LEN;
         private ThreadEvent VSCREEN_WAIT;
@@ -59,18 +62,18 @@ public class SocketChannelManager {
             byte[] bArr = new byte[4];
             DataInputStream dataInputStream = new DataInputStream(this.mIn);
             int access$100 = 0;
-            while (!SocketChannelManager.this.stopProcess) {
+            while (!stopProcess) {
                 try {
                     dataInputStream.readFully(bArr);
                     access$100 = SocketChannelManager.ByteArrayToInt(bArr);
                     if (access$100 > 10000000) {
                         Logger.e(getName() + ": Disconnect. Data length is to big. length = " + access$100);
-                        if (!SocketChannelManager.this.stopProcess) {
+                        if (!stopProcess) {
 
-                            if (ScreenMatrixActivity.screenHandler != null) {
-                                ScreenMatrixActivity.screenHandler.sendEmptyMessage(ErrorCode.ADDRESS_PARSE_FAILURE);
+                            if (iDisplayer.getScreenHandler() != null) {
+                                iDisplayer.getScreenHandler().sendEmptyMessage(ErrorCode.ADDRESS_PARSE_FAILURE);
                             }
-                            SocketChannelManager.this.stopProcess = true;
+                            stopProcess = true;
                             return;
                         }
                         return;
@@ -79,7 +82,7 @@ public class SocketChannelManager {
                         try {
                             dataInputStream.readFully(this.actualData, 0, access$100);
                             ConnectionActivity.ccMngr.sendFrameReceived();
-                            SocketChannelManager.this.onAcceptSocketData(access$100, this.actualData);
+                            onAcceptSocketData(access$100, this.actualData);
                         } catch (Throwable e) {
                             Logger.e(getName() + ": Can't read data", e);
                         }
@@ -95,21 +98,21 @@ public class SocketChannelManager {
                     } else {
                         Logger.e(getName() + ": Disconnect. Data length is <= 0. length = " + access$100);
 
-                        if (ScreenMatrixActivity.screenHandler != null) {
-                            ScreenMatrixActivity.screenHandler.sendEmptyMessage(17);
+                        if (iDisplayer.getScreenHandler() != null) {
+                            iDisplayer.getScreenHandler().sendEmptyMessage(17);
                         }
-                        SocketChannelManager.this.remoteSocketClosedNotified = true;
-                        SocketChannelManager.this.stopProcess = true;
+                        remoteSocketClosedNotified = true;
+                        stopProcess = true;
                         return;
                     }
                 } catch (Throwable e22) {
-                    if (!SocketChannelManager.this.stopProcess) {
+                    if (!stopProcess) {
                         Logger.e(getName(), e22);
                         
-                        if (ScreenMatrixActivity.screenHandler != null) {
-                            ScreenMatrixActivity.screenHandler.sendEmptyMessage(ErrorCode.ADDRESS_PARSE_FAILURE);
+                        if (iDisplayer.getScreenHandler() != null) {
+                            iDisplayer.getScreenHandler().sendEmptyMessage(ErrorCode.ADDRESS_PARSE_FAILURE);
                         }
-                        SocketChannelManager.this.stopProcess = true;
+                        stopProcess = true;
                     }
                 }
             }
@@ -131,26 +134,26 @@ public class SocketChannelManager {
             byte[] bArr = new byte[4];
             DataInputStream dataInputStream = new DataInputStream(this.mIn);
             int access$100 = 0;
-            while (!SocketChannelManager.this.stopProcess) {
+            while (!stopProcess) {
                 try {
                     dataInputStream.readFully(bArr);
                     access$100 = SocketChannelManager.ByteArrayToInt(bArr);
                 } catch (Throwable e) {
                     Logger.e(getName() + ": Can't read size", e);
-                    if (!SocketChannelManager.this.stopProcess) {
-                        if (ScreenMatrixActivity.screenHandler != null) {
-                            ScreenMatrixActivity.screenHandler.sendEmptyMessage(ErrorCode.ADDRESS_PARSE_FAILURE);
+                    if (!stopProcess) {
+                        if (iDisplayer.getScreenHandler() != null) {
+                            iDisplayer.getScreenHandler().sendEmptyMessage(ErrorCode.ADDRESS_PARSE_FAILURE);
                         }
-                        SocketChannelManager.this.stopProcess = true;
+                        stopProcess = true;
                     }
                 }
                 if (access$100 > 10000000) {
                     Logger.e(getName() + ": Disconnect. Data length is to big. length = " + access$100);
-                    if (!SocketChannelManager.this.stopProcess) {
-                        if (ScreenMatrixActivity.screenHandler != null) {
-                            ScreenMatrixActivity.screenHandler.sendEmptyMessage(ErrorCode.ADDRESS_PARSE_FAILURE);
+                    if (!stopProcess) {
+                        if (iDisplayer.getScreenHandler() != null) {
+                            iDisplayer.getScreenHandler().sendEmptyMessage(ErrorCode.ADDRESS_PARSE_FAILURE);
                         }
-                        SocketChannelManager.this.stopProcess = true;
+                        stopProcess = true;
                         return;
                     }
                     return;
@@ -162,27 +165,27 @@ public class SocketChannelManager {
                             dataInputStream.readFully(this.actualData, 0, access$100);
                         } catch (Throwable e3) {
                             Logger.e(getName() + ": Can't read data", e3);
-                            if (!SocketChannelManager.this.remoteSocketClosedNotified) {
-                            	ScreenMatrixActivity.setSocketConnectionClosedFromRemote();
-                                SocketChannelManager.this.remoteSocketClosedNotified = true;
-                                SocketChannelManager.this.stopProcess = true;
+                            if (!remoteSocketClosedNotified) {
+                            	iDisplayer.setSocketConnectionClosedFromRemote();
+                                remoteSocketClosedNotified = true;
+                                stopProcess = true;
                                 break;
                             }
                         }
                         
-                        SocketChannelManager.this.onAcceptSocketTelemetry(access$100, this.actualData);
+                        onAcceptSocketTelemetry(access$100, this.actualData);
                     } catch (OutOfMemoryError e2) {
                         this.actualData = null;
                     }
 
                 } else {
                     Logger.e(getName() + ": Disconnect. Data length is 0. length = " + access$100);
-                    if (ScreenMatrixActivity.screenHandler != null) {
-                        ScreenMatrixActivity.screenHandler.sendEmptyMessage(17);
+                    if (iDisplayer.getScreenHandler() != null) {
+                        iDisplayer.getScreenHandler().sendEmptyMessage(17);
                     }
 
-                    SocketChannelManager.this.remoteSocketClosedNotified = true;
-                    SocketChannelManager.this.stopProcess = true;
+                    remoteSocketClosedNotified = true;
+                    stopProcess = true;
                     return;
                 }
             }
