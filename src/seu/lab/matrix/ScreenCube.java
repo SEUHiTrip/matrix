@@ -461,20 +461,21 @@ public class ScreenCube extends Object3D implements IDisplayProgram {
 //		d = allocateDirect.asFloatBuffer();
 //		d.put(fArr);
 //		d.position(0);
-		if (buffer != null) {
-			GLES20.glDeleteTextures(buffer.length, buffer, 0);
-		}
-		int numOfTextures = 3 + 4;
-		buffer = new int[numOfTextures];
-		GLES20.glGenTextures(numOfTextures, buffer, 0);
-		for (int i = 0; i < numOfTextures; i++) {
-			int i2 = buffer[i];
-			Log.v("Texture", "Texture is at " + i2);
-			GLES20.glBindTexture(3553, i2);
-			GLES20.glTexParameteri(3553, 10242, 33071);
-			GLES20.glTexParameteri(3553, 10243, 33071);
-			GLES20.glTexParameteri(3553, 10240, 9729);
-			GLES20.glTexParameteri(3553, 10241, 9729);
+		if (buffer == null) {
+			//GLES20.glDeleteTextures(buffer.length, buffer, 0);
+			
+			int numOfTextures = 3 + 4;
+			buffer = new int[numOfTextures];
+			GLES20.glGenTextures(numOfTextures, buffer, 0);
+			for (int i = 0; i < numOfTextures; i++) {
+				int i2 = buffer[i];
+				Log.d("Texture", "Texture is at " + i2);
+				GLES20.glBindTexture(3553, i2);
+				GLES20.glTexParameteri(3553, 10242, 33071);
+				GLES20.glTexParameteri(3553, 10243, 33071);
+				GLES20.glTexParameteri(3553, 10240, 9729);
+				GLES20.glTexParameteri(3553, 10241, 9729);
+			}
 		}
 
 		isCursorDirty = true;

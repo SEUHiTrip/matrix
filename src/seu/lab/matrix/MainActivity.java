@@ -28,7 +28,7 @@ public class MainActivity extends Activity {
 
 	public static final String TAG = "MainActivity";
 
-	public static Class<?> iDisplayerClass = Screen3DMatrixActivity.class;
+	public static Class<?> iDisplayerClass = Framework3DMatrixActivity.class;
 	
 	private RequestQueue mQueue = null;
 
@@ -60,7 +60,7 @@ public class MainActivity extends Activity {
 			
 			@Override
 			public void onClick(View v) {
-				Intent intent = new Intent(getApplicationContext(), Screen3DMatrixActivity.class);
+				Intent intent = new Intent(getApplicationContext(), Framework3DMatrixActivity.class);
 				intent.putExtra("mode", new IDisplayConnection.ConnectionMode(ConnectionType.Single.ordinal()));
 				startActivity(intent);
 				finish();
@@ -71,7 +71,7 @@ public class MainActivity extends Activity {
 			
 			@Override
 			public void onClick(View v) {
-				Intent intent = new Intent(getApplicationContext(), Screen3DMatrixActivity.class);
+				Intent intent = new Intent(getApplicationContext(), Framework3DMatrixActivity.class);
 				intent.putExtra("mode", new IDisplayConnection.ConnectionMode(ConnectionType.Duel.ordinal()));
 				startActivity(intent);
 				finish();
