@@ -6,6 +6,7 @@ import java.nio.FloatBuffer;
 import com.google.vrtoolkit.cardboard.Eye;
 import com.idisplay.VirtualScreenDisplay.ConnectionActivity;
 import com.idisplay.VirtualScreenDisplay.FPSCounter;
+import com.idisplay.VirtualScreenDisplay.IDisplayConnection;
 import com.idisplay.VirtualScreenDisplay.IIdisplayViewRendererContainer;
 import com.idisplay.VirtualScreenDisplay.ZoomState;
 import com.idisplay.util.ArrayImageContainer;
@@ -265,7 +266,7 @@ public class ScreenCube extends Object3D implements IDisplayProgram {
 			int y = mArrayImageContainer.getStrideY();
 			int len = x * y;
 
-			if (ConnectionActivity.currentMode.type == ConnectionActivity.ConnectionType.Single) {
+			if (IDisplayConnection.currentMode.type == IDisplayConnection.ConnectionType.Single) {
 				simpleFillTextures(i, iArr, 0, len, x, y);
 			} else {
 				if (eye.getType() == Eye.Type.LEFT) {

@@ -90,8 +90,8 @@ public class VirtualScreenActivity extends Activity {
 		switch (i) {
 		case 1:
 			Logger.d(className + ":Reconnecting moving to connection screen");
-			if (ConnectionActivity.ccMngr != null) {
-				ConnectionActivity.ccMngr.stopProcesses();
+			if (IDisplayConnection.ccMngr != null) {
+				IDisplayConnection.ccMngr.stopProcesses();
 			}
 			intent.putExtra("DENY", true);
 			intent.putExtra("WHERE", "DISCONNECT");
@@ -355,8 +355,8 @@ public class VirtualScreenActivity extends Activity {
 	protected void onPause() {
 		super.onPause();
 		Logger.d(className + ":onPause");
-		if (ConnectionActivity.ccMngr != null) {
-			ConnectionActivity.ccMngr.stopStream();
+		if (IDisplayConnection.ccMngr != null) {
+			IDisplayConnection.ccMngr.stopStream();
 		}
 		BitmapPool.clear();
 		if (System.currentTimeMillis() - mTimeStartSession > 300000) {
@@ -385,8 +385,8 @@ public class VirtualScreenActivity extends Activity {
 			this.mExitTimer.purge();
 			this.mExitTimer = null;
 		}
-		if (ConnectionActivity.ccMngr != null) {
-			ConnectionActivity.ccMngr.startStream();
+		if (IDisplayConnection.ccMngr != null) {
+			IDisplayConnection.ccMngr.startStream();
 		} else {
 			screenHandler.sendEmptyMessage(21);
 		}

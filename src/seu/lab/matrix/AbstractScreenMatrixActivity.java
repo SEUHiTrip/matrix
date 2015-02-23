@@ -1,36 +1,23 @@
 package seu.lab.matrix;
 
-import java.util.Timer;
 import java.util.concurrent.CountDownLatch;
-
-import javax.jmdns.impl.constants.DNSConstants;
-
 import org.apache.log4j.spi.ErrorCode;
-
 import com.google.vrtoolkit.cardboard.CardboardActivity;
 import com.idisplay.DataChannelManager.DataChannelManager;
 import com.idisplay.VirtualScreenDisplay.ConnectionActivity;
-import com.idisplay.VirtualScreenDisplay.FPSCounter;
-import com.idisplay.VirtualScreenDisplay.ZoomState;
-import com.idisplay.VirtualScreenDisplay.IDisplayOpenGLView.OnMeasureListener;
-import com.idisplay.util.ArrayImageContainer;
+import com.idisplay.VirtualScreenDisplay.IDisplayConnection;
 import com.idisplay.util.BitmapPool;
 import com.idisplay.util.ImageContainer;
 import com.idisplay.util.Logger;
 import com.idisplay.util.RLEImage;
 import com.idisplay.util.SettingsManager;
-
-import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.Bitmap.Config;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.ViewGroup.LayoutParams;
-import android.widget.AbsListView;
 
 public abstract class AbstractScreenMatrixActivity extends CardboardActivity{
 	
@@ -68,8 +55,8 @@ public abstract class AbstractScreenMatrixActivity extends CardboardActivity{
 		switch (i) {
 		case 1:
 			Logger.d(TAG + ":Reconnecting moving to connection screen");
-			if (ConnectionActivity.ccMngr != null) {
-				ConnectionActivity.ccMngr.stopProcesses();
+			if (IDisplayConnection.ccMngr != null) {
+				IDisplayConnection.ccMngr.stopProcesses();
 			}
 			intent.putExtra("DENY", true);
 			intent.putExtra("WHERE", "DISCONNECT");
@@ -185,8 +172,8 @@ public abstract class AbstractScreenMatrixActivity extends CardboardActivity{
 	protected void onPause() {
 		super.onPause();
 		Logger.d(TAG + ":onPause");
-		if (ConnectionActivity.ccMngr != null) {
-			ConnectionActivity.ccMngr.stopStream();
+		if (IDisplayConnection.ccMngr != null) {
+			IDisplayConnection.ccMngr.stopStream();
 		}
 		BitmapPool.clear();
 		if (System.currentTimeMillis() - mTimeStartSession > 300000) {
@@ -211,8 +198,8 @@ public abstract class AbstractScreenMatrixActivity extends CardboardActivity{
 		super.onResume();
 		Logger.d(TAG + ":onResume");
 
-		if (ConnectionActivity.ccMngr != null) {
-			ConnectionActivity.ccMngr.startStream();
+		if (IDisplayConnection.ccMngr != null) {
+			IDisplayConnection.ccMngr.startStream();
 		} else {
 			screenHandler.sendEmptyMessage(21);
 		}

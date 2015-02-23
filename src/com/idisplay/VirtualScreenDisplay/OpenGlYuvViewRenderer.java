@@ -49,7 +49,7 @@ public class OpenGlYuvViewRenderer implements IIdisplayViewRenderer {
 			int y = mArrayImageContainer.getStrideY();
 			int len = x * y;
 
-			if (ConnectionActivity.currentMode.type == ConnectionActivity.ConnectionType.Single) {
+			if (IDisplayConnection.currentMode.type == IDisplayConnection.ConnectionType.Single) {
 				simpleFillTextures(i, iArr, 0, len, x, y);
 			} else {
 				if (eye.getType() == Eye.Type.LEFT) {

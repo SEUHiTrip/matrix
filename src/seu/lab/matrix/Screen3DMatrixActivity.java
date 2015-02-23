@@ -1,29 +1,21 @@
 package seu.lab.matrix;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-import java.util.Observable;
-import java.util.Observer;
 import com.google.vrtoolkit.cardboard.CardboardView;
 import com.google.vrtoolkit.cardboard.Eye;
 import com.google.vrtoolkit.cardboard.HeadTransform;
 import com.google.vrtoolkit.cardboard.Viewport;
 import com.idisplay.VirtualScreenDisplay.ConnectionActivity;
-import com.idisplay.VirtualScreenDisplay.FPSCounter;
-import com.idisplay.VirtualScreenDisplay.IIdisplayViewRendererContainer;
-import com.idisplay.VirtualScreenDisplay.Programs;
-import com.idisplay.VirtualScreenDisplay.ZoomState;
+import com.idisplay.VirtualScreenDisplay.IDisplayConnection;
+import com.idisplay.VirtualScreenDisplay.IDisplayConnection.ConnectionMode;
+import com.idisplay.VirtualScreenDisplay.IDisplayConnection.IDisplayConnectionCallback;
 import com.idisplay.util.ArrayImageContainer;
-import com.idisplay.util.BitmapPool;
 import com.idisplay.util.ImageContainer;
 import com.idisplay.util.Logger;
 import com.idisplay.util.RLEImage;
+import com.idisplay.util.ServerItem;
 import com.learnopengles.android.common.GLCommon;
 import com.learnopengles.android.common.RawResourceReader;
 import com.learnopengles.android.common.ShaderHelper;
-
-import android.R.integer;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.opengl.GLES20;
@@ -33,13 +25,15 @@ import android.os.Vibrator;
 import android.util.Log;
 import javax.microedition.khronos.egl.EGLConfig;
 
-import org.apache.commons.lang.NotImplementedException;
-
 public class Screen3DMatrixActivity extends AbstractScreenMatrixActivity
-		implements CardboardView.StereoRenderer{
+		implements CardboardView.StereoRenderer, IDisplayConnectionCallback{
 
 	private static final String TAG = "MatrixActivity";
 
+	private ServerItem usbServerItem;
+	private IDisplayConnection iDisplayConnection;
+	private ConnectionMode currentMode;
+	
 	private static final float Z_NEAR = 0.1f;
 	private static final float Z_FAR = 100.0f;
 
@@ -71,12 +65,6 @@ public class Screen3DMatrixActivity extends AbstractScreenMatrixActivity
 
 	private Vibrator mVibrator;
 	private CardboardOverlayView mOverlayView;
-
-
-
-	public Screen3DMatrixActivity() {
-
-	}
 	
 	/**
 	 * Sets the view to our CardboardView and initializes the transformation
@@ -86,6 +74,21 @@ public class Screen3DMatrixActivity extends AbstractScreenMatrixActivity
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		usbServerItem = ServerItem.CreateUsbItem(this);
+		iDisplayConnection = new IDisplayConnection(this);
+
+		Bundle extras = getIntent().getExtras();
+		if (extras != null) {
+			if (extras.isEmpty()) {
+				Logger.d("start with: empty extract");
+			} else {
+				Logger.d("start with: " + extras.toString());
+				currentMode = (ConnectionMode) extras.getParcelable("mode");
+				Logger.d("currentMode: " + currentMode.width + "x"
+						+ currentMode.height);
+			}
+		}
+		
 		setContentView(R.layout.common_ui);
 		CardboardView cardboardView = (CardboardView) findViewById(R.id.cardboard_view);
 		cardboardView.setRenderer(this);
@@ -104,6 +107,20 @@ public class Screen3DMatrixActivity extends AbstractScreenMatrixActivity
 		mOverlayView.show3DToast("Pull the magnet when you find an object.");
 	}
 
+	@Override
+	protected void onStart() {
+		super.onStart();
+		Logger.d("usbServerItem : " + usbServerItem);
+
+		iDisplayConnection.connectToServer(usbServerItem);
+	}
+	
+	@Override
+	protected void onPause() {
+		super.onPause();
+		iDisplayConnection.listScreenHandler.sendEmptyMessage(1);
+	}
+	
 	@Override
 	public void onRendererShutdown() {
 		Log.i(TAG, "onRendererShutdown");
@@ -323,6 +340,12 @@ public class Screen3DMatrixActivity extends AbstractScreenMatrixActivity
 	@Override
 	protected Bitmap setDiffImage(Bitmap bitmap, RLEImage rLEImage) throws Exception {
 		throw new Exception("setDiffImage not implemneted");
+	}
+
+	@Override
+	public void onIDisplayConnected() {
+		// TODO Auto-generated method stub
+		
 	}
 
 

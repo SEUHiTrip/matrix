@@ -45,7 +45,7 @@
         android:layout_below="@+id/cardboard_btn"
         android:layout_marginTop="34dp"
         android:text="Connect" />
-
+    
     <ImageView
         android:id="@+id/image_view"
         android:layout_width="wrap_content"
@@ -55,5 +55,14 @@
         android:layout_marginLeft="17dp"
         android:layout_marginTop="60dp"
         android:src="@android:drawable/btn_star_big_off" />
+
+    <Button
+        android:id="@+id/test"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignRight="@+id/textView1"
+        android:layout_below="@+id/connect_btn"
+        android:layout_marginTop="16dp"
+        android:text="Test" />
     
 </RelativeLayout>

@@ -2,6 +2,7 @@ package com.idisplay.ServerInteractionManager;
 
 import com.idisplay.Audio.AudioChannel;
 import com.idisplay.VirtualScreenDisplay.ConnectionActivity;
+import com.idisplay.VirtualScreenDisplay.IDisplayConnection;
 import com.idisplay.VirtualScreenDisplay.ThreadEvent;
 import com.idisplay.util.ByteBufferPool;
 import com.idisplay.util.Logger;
@@ -42,7 +43,7 @@ public class SocketChannelManager {
     private volatile boolean stopProcess;
 
     private AbstractScreenMatrixActivity iDisplayer;
-    
+
     private class ListenToDataSocket extends Thread {
         private final int INITIAL_DATA_LEN;
         private ThreadEvent VSCREEN_WAIT;
@@ -81,13 +82,13 @@ public class SocketChannelManager {
                         this.actualData = ByteBufferPool.get(access$100);
                         try {
                             dataInputStream.readFully(this.actualData, 0, access$100);
-                            ConnectionActivity.ccMngr.sendFrameReceived();
+                            IDisplayConnection.ccMngr.sendFrameReceived();
                             onAcceptSocketData(access$100, this.actualData);
                         } catch (Throwable e) {
                             Logger.e(getName() + ": Can't read data", e);
                         }
 
-                        if (!ConnectionActivity.isVirtualScreenShown()) {
+                        if (!IDisplayConnection.isVirtualScreenShown()) {
                             try {
                                 Logger.e(getName() + ": Waiting for Virtual screen to be shown");
                                 this.VSCREEN_WAIT.await();
@@ -315,7 +316,7 @@ public class SocketChannelManager {
         } catch (Throwable e32) {
             Logger.e(this.className + ": Exception in connectToServer ", e32);
             if (connectWithUSb) {
-            	ConnectionActivity.listScreenHandler.sendEmptyMessage(1);
+            	IDisplayConnection.listScreenHandler.sendEmptyMessage(1);
             }
             return false;
         }

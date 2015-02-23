@@ -10,7 +10,8 @@ import com.android.volley.toolbox.ImageRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
 import com.idisplay.VirtualScreenDisplay.ConnectionActivity;
-import com.idisplay.VirtualScreenDisplay.ConnectionActivity.ConnectionType;
+import com.idisplay.VirtualScreenDisplay.IDisplayConnection;
+import com.idisplay.VirtualScreenDisplay.IDisplayConnection.ConnectionType;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -51,14 +52,16 @@ public class MainActivity extends Activity {
 		Button duel = (Button) findViewById(R.id.connect_btn_duel);
 		Button cardboardButton = (Button) findViewById(R.id.cardboard_btn);
 		Button connetButton = (Button) findViewById(R.id.connect_btn);
+		Button testButton = (Button) findViewById(R.id.test);
+
 		imageView = (ImageView) findViewById(R.id.image_view);
 		
 		single.setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
-				Intent intent = new Intent(getApplicationContext(), ConnectionActivity.class);
-				intent.putExtra("mode", new ConnectionActivity.ConnectionMode(ConnectionType.Single.ordinal()));
+				Intent intent = new Intent(getApplicationContext(), Screen3DMatrixActivity.class);
+				intent.putExtra("mode", new IDisplayConnection.ConnectionMode(ConnectionType.Single.ordinal()));
 				startActivity(intent);
 				finish();
 			}
@@ -68,8 +71,8 @@ public class MainActivity extends Activity {
 			
 			@Override
 			public void onClick(View v) {
-				Intent intent = new Intent(getApplicationContext(), ConnectionActivity.class);
-				intent.putExtra("mode", new ConnectionActivity.ConnectionMode(ConnectionType.Duel.ordinal()));
+				Intent intent = new Intent(getApplicationContext(), Screen3DMatrixActivity.class);
+				intent.putExtra("mode", new IDisplayConnection.ConnectionMode(ConnectionType.Duel.ordinal()));
 				startActivity(intent);
 				finish();
 			}
@@ -95,6 +98,16 @@ public class MainActivity extends Activity {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+			}
+		});
+		
+		testButton.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View arg0) {
+				Intent intent = new Intent(getApplicationContext(), TestActivity.class);
+				startActivity(intent);
+				finish();
 			}
 		});
 		
