@@ -72,9 +72,7 @@ public class ColorTrackActivity extends CardboardActivity implements
 	private RGBColor back = new RGBColor(50, 50, 100);
 	private float[] mAngles = new float[3];
 	
-	private SimpleVector origin = new SimpleVector(5,0,0);
-	private SimpleVector yVector = new SimpleVector(0,1,0);
-	private SimpleVector zVector = new SimpleVector(0,0,1);
+	private SimpleVector origin = new SimpleVector(0,0,5);
 
 	List<android.hardware.Camera.Size> mResolutionList;
 
@@ -196,18 +194,22 @@ public class ColorTrackActivity extends CardboardActivity implements
 		cam.rotateX(mAngles[0]);
 
 		ball1.clearRotation();
+
 		if(points.size() > 0){
 			ball1.setRotationPivot(origin);
 			ball1.rotateY((float)(0.5f*points.get(0).x));
-			ball1.rotateZ((float)(-0.5f*points.get(0).y));
+			ball1.rotateX((float)(0.5f*points.get(0).y));
 		}
 		
 		ball2.clearRotation();
-		if(points.size() > 1){
-			ball2.setRotationPivot(origin);
-			ball2.rotateY((float)(0.5f*points.get(1).x));
-			ball2.rotateZ((float)(-0.5f*points.get(1).y));
-		}
+		ball2.setRotationPivot(origin);
+		ball2.rotateY(0.5f);
+		ball2.rotateX(0.5f);
+//		if(points.size() > 1){
+//			ball2.setRotationPivot(origin);
+//			ball2.rotateY((float)(0.5f*points.get(1).x));
+//			ball2.rotateZ((float)(-0.5f*points.get(1).y));
+//		}
 	}
 
 	@Override
@@ -229,7 +231,7 @@ public class ColorTrackActivity extends CardboardActivity implements
 		sun.setIntensity(250, 250, 250);
 
 		cube = Primitives.getCube(1);
-		cube.translate(-10, 0, 0);
+		cube.translate(0, 0, -10);
 		cube.calcTextureWrapSpherical();
 		cube.setTexture("texture");
 		cube.strip();
@@ -237,7 +239,7 @@ public class ColorTrackActivity extends CardboardActivity implements
 		world.addObject(cube);
 		
 		ball1 = Primitives.getSphere(0.2f);
-		ball1.translate(-5, 0, 0);
+		ball1.translate(0, 0, -5);
 		ball1.calcTextureWrapSpherical();
 		ball1.setAdditionalColor(new RGBColor(100, 0, 0));
 		ball1.strip();
@@ -245,7 +247,7 @@ public class ColorTrackActivity extends CardboardActivity implements
 		world.addObject(ball1);
 
 		ball2 = Primitives.getSphere(0.2f);
-		ball2.translate(-5, 0, 0);
+		ball2.translate(0, 0, -5);
 		ball2.calcTextureWrapSpherical();
 		ball2.setAdditionalColor(new RGBColor(0, 100, 0));
 		ball2.strip();

@@ -9,12 +9,14 @@ import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
+import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.imgproc.Moments;
 
 import seu.lab.matrix.R;
 import android.app.Activity;
@@ -190,6 +192,26 @@ public class ColorBlobDetectionActivity extends Activity implements
 			Mat spectrumLabel = mRgba.submat(4, 4 + mSpectrum.rows(), 70,
 					70 + mSpectrum.cols());
 			mSpectrum.copyTo(spectrumLabel);
+			
+			for (int i = 0; i < contours.size(); i++) {
+				MatOfPoint matOfPoint = contours.get(i);
+
+//				Log.e(TAG, "width " + matOfPoint.size().width + "height "
+//						+ matOfPoint.size().height);
+
+				if(matOfPoint.size().height < 3)continue;
+				
+				Mat mat = new Mat();
+				matOfPoint.copyTo(mat);
+				Moments mMoments = Imgproc.moments(mat);
+
+				double x = mMoments.get_m10() / mMoments.get_m00();
+				double y = mMoments.get_m01() / mMoments.get_m00();
+				double rx = (2*x - mRgba.width()) / mRgba.width();
+				double ry = -(2*y - mRgba.height()) / mRgba.height();
+								
+				Log.e(TAG, "rx: "+rx+"  ry: "+ry);
+			}
 		}
 
 		return mRgba;
