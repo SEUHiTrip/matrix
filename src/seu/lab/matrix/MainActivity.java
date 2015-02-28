@@ -2,6 +2,9 @@ package seu.lab.matrix;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.opencv.samples.colorblobdetect.ColorBlobDetectionActivity;
+import org.opencv.samples.colorblobdetect.ColorTrackActivity;
+
 import com.android.volley.RequestQueue;
 import com.android.volley.Response.ErrorListener;
 import com.android.volley.Response.Listener;
@@ -53,7 +56,9 @@ public class MainActivity extends Activity {
 		Button cardboardButton = (Button) findViewById(R.id.cardboard_btn);
 		Button connetButton = (Button) findViewById(R.id.connect_btn);
 		Button testButton = (Button) findViewById(R.id.test);
-
+		Button pickButton = (Button) findViewById(R.id.pick_btn);
+		Button trackButton = (Button) findViewById(R.id.track_btn);
+		
 		imageView = (ImageView) findViewById(R.id.image_view);
 		
 		single.setOnClickListener(new OnClickListener() {
@@ -63,7 +68,6 @@ public class MainActivity extends Activity {
 				Intent intent = new Intent(getApplicationContext(), Framework3DMatrixActivity.class);
 				intent.putExtra("mode", new IDisplayConnection.ConnectionMode(ConnectionType.Single.ordinal()));
 				startActivity(intent);
-				finish();
 			}
 		});
 		
@@ -74,7 +78,6 @@ public class MainActivity extends Activity {
 				Intent intent = new Intent(getApplicationContext(), Framework3DMatrixActivity.class);
 				intent.putExtra("mode", new IDisplayConnection.ConnectionMode(ConnectionType.Duel.ordinal()));
 				startActivity(intent);
-				finish();
 			}
 		});
 		
@@ -84,7 +87,6 @@ public class MainActivity extends Activity {
 			public void onClick(View v) {
 				Intent intent = new Intent(getApplicationContext(), MatrixActivity.class);
 				startActivity(intent);
-				finish();
 			}
 		});
 		
@@ -107,7 +109,24 @@ public class MainActivity extends Activity {
 			public void onClick(View arg0) {
 				Intent intent = new Intent(getApplicationContext(), TestActivity.class);
 				startActivity(intent);
-				finish();
+			}
+		});
+		
+		pickButton.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View arg0) {
+				Intent intent = new Intent(getApplicationContext(), ColorBlobDetectionActivity.class);
+				startActivity(intent);
+			}
+		});
+		
+		trackButton.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View arg0) {
+				Intent intent = new Intent(getApplicationContext(), ColorTrackActivity.class);
+				startActivity(intent);
 			}
 		});
 		

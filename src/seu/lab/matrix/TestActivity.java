@@ -2,10 +2,22 @@ package seu.lab.matrix;
 
 import javax.microedition.khronos.egl.EGLConfig;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import seu.lab.dolphin.client.ContinuousGestureEvent;
+import seu.lab.dolphin.client.Dolphin;
+import seu.lab.dolphin.client.DolphinException;
+import seu.lab.dolphin.client.GestureEvent;
+import seu.lab.dolphin.client.IDolphinStateCallback;
+import seu.lab.dolphin.client.IGestureListener;
+
 import android.R.anim;
 import android.R.integer;
 import android.content.Context;
+import android.media.AudioManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Vibrator;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -33,6 +45,7 @@ import com.threed.jpct.util.MemoryHelper;
 public class TestActivity extends CardboardActivity implements
 		CardboardView.StereoRenderer {
 
+	private static String TAG = "TestActivity";
 	private static TestActivity master = null;
 
 	private float[] mAngles;
@@ -61,6 +74,107 @@ public class TestActivity extends CardboardActivity implements
 
 	private float[] mView;
 
+	private CardboardOverlayView mOverlayView;
+	
+	private Handler mHandler;
+	
+	IGestureListener gestureListener = new IGestureListener() {
+		
+		@Override
+		public void onGesture(final GestureEvent event) {
+			if (!event.isConclusion)
+				return;
+			
+			mHandler.post(new Runnable() {
+				
+				@Override
+				public void run() {
+					mOverlayView.show3DToast(event.result);
+				}
+			});
+			
+		}
+		
+		@Override
+		public void onContinuousGestureUpdate(ContinuousGestureEvent event) {
+			// TODO Auto-generated method stub
+			
+		}
+		
+		@Override
+		public void onContinuousGestureStart(ContinuousGestureEvent event) {
+			// TODO Auto-generated method stub
+			
+		}
+		
+		@Override
+		public void onContinuousGestureEnd() {
+			// TODO Auto-generated method stub
+			
+		}
+		
+		@Override
+		public JSONObject getGestureConfig() {
+			// claim the gesture you need to be true
+
+			JSONObject config = new JSONObject();
+			JSONObject masks = new JSONObject();
+
+			try {
+				masks.put("" + GestureEvent.Gestures.SWIPE_LEFT_L.ordinal(),
+						true);
+				masks.put("" + GestureEvent.Gestures.SWIPE_RIGHT_L.ordinal(),
+						true);
+				masks.put("" + GestureEvent.Gestures.PULL_PUSH_PULL.ordinal(),
+						true);
+				masks.put("" + GestureEvent.Gestures.PUSH_PULL_PUSH.ordinal(),
+						true);
+				masks.put("" + GestureEvent.Gestures.SWIPE_BACK_LEFT_L.ordinal(),
+						true);
+				masks.put("" + GestureEvent.Gestures.SWIPE_BACK_RIGHT_L.ordinal(),
+						true);
+				config.put("masks", masks);
+			} catch (JSONException e) {
+				Log.e(TAG, e.toString());
+			}
+
+			return config;
+		}
+	}; 
+	
+	IDolphinStateCallback stateCallback = new IDolphinStateCallback() {
+		
+		@Override
+		public void onNormal() {
+			// TODO Auto-generated method stub
+			
+		}
+		
+		@Override
+		public void onNoisy() {
+			// TODO Auto-generated method stub
+			
+		}
+		
+		@Override
+		public void onCoreReady() {
+			try {
+				dolphin.start();
+			} catch (DolphinException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		@Override
+		public void onCoreFail() {
+			// TODO Auto-generated method stub
+			
+		}
+	};
+	
+	Dolphin dolphin = null;
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -70,6 +184,9 @@ public class TestActivity extends CardboardActivity implements
 		cardboardView.setRenderer(this);
 		setCardboardView(cardboardView);
 
+		mOverlayView = (CardboardOverlayView) findViewById(R.id.overlay);
+		mOverlayView.show3DToast("Test start");
+		
 		// cardboardView.setDistortionCorrectionEnabled(false);
 		mHeadView = new float[16];
 		mForwardVec = new float[3];
@@ -79,13 +196,62 @@ public class TestActivity extends CardboardActivity implements
 		mView = new float[16];
 		mAngles = new float[3];
 		mat = new Matrix();
+		
+		try {
+            dolphin = Dolphin.getInstance(
+                    (AudioManager)getSystemService(Context.AUDIO_SERVICE), 
+                    getContentResolver(),
+                    stateCallback,
+                    null,
+                    gestureListener);
+        } catch (DolphinException e) {
+            Log.e(TAG, e.toString());
+        } catch (JSONException e) {
+            Log.e(TAG, e.toString());
+        }
+		
+		mHandler = new Handler(getMainLooper());
 	}
 
 	@Override
+	protected void onStart() {
+		super.onStart();
+		
+		try {
+			dolphin.prepare(getApplicationContext());
+		} catch (DolphinException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	@Override
+	protected void onPause() {
+		try {
+			dolphin.pause();
+		} catch (DolphinException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		super.onPause();
+	}
+	
+	@Override
+	protected void onStop() {
+		try {
+			dolphin.stop();
+		} catch (DolphinException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		super.onStop();
+	}
+	
+	@Override
 	public void onDrawEye(Eye eye) {
 
-//		android.opengl.Matrix.multiplyMM(mView, 0, eye.getEyeView(), 0,
-//				mCamera, 0);
+		// android.opengl.Matrix.multiplyMM(mView, 0, eye.getEyeView(), 0,
+		// mCamera, 0);
 
 		// for (int i = 0; i < 4; i++) {
 		// for (int j = 0; j < 4; j++) {
@@ -96,28 +262,46 @@ public class TestActivity extends CardboardActivity implements
 		// System.out.println("=====================");
 		Camera cam = world.getCamera();
 
-//		for (int i = 0; i < 3; i++) {
-//			mForwardVec[i] = mView[i];
-//			mUpVec[i] = mView[i + 4];
-//			mRightVec[i] = mView[i + 8];
-//		}
+		// for (int i = 0; i < 3; i++) {
+		// mForwardVec[i] = mView[i];
+		// mUpVec[i] = mView[i + 4];
+		// mRightVec[i] = mView[i + 8];
+		// }
 
-		SimpleVector simpleVector1 = new SimpleVector(1,0,0);
-		SimpleVector simpleVector2 = new SimpleVector(0,0,1);
+		SimpleVector simpleVector1 = new SimpleVector(1, 0, 0);
+		SimpleVector simpleVector2 = new SimpleVector(0, 0, 1);
 
-		cube.setOrientation(simpleVector1, simpleVector2);
-//		cam.setOrientation(simpleVector1, simpleVector2);
-		
+		// cube.setOrientation(simpleVector1, simpleVector2);
+		// cam.setOrientation(simpleVector1, simpleVector2);
+
 		// cam.moveCamera(Camera.CAMERA_MOVEOUT, 50);
 		cam.lookAt(cube.getTransformedCenter());
 		cam.rotateY(mAngles[1]);
-		cam.rotateZ(0-mAngles[2]);
+		cam.rotateZ(0 - mAngles[2]);
 		cam.rotateX(mAngles[0]);
 
-//		cam.rotateX(mAngles[2]);//roll 2
-//		cam.rotateY(mAngles[1]);//pitch 0
-//		cam.rotateZ(mAngles[0]);//yaw 1
-		
+//		SimpleVector cubeCenter = new SimpleVector();
+//		SimpleVector camDir = new SimpleVector();
+//
+//		cube.getTransformedCenter(cubeCenter);
+//		cam.getDirection(camDir);
+//
+//		double sum = Math.pow(cubeCenter.x, 2d) + Math.pow(cubeCenter.y, 2d)
+//				+ Math.pow(cubeCenter.z, 2d);
+//		sum = Math.sqrt(sum);
+//		cubeCenter.x = (float) (cubeCenter.x / sum);
+//		cubeCenter.y = (float) (cubeCenter.y / sum);
+//		cubeCenter.z = (float) (cubeCenter.z / sum);
+//
+//		double dot = camDir.x * cubeCenter.x + camDir.y * cubeCenter.y
+//				+ camDir.z * cubeCenter.z;
+//		
+//		Log.d("cam", "dot: " + dot);
+
+		// cam.rotateX(mAngles[2]);//roll 2
+		// cam.rotateY(mAngles[1]);//pitch 0
+		// cam.rotateZ(mAngles[0]);//yaw 1
+
 		int factor = 5;
 		cube1.setTranslationMatrix(new Matrix());
 		cube2.setTranslationMatrix(new Matrix());
@@ -128,7 +312,7 @@ public class TestActivity extends CardboardActivity implements
 				* mRightVec[1], factor * mRightVec[2]));
 		cube3.translate(new SimpleVector(-10 + factor * mUpVec[0], factor
 				* mUpVec[1], factor * mUpVec[2]));
-
+		
 		fb.clear(back);
 		world.renderScene(fb);
 		world.draw(fb);
@@ -149,7 +333,7 @@ public class TestActivity extends CardboardActivity implements
 
 		headTransform.getEulerAngles(mAngles, 0);
 
-//		Log.d("angles", mAngles[0] + " " + mAngles[1] + " " + mAngles[2]);
+		// Log.d("angles", mAngles[0] + " " + mAngles[1] + " " + mAngles[2]);
 		headTransform.getHeadView(mHeadView, 0);
 		headTransform.getForwardVector(mForwardVec, 0);
 		headTransform.getRightVector(mRightVec, 0);
@@ -161,16 +345,16 @@ public class TestActivity extends CardboardActivity implements
 		// System.out.println(new SimpleVector(mUpVec));
 		// System.out.println("============================");
 
-		 for (int i = 0; i < mUpVec.length; i++) {
-//			 mForwardVec[i] = - mForwardVec[i];
-			 mUpVec[i] = - mUpVec[i];
-			 mRightVec[i] = - mRightVec[i];
-		 }
+		for (int i = 0; i < mUpVec.length; i++) {
+			// mForwardVec[i] = - mForwardVec[i];
+			mUpVec[i] = -mUpVec[i];
+			mRightVec[i] = -mRightVec[i];
+		}
 
 		// mForwardVec[0] = mRightVec[1] * mUpVec[2] - mRightVec[2] * mUpVec[1];
-		//
+
 		// mForwardVec[1] = mRightVec[2] * mUpVec[0] - mRightVec[0] * mUpVec[2];
-		//
+
 		// mForwardVec[2] = mRightVec[0] * mUpVec[1] - mRightVec[1] * mUpVec[0];
 
 	}
@@ -237,7 +421,7 @@ public class TestActivity extends CardboardActivity implements
 			cube3.setAdditionalColor(new RGBColor(0, 0, 100));
 			cube3.build();
 			world.addObject(cube3);
-			
+
 			cube1.setVisibility(false);
 			cube2.setVisibility(false);
 			cube3.setVisibility(false);
@@ -272,5 +456,11 @@ public class TestActivity extends CardboardActivity implements
 	@Override
 	public void onSurfaceCreated(EGLConfig config) {
 		world = new World();
+	}
+
+	@Override
+	public void onCardboardTrigger() {
+		// TODO Auto-generated method stub
+		super.onCardboardTrigger();
 	}
 }
