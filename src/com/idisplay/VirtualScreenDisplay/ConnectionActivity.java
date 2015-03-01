@@ -33,6 +33,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.spi.ErrorCode;
 
 import seu.lab.matrix.AbstractScreenMatrixActivity;
+import seu.lab.matrix.Framework3DMatrixActivity;
 import seu.lab.matrix.IdisplayCardboardScreenView;
 import seu.lab.matrix.MainActivity;
 import seu.lab.matrix.R;
@@ -118,7 +119,7 @@ public class ConnectionActivity extends Activity implements
 	@Override
 	public void onIDisplayConnected() {
 		Intent intent = new Intent();
-		intent.setClass(ConnectionActivity.this, MainActivity.iDisplayerClass); // TODO
+		intent.setClass(ConnectionActivity.this, Framework3DMatrixActivity.class); // TODO
 																				// VirtualScreenActivity.class);
 		Logger.i(className + ":Before ActivityFinish");
 		finish();

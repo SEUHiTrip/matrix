@@ -48,7 +48,7 @@ public class IDisplayConnection implements UnexpectedErrorListner,
 	private IDisplayConnectionCallback callback;
 
 	public enum ConnectionType {
-		Single, Duel
+		Single, Duel, SideBySide
 	}
 
 	public static interface IDisplayConnectionCallback {
@@ -83,8 +83,13 @@ public class IDisplayConnection implements UnexpectedErrorListner,
 				width = 1024;
 				break;
 			case 1:
-			default:
 				this.type = ConnectionType.Duel;
+				height = 2048;
+				width = 1024;
+				break;
+			case 2:
+			default:
+				this.type = ConnectionType.SideBySide;
 				height = 2048;
 				width = 1024;
 				break;

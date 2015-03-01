@@ -68,4 +68,12 @@
         android:layout_below="@+id/pick_btn"
         android:text="Track color" />
 
+    <Button
+        android:id="@+id/connect_btn_sidebyside"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/cardboard_btn"
+        android:layout_centerHorizontal="true"
+        android:text="Side by side" />
+
 </RelativeLayout>

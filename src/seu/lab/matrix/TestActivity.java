@@ -312,7 +312,7 @@ public class TestActivity extends CardboardActivity implements
 				* mRightVec[1], factor * mRightVec[2]));
 		cube3.translate(new SimpleVector(-10 + factor * mUpVec[0], factor
 				* mUpVec[1], factor * mUpVec[2]));
-		
+	
 		fb.clear(back);
 		world.renderScene(fb);
 		world.draw(fb);

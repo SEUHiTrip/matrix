@@ -31,67 +31,84 @@ public class MainActivity extends Activity {
 
 	public static final String TAG = "MainActivity";
 
-	public static Class<?> iDisplayerClass = Framework3DMatrixActivity.class;
-	
 	private RequestQueue mQueue = null;
 
 	private Gson gson = new Gson();
-	
+
 	private ImageView imageView;
-	
-	class Folder{
+
+	class Folder {
 		public String res = "";
 		public String name;
 		public String location;
 	}
-	
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
+
 		setContentView(R.layout.activity_main);
-		
+
 		Button single = (Button) findViewById(R.id.connect_btn_single);
 		Button duel = (Button) findViewById(R.id.connect_btn_duel);
+		Button side = (Button) findViewById(R.id.connect_btn_sidebyside);
+
 		Button cardboardButton = (Button) findViewById(R.id.cardboard_btn);
 		Button connetButton = (Button) findViewById(R.id.connect_btn);
 		Button testButton = (Button) findViewById(R.id.test);
 		Button pickButton = (Button) findViewById(R.id.pick_btn);
 		Button trackButton = (Button) findViewById(R.id.track_btn);
-		
+
 		imageView = (ImageView) findViewById(R.id.image_view);
-		
+
 		single.setOnClickListener(new OnClickListener() {
-			
+
 			@Override
 			public void onClick(View v) {
-				Intent intent = new Intent(getApplicationContext(), Framework3DMatrixActivity.class);
-				intent.putExtra("mode", new IDisplayConnection.ConnectionMode(ConnectionType.Single.ordinal()));
+				Intent intent = new Intent(getApplicationContext(),
+						Framework3DMatrixActivity.class);
+				intent.putExtra("mode", new IDisplayConnection.ConnectionMode(
+						ConnectionType.Single.ordinal()));
 				startActivity(intent);
 			}
 		});
-		
+
 		duel.setOnClickListener(new OnClickListener() {
-			
+
 			@Override
 			public void onClick(View v) {
-				Intent intent = new Intent(getApplicationContext(), Framework3DMatrixActivity.class);
-				intent.putExtra("mode", new IDisplayConnection.ConnectionMode(ConnectionType.Duel.ordinal()));
+				Intent intent = new Intent(getApplicationContext(),
+						Framework3DMatrixActivity.class);
+				intent.putExtra("mode", new IDisplayConnection.ConnectionMode(
+						ConnectionType.Duel.ordinal()));
 				startActivity(intent);
 			}
 		});
-		
+
+		side.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				Intent intent = new Intent(getApplicationContext(),
+						Framework3DMatrixActivity.class);
+				intent.putExtra("mode", new IDisplayConnection.ConnectionMode(
+						ConnectionType.SideBySide.ordinal()));
+				startActivity(intent);
+			}
+		});
+
 		cardboardButton.setOnClickListener(new OnClickListener() {
-			
+
 			@Override
 			public void onClick(View v) {
-				Intent intent = new Intent(getApplicationContext(), MatrixActivity.class);
+				Intent intent = new Intent(getApplicationContext(),
+						MatrixActivity.class);
 				startActivity(intent);
 			}
 		});
-		
+
 		connetButton.setOnClickListener(new OnClickListener() {
-			
+
 			@Override
 			public void onClick(View arg0) {
 				try {
@@ -102,77 +119,84 @@ public class MainActivity extends Activity {
 				}
 			}
 		});
-		
+
 		testButton.setOnClickListener(new OnClickListener() {
-			
+
 			@Override
 			public void onClick(View arg0) {
-				Intent intent = new Intent(getApplicationContext(), TestActivity.class);
+				Intent intent = new Intent(getApplicationContext(),
+						TestActivity.class);
 				startActivity(intent);
 			}
 		});
-		
+
 		pickButton.setOnClickListener(new OnClickListener() {
-			
+
 			@Override
 			public void onClick(View arg0) {
-				Intent intent = new Intent(getApplicationContext(), ColorBlobDetectionActivity.class);
+				Intent intent = new Intent(getApplicationContext(),
+						ColorBlobDetectionActivity.class);
 				startActivity(intent);
 			}
 		});
-		
+
 		trackButton.setOnClickListener(new OnClickListener() {
-			
+
 			@Override
 			public void onClick(View arg0) {
-				Intent intent = new Intent(getApplicationContext(), ColorTrackActivity.class);
+				Intent intent = new Intent(getApplicationContext(),
+						ColorTrackActivity.class);
 				startActivity(intent);
 			}
 		});
-		
+
 		mQueue = Volley.newRequestQueue(getApplicationContext());
 	}
-	
+
 	public void testVolley() throws JSONException {
-		
+
 		Folder folder = new Folder();
 		folder.name = "ff1";
 		folder.location = "ll1";
-		
-		String url = "http://192.168.1.102:50305/api/test";
-        Log.d(TAG, "req : " + url);
 
-        ErrorListener errorListener = new ErrorListener() {
+		String url = "http://192.168.1.102:50305/api/test";
+		Log.d(TAG, "req : " + url);
+
+		ErrorListener errorListener = new ErrorListener() {
 
 			@Override
 			public void onErrorResponse(VolleyError error) {
-                Log.d(TAG, "onError : " + error.toString());
+				Log.d(TAG, "onError : " + error.toString());
 			}
 		};
-		
+
 		Listener<JSONObject> listener = new Listener<JSONObject>() {
 
 			@Override
 			public void onResponse(JSONObject res) {
 				Folder folder = gson.fromJson(res.toString(), Folder.class);
-				
-                Log.d(TAG, "onResponse : " + folder.res);
+
+				Log.d(TAG, "onResponse : " + folder.res);
 			}
 		};
-		
+
 		Listener<Bitmap> imgListener = new Listener<Bitmap>() {
 
 			@Override
 			public void onResponse(Bitmap bitmap) {
-                Log.d(TAG, "onResponse : " + bitmap.getWidth() + "x" + bitmap.getHeight());
-                imageView.setImageBitmap(bitmap);
+				Log.d(TAG,
+						"onResponse : " + bitmap.getWidth() + "x"
+								+ bitmap.getHeight());
+				imageView.setImageBitmap(bitmap);
 			}
 		};
 
-		//mQueue.add(new JsonObjectRequest(Method.POST, url, new JSONObject(gson.toJson(folder)), listener, errorListener));
-		
-		mQueue.add(new ImageRequest(url, imgListener, 2000, 2000, Config.ARGB_8888, errorListener));
-		
+		// mQueue.add(new JsonObjectRequest(Method.POST, url, new
+		// JSONObject(gson.toJson(folder)), listener, errorListener));
+
+		mQueue.add(new ImageRequest(url, imgListener, 2000, 2000,
+				Config.ARGB_8888, errorListener));
+
 		mQueue.start();
 	}
 }
