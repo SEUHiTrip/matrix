@@ -74,7 +74,7 @@ public class CopyOfColorBlobDetectionActivity extends Activity implements
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-		setContentView(R.layout.color_blob_detection_surface_view);
+		setContentView(R.layout.color_track_view);
 
 		mOpenCvCameraView = (CameraView) findViewById(R.id.color_blob_detection_activity_surface_view);
 		mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);

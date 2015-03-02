@@ -86,6 +86,6 @@ public class CameraView extends JavaCameraView implements PictureCallback {
         } catch (java.io.IOException e) {
             Log.e("PictureDemo", "Exception in photoCallback", e);
         }
-
     }
+    
 }

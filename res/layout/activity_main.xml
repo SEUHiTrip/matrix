@@ -76,4 +76,12 @@
         android:layout_centerHorizontal="true"
         android:text="Side by side" />
 
+    <Button
+        android:id="@+id/ar_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/track_btn"
+        android:text="AR" />
+
 </RelativeLayout>

@@ -5,6 +5,8 @@ import org.json.JSONObject;
 import org.opencv.samples.colorblobdetect.ColorBlobDetectionActivity;
 import org.opencv.samples.colorblobdetect.ColorTrackActivity;
 
+import seu.lab.matrix.ar.ARActivity;
+
 import com.android.volley.RequestQueue;
 import com.android.volley.Response.ErrorListener;
 import com.android.volley.Response.Listener;
@@ -58,6 +60,7 @@ public class MainActivity extends Activity {
 		Button testButton = (Button) findViewById(R.id.test);
 		Button pickButton = (Button) findViewById(R.id.pick_btn);
 		Button trackButton = (Button) findViewById(R.id.track_btn);
+		Button arButton = (Button) findViewById(R.id.ar_btn);
 
 		imageView = (ImageView) findViewById(R.id.image_view);
 
@@ -150,6 +153,16 @@ public class MainActivity extends Activity {
 			}
 		});
 
+		arButton.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+				Intent intent = new Intent(getApplicationContext(),
+						ARActivity.class);
+				startActivity(intent);
+			}
+		});
+		
 		mQueue = Volley.newRequestQueue(getApplicationContext());
 	}
 
