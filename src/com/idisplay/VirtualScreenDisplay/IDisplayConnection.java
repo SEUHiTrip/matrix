@@ -303,10 +303,9 @@ public class IDisplayConnection implements UnexpectedErrorListner,
 		listScreenHandler = new ListScreenHandler();
 	}
 
-	public static void connectToServer(ServerItem serverItem) {
-
+	public static void connectToServer(ServerItem serverItem, ConnectionMode mode) {
 		Logger.d("in static connectToServer: " + serverItem);
-
+		currentMode = mode;
 		Message message = new Message();
 		message.what = 13;
 		message.obj = serverItem;
@@ -314,7 +313,7 @@ public class IDisplayConnection implements UnexpectedErrorListner,
 	}
 
 	private void connectToServer(String str, String str2, long j) {
-
+		
 		VP8Decoder.getInstance().unInitialize();
 		ccMngr.setUnexpectedErrorListner(new ErrorAndDataListener());
 		ccMngr.setDataChannelConnectionListener(new ErrorAndDataListener());

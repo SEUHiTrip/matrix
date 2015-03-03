@@ -112,7 +112,7 @@ public class Screen3DMatrixActivity extends AbstractScreenMatrixActivity
 		super.onStart();
 		Logger.d("usbServerItem : " + usbServerItem);
 
-		iDisplayConnection.connectToServer(usbServerItem);
+		iDisplayConnection.connectToServer(usbServerItem, currentMode);
 	}
 	
 	@Override
