@@ -38,7 +38,9 @@ import com.threed.jpct.Texture;
 import com.threed.jpct.TextureInfo;
 import com.threed.jpct.TextureManager;
 import com.threed.jpct.World;
+import com.threed.jpct.util.BitmapHelper;
 import com.threed.jpct.util.MemoryHelper;
+import com.threed.jpct.util.SkyBox;
 
 public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 		implements CardboardView.StereoRenderer, IDisplayConnectionCallback {
@@ -51,15 +53,21 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 	private ConnectionMode currentMode;
 	
 	private FrameBuffer fb = null;
+	private SkyBox sky;
 	private World world = null;
 	private Light sun = null;
+	private Light spot = null;
 	private Object3D[] screens = null;
 	private Object3D[] islands = null;
+	private Object3D treasure = null;
 	private GLSLShader[] screenShaders = null;
 
 	private RGBColor back = new RGBColor(50, 50, 100);
 
 	private SimpleVector forward = new SimpleVector(-1, 0, 0);
+
+	private int[] buffer;
+	private boolean canCamRotate = true;
 
 
 	private int mWidth = 1024;
@@ -169,8 +177,6 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 		}
 
 	};
-	private int[] buffer;
-	private boolean canCamRotate = true;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -291,12 +297,17 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 
 		if (master == null) {
 
+			sky = new SkyBox("dummy", "dummy", "dummy", "dummy", "dummy", "dummy", 10f);
+			
 			world = new World();
-			world.setAmbientLight(50, 50, 50);
+			world.setAmbientLight(120, 120, 120);
 
 			sun = new Light(world);
 			sun.setIntensity(250, 250, 250);
 
+			spot = new Light(world);
+			spot.setIntensity(150, 150, 150);
+			
 			screens = new Object3D[3];
 			islands = new Object3D[4];
 			
@@ -340,11 +351,17 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 			islands[1].rotateZ(3.14f/4);
 			world.addObjects(islands[1]);
 			
-			islands[2] = Object3D.mergeAll(Loader.load3DS(getResources().openRawResource(R.raw.island_ship), 0.25f));
+			islands[2] = Object3D.mergeAll(Loader.load3DS(getResources().openRawResource(R.raw.island_ship), 0.2f));
 			islands[2].translate(-10, 0, 10);
 			islands[2].rotateY(3.14f/2);
 			islands[2].rotateZ(3.14f/4);
 			world.addObjects(islands[2]);
+			
+			treasure = Object3D.mergeAll(Loader.load3DS(getResources().openRawResource(R.raw.treasure), 0.5f));
+			treasure.translate(5, 1, 0);
+			treasure.rotateY(3.14f/2);
+			treasure.rotateZ(3.14f/2);
+			world.addObjects(treasure);
 			
 			if (currentMode.type == IDisplayConnection.ConnectionType.Single) {
 				screens[1].setVisibility(false);
@@ -357,9 +374,11 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 			Camera cam = world.getCamera();
 
 			SimpleVector sv = new SimpleVector(0, 0, 0);
-			sv.y -= 100;
-			sv.z -= 100;
+			sv.y -= 50;
+//			sv.z -= 50;
 			sun.setPosition(sv);
+			
+			spot.setPosition(new SimpleVector());
 			MemoryHelper.compact();
 		}
 
@@ -384,6 +403,13 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 	@Override
 	public void onSurfaceCreated(EGLConfig config) {
 		Resources res = getResources();
+		
+		Texture texture = new Texture(BitmapHelper.rescale(
+				BitmapHelper.convert(getResources().getDrawable(
+						R.drawable.icon)), 64, 64));
+		TextureManager.getInstance().addTexture("dummy", texture);
+
+		
 //		TextureManager tm = TextureManager.getInstance();
 
 		// face = new Texture(res.openRawResource(R.raw.face));
