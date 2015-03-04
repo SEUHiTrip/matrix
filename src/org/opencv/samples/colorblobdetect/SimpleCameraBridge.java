@@ -38,7 +38,7 @@ public class SimpleCameraBridge extends CameraView{
 		private Mat mRgba;
 		private Size SPECTRUM_SIZE;
 		private Scalar CONTOUR_COLOR;
-		public List<Point> points = new LinkedList<>();
+		public List<Point> points = new LinkedList<Point>();
 		
 		public void onCameraViewStarted(int width, int height) {
 			mRgba = new Mat(height, width, CvType.CV_8UC4);
