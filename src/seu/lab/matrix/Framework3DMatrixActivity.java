@@ -1,7 +1,6 @@
 package seu.lab.matrix;
 
 import java.nio.ByteBuffer;
-
 import javax.microedition.khronos.egl.EGLConfig;
 import android.R.integer;
 import android.app.Activity;
@@ -50,17 +49,18 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 	private ServerItem usbServerItem;
 	private IDisplayConnection iDisplayConnection;
 	private ConnectionMode currentMode;
+	
 	private FrameBuffer fb = null;
 	private World world = null;
 	private Light sun = null;
-	private Object3D screen1 = null;
-	private Object3D screen2 = null;
+	private Object3D[] screens = null;
+	private Object3D[] islands = null;
+	private GLSLShader[] screenShaders = null;
+
 	private RGBColor back = new RGBColor(50, 50, 100);
 
 	private SimpleVector forward = new SimpleVector(-1, 0, 0);
 
-	private GLSLShader screen1Shader = null;
-	private GLSLShader screen2Shader = null;
 
 	private int mWidth = 1024;
 	private int mHeight = 1024;
@@ -219,15 +219,17 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 	@Override
 	public void onDrawEye(Eye eye) {
 
+		screens[2].setVisibility(false);
+		
 		if (currentMode.type == IDisplayConnection.ConnectionType.Single) {
 
 		} else if (currentMode.type == IDisplayConnection.ConnectionType.Duel) {
 			if (eye.getType() == Eye.Type.LEFT) {
-				screen1.setVisibility(true);
-				screen2.setVisibility(false);
+				screens[0].setVisibility(true);
+				screens[1].setVisibility(false);
 			} else {
-				screen1.setVisibility(false);
-				screen2.setVisibility(true);
+				screens[0].setVisibility(false);
+				screens[1].setVisibility(true);
 			}
 		} else {
 			
@@ -235,14 +237,18 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 
 		fillTexturesWithEye(buffer, eye);
 
-		screen1Shader.setUniform("videoFrame", 4);
-		screen1Shader.setUniform("videoFrame2", 5);
-		screen1Shader.setUniform("videoFrame3", 6);
+		screenShaders[0].setUniform("videoFrame", 4);
+		screenShaders[0].setUniform("videoFrame2", 5);
+		screenShaders[0].setUniform("videoFrame3", 6);
 
-		screen2Shader.setUniform("videoFrame", 7);
-		screen2Shader.setUniform("videoFrame2", 8);
-		screen2Shader.setUniform("videoFrame3", 9);
+		screenShaders[1].setUniform("videoFrame", 7);
+		screenShaders[1].setUniform("videoFrame2", 8);
+		screenShaders[1].setUniform("videoFrame3", 9);
 
+		screenShaders[2].setUniform("videoFrame", 10);
+		screenShaders[2].setUniform("videoFrame2", 11);
+		screenShaders[2].setUniform("videoFrame3", 12);
+		
 		fb.clear(back);
 		world.renderScene(fb);
 		world.draw(fb);
@@ -286,35 +292,66 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 		if (master == null) {
 
 			world = new World();
-			world.setAmbientLight(20, 20, 20);
+			world.setAmbientLight(50, 50, 50);
 
 			sun = new Light(world);
 			sun.setIntensity(250, 250, 250);
 
-			screen1 = Primitives.getPlane(1, 10);
-			screen1.rotateY(4.71f);
-			screen1.translate(-10, 5, 5);
-			screen1.setShader(screen1Shader);
-			screen1.calcTextureWrapSpherical();
-			screen1.build();
-			screen1.strip();
-			world.addObject(screen1);
+			screens = new Object3D[3];
+			islands = new Object3D[4];
+			
+			screens[0] = Primitives.getPlane(1, 10);
+			screens[0].rotateY(4.71f);
+			screens[0].translate(10, 5, 5);
+			screens[0].setShader(screenShaders[0]);
+			screens[0].calcTextureWrapSpherical();
+			screens[0].build();
+			screens[0].strip();
+			world.addObject(screens[0]);
 
-			screen2 = Primitives.getPlane(1, 10);
-			screen2.rotateY(4.71f);
-			screen2.translate(-10, 5, 5);
-			screen2.setShader(screen2Shader);
-			screen2.calcTextureWrapSpherical();
-			screen2.build();
-			screen2.strip();
-			world.addObject(screen2);
-
+			screens[1] = Primitives.getPlane(1, 10);
+			screens[1].rotateY(4.71f);
+			screens[1].translate(10, 5, 5);
+			screens[1].setShader(screenShaders[1]);
+			screens[1].calcTextureWrapSpherical();
+			screens[1].build();
+			screens[1].strip();
+			world.addObject(screens[1]);
+			
+			screens[2] = Primitives.getPlane(1, 10);
+			screens[2].rotateY(4.71f);
+			screens[2].translate(10, 5, 5);
+			screens[2].setShader(screenShaders[2]);
+			screens[2].calcTextureWrapSpherical();
+			screens[2].build();
+			screens[2].strip();
+			world.addObject(screens[2]);
+			screens[2].setVisibility(false);
+			
+			islands[0] = Object3D.mergeAll(Loader.load3DS(getResources().openRawResource(R.raw.island_green), 1f));
+			islands[0].translate(-10, 0, -10);
+			islands[0].rotateY(3.14f/2);
+			islands[0].rotateZ(3.14f/4);
+			world.addObjects(islands[0]);
+			
+			islands[1] = Object3D.mergeAll(Loader.load3DS(getResources().openRawResource(R.raw.island_volcano), 1f));
+			islands[1].translate(-10, 0, 0);
+			islands[1].rotateY(3.14f/2);
+			islands[1].rotateZ(3.14f/4);
+			world.addObjects(islands[1]);
+			
+			islands[2] = Object3D.mergeAll(Loader.load3DS(getResources().openRawResource(R.raw.island_ship), 0.25f));
+			islands[2].translate(-10, 0, 10);
+			islands[2].rotateY(3.14f/2);
+			islands[2].rotateZ(3.14f/4);
+			world.addObjects(islands[2]);
+			
 			if (currentMode.type == IDisplayConnection.ConnectionType.Single) {
-				screen2.setVisibility(false);
+				screens[1].setVisibility(false);
 			} else if (currentMode.type == IDisplayConnection.ConnectionType.Duel) {
 
 			} else {
-				screen2.translate(0,0,-12);
+				screens[1].translate(0,0,-12);
 			}
 
 			Camera cam = world.getCamera();
@@ -329,7 +366,7 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 		if (buffer == null) {
 			// GLES20.glDeleteTextures(buffer.length, buffer, 0);
 
-			int numOfTextures = 3 + 4 + 3;
+			int numOfTextures = 3 + 4 + 3 + 3;
 			buffer = new int[numOfTextures];
 			GLES20.glGenTextures(numOfTextures, buffer, 0);
 			for (int i = 0; i < numOfTextures; i++) {
@@ -361,15 +398,20 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 		// Log.d(TAG,
 		// "texid "+tm.getTextureID("videoFrame")+" "+tm.getTextureID("videoFrame2")+" "+tm.getTextureID("videoFrame3"));
 
-		screen1Shader = new GLSLShader(Loader.loadTextFile(res
+		screenShaders = new GLSLShader[3];
+		
+		screenShaders[0] = new GLSLShader(Loader.loadTextFile(res
 				.openRawResource(R.raw.vertexshader_offset)),
 				Loader.loadTextFile(res
 						.openRawResource(R.raw.fragmentshader_offset)));
-		screen2Shader = new GLSLShader(Loader.loadTextFile(res
+		screenShaders[1] = new GLSLShader(Loader.loadTextFile(res
 				.openRawResource(R.raw.vertexshader_offset)),
 				Loader.loadTextFile(res
 						.openRawResource(R.raw.fragmentshader_offset)));
-
+		screenShaders[2] = new GLSLShader(Loader.loadTextFile(res
+				.openRawResource(R.raw.vertexshader_offset)),
+				Loader.loadTextFile(res
+						.openRawResource(R.raw.fragmentshader_offset)));
 	}
 
 	@Override
@@ -476,29 +518,29 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 		canCamRotate = canCamRotate ? false : true;
 
 		if (!canCamRotate) {
-			rotationMatrix1 = new Matrix(screen1.getRotationMatrix());
-			translatMatrix1 = new Matrix(screen1.getTranslationMatrix());
+			rotationMatrix1 = new Matrix(screens[0].getRotationMatrix());
+			translatMatrix1 = new Matrix(screens[0].getTranslationMatrix());
 
-			screen1.clearRotation();
-			screen1.clearTranslation();
+			screens[0].clearRotation();
+			screens[0].clearTranslation();
 
-			screen1.rotateY(4.71f);
-			screen1.translate(new SimpleVector(-8, 0, 0));
+			screens[0].rotateY(4.71f);
+			screens[0].translate(new SimpleVector(-8, 0, 0));
 			
-			rotationMatrix2 = new Matrix(screen2.getRotationMatrix());
-			translatMatrix2 = new Matrix(screen2.getTranslationMatrix());
+			rotationMatrix2 = new Matrix(screens[1].getRotationMatrix());
+			translatMatrix2 = new Matrix(screens[1].getTranslationMatrix());
 
-			screen2.clearRotation();
-			screen2.clearTranslation();
+			screens[1].clearRotation();
+			screens[1].clearTranslation();
 
-			screen2.rotateY(4.71f);
-			screen2.translate(new SimpleVector(-8, 0, 0));
+			screens[1].rotateY(4.71f);
+			screens[1].translate(new SimpleVector(-8, 0, 0));
 		} else {
-			screen1.setTranslationMatrix(translatMatrix1);
-			screen1.setRotationMatrix(rotationMatrix1);
+			screens[0].setTranslationMatrix(translatMatrix1);
+			screens[0].setRotationMatrix(rotationMatrix1);
 			
-			screen2.setTranslationMatrix(translatMatrix2);
-			screen2.setRotationMatrix(rotationMatrix2);
+			screens[1].setTranslationMatrix(translatMatrix2);
+			screens[1].setRotationMatrix(rotationMatrix2);
 		}
 
 		return false;
