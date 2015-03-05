@@ -256,15 +256,15 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 		screenShaders[2].setUniform("videoFrame3", 12);
 		
 		fb.clear(back);
+
 		world.renderScene(fb);
+		sky.render(world, fb);
 		world.draw(fb);
 		fb.display();
 	}
 
 	@Override
 	public void onFinishFrame(Viewport viewport) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
@@ -297,14 +297,18 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 
 		if (master == null) {
 
-			sky = new SkyBox("dummy", "dummy", "dummy", "dummy", "dummy", "dummy", 10f);
+//			com.threed.jpct.util.SkyBox.SkyBox(String left, String front, String right, String back, String up, String 
+//					 down, float size)
+			
+			sky = new SkyBox("star_left", "star_forward", "star_left", "star_right", "star_back", "star_bottom", 10000f);
+			sky.setCenter(new SimpleVector());
 			
 			world = new World();
 			world.setAmbientLight(120, 120, 120);
 
 			sun = new Light(world);
 			sun.setIntensity(250, 250, 250);
-
+			
 			spot = new Light(world);
 			spot.setIntensity(150, 150, 150);
 			
@@ -404,11 +408,44 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 	public void onSurfaceCreated(EGLConfig config) {
 		Resources res = getResources();
 		
-		Texture texture = new Texture(BitmapHelper.rescale(
-				BitmapHelper.convert(getResources().getDrawable(
-						R.drawable.icon)), 64, 64));
-		TextureManager.getInstance().addTexture("dummy", texture);
+		TextureManager tm = TextureManager.getInstance();
 
+		if(!tm.containsTexture("dummy")){
+			Texture texture = new Texture(BitmapHelper.rescale(
+					BitmapHelper.convert(getResources().getDrawable(
+							R.drawable.icon)), 512, 512));
+			tm.addTexture("dummy", texture);
+			
+			Texture star_back = new Texture(BitmapHelper.rescale(
+					BitmapHelper.convert(getResources().getDrawable(
+							R.drawable.star_back)), 512, 512));
+			tm.addTexture("star_back", star_back);
+			
+			Texture star_bottom = new Texture(BitmapHelper.rescale(
+					BitmapHelper.convert(getResources().getDrawable(
+							R.drawable.star_bottom)), 512, 512));
+			tm.addTexture("star_bottom", star_bottom);
+			
+			Texture star_forward = new Texture(BitmapHelper.rescale(
+					BitmapHelper.convert(getResources().getDrawable(
+							R.drawable.star_forward)), 512, 512));
+			tm.addTexture("star_forward", star_forward);
+			
+			Texture star_left = new Texture(BitmapHelper.rescale(
+					BitmapHelper.convert(getResources().getDrawable(
+							R.drawable.star_left)), 512, 512));
+			tm.addTexture("star_left", star_left);
+			
+			Texture star_right = new Texture(BitmapHelper.rescale(
+					BitmapHelper.convert(getResources().getDrawable(
+							R.drawable.star_right)), 512, 512));
+			tm.addTexture("star_right", star_right);
+			
+			Texture star_top = new Texture(BitmapHelper.rescale(
+					BitmapHelper.convert(getResources().getDrawable(
+							R.drawable.star_top)), 512, 512));
+			tm.addTexture("star_top", star_top);
+		}
 		
 //		TextureManager tm = TextureManager.getInstance();
 
