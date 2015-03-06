@@ -45,37 +45,37 @@ import com.threed.jpct.util.SkyBox;
 public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 		implements CardboardView.StereoRenderer, IDisplayConnectionCallback {
 
-	private static Activity master = null;
-	private static final String TAG = "Framework3DMatrixActivity";
+	protected static Activity master = null;
+	protected static final String TAG = "Framework3DMatrixActivity";
 
-	private ServerItem usbServerItem;
-	private IDisplayConnection iDisplayConnection;
-	private ConnectionMode currentMode;
+	protected ServerItem usbServerItem;
+	protected IDisplayConnection iDisplayConnection;
+	protected ConnectionMode currentMode;
 	
-	private FrameBuffer fb = null;
-	private SkyBox sky;
-	private World world = null;
-	private Light sun = null;
-	private Light spot = null;
-	private Object3D[] screens = null;
-	private Object3D[] islands = null;
-	private Object3D treasure = null;
-	private GLSLShader[] screenShaders = null;
+	protected FrameBuffer fb = null;
+	protected SkyBox sky;
+	protected World world = null;
+	protected Light sun = null;
+	protected Light spot = null;
+	protected Object3D[] screens = null;
+	protected Object3D[] islands = null;
+	protected Object3D treasure = null;
+	protected GLSLShader[] screenShaders = null;
 
-	private RGBColor back = new RGBColor(50, 50, 100);
+	protected RGBColor back = new RGBColor(50, 50, 100);
 
-	private SimpleVector forward = new SimpleVector(-1, 0, 0);
+	protected SimpleVector forward = new SimpleVector(-1, 0, 0);
 
-	private int[] buffer;
-	private boolean canCamRotate = true;
+	protected int[] buffer;
+	protected boolean canCamRotate = true;
 
 
-	private int mWidth = 1024;
-	private int mHeight = 1024;
-	private int mStrideX = 1024;
-	private int mStrideY = 1024;
+	protected int mWidth = 1024;
+	protected int mHeight = 1024;
+	protected int mStrideX = 1024;
+	protected int mStrideY = 1024;
 
-	private float[] mAngles = new float[3];
+	protected float[] mAngles = new float[3];
 
 	ArrayImageContainer mArrayImageContainer;
 
@@ -128,8 +128,8 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 		int cnt;
 		long current;
 
-		private float mCursorMulX;
-		private float mCursorMulY;
+		protected float mCursorMulX;
+		protected float mCursorMulY;
 
 		float mCursorX = -2.0f;
 		float mCursorY = -2.0f;

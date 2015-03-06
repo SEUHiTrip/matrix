@@ -5,8 +5,10 @@ import android.content.res.AssetManager;
 import android.opengl.GLES20;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MotionEvent;
 
 import com.google.vrtoolkit.cardboard.CardboardView;
+import com.google.vrtoolkit.cardboard.Eye;
 import com.google.vrtoolkit.cardboard.HeadTransform;
 import com.idisplay.VirtualScreenDisplay.IDisplayConnection;
 import com.idisplay.VirtualScreenDisplay.IDisplayConnection.ConnectionMode;
@@ -28,41 +30,19 @@ public class SceneActivity extends Framework3DMatrixActivity {
     private Object3D object_jpct;
 	
     private static final String TAG = "SceneActivity";
-
-    private ServerItem usbServerItem;
-	private IDisplayConnection iDisplayConnection;
-	private ConnectionMode currentMode;
-	
-    private FrameBuffer fb = null;
-	private World world = null;
-	private GLSLShader[] screenShaders = null;
-	
-	private RGBColor back = new RGBColor(50, 50, 100);
-
-	private SimpleVector forward = new SimpleVector(-1, 0, 0);
-
-	private int[] buffer;
-	private boolean canCamRotate = true;
-
-	private float[] mAngles = new float[3];
-	
-	private int mWidth = 1024;
-	private int mHeight = 1024;
-	private int mStrideX = 1024;
-	private int mStrideY = 1024;
 	
 	@Override
 	public void onSurfaceChanged(int w, int h) {
 		// TODO Auto-generated method stub
-//		if (fb != null) {
-//			fb.dispose();
-//		}
-//		fb = new FrameBuffer(w, h);
-//		world=new World();
-//		AssetManager assetManager=getAssets();//just for jbrush_ae
-//		objects=Scene.loadSerializedLevel("scene.txt",  objects,world, assetManager);//it is used for eclipse load the resource of /assets/
-		//object_jpct=Scene.findObject("treasure", objects);
-		//world.addObject(object_jpct);
+		if (fb != null) {
+			fb.dispose();
+		}
+		fb = new FrameBuffer(w, h);
+		world=new World();
+		AssetManager assetManager=getAssets();//just for jbrush_ae
+		objects=Scene.loadSerializedLevel("scene.txt",  objects,world, assetManager);//it is used for eclipse load the resource of /assets/
+//		object_jpct=Scene.findObject("treasure", objects);
+//		world.addObject(object_jpct);
 		
 		
 		if (buffer == null) {
@@ -95,5 +75,20 @@ public class SceneActivity extends Framework3DMatrixActivity {
 			cam.rotateZ(0 - mAngles[2]);
 			cam.rotateX(mAngles[0]);
 		}
+	}
+	
+	@Override
+	public void onDrawEye(Eye eye) {
+
+		fb.clear(back);
+		world.renderScene(fb);
+		world.draw(fb);
+		fb.display();
+	}
+
+	@Override
+	public boolean onTouchEvent(MotionEvent event) {
+		// TODO Auto-generated method stub
+		return false;
 	}
 }
