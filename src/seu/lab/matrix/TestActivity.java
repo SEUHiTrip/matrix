@@ -16,17 +16,21 @@ import android.R.anim;
 import android.R.integer;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.PixelFormat;
 import android.graphics.Typeface;
 import android.media.AudioManager;
+import android.opengl.GLES20;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
 import android.util.Log;
 import android.view.MotionEvent;
 
+import com.arwave.skywriter.objects.Rectangle;
 import com.google.vrtoolkit.cardboard.CardboardActivity;
 import com.google.vrtoolkit.cardboard.CardboardView;
 import com.google.vrtoolkit.cardboard.Eye;
@@ -188,6 +192,7 @@ public class TestActivity extends CardboardActivity implements
 
 		setContentView(R.layout.common_ui);
 		CardboardView cardboardView = (CardboardView) findViewById(R.id.cardboard_view);
+		cardboardView.getHolder().setFormat(PixelFormat.RGBA_8888);
 		cardboardView.setRenderer(this);
 		setCardboardView(cardboardView);
 
@@ -223,10 +228,8 @@ public class TestActivity extends CardboardActivity implements
 		TextureManager tm = TextureManager.getInstance();
 
 		if (!tm.containsTexture("font")) {
-
-			Texture fontTexture = new Texture(fontBitmap);
+			Texture fontTexture = new Texture(fontBitmap,true);	
 			tm.addTexture("font", fontTexture);
-
 		}
 	}
 
@@ -345,9 +348,6 @@ public class TestActivity extends CardboardActivity implements
 	@Override
 	public void onNewFrame(HeadTransform headTransform) {
 
-		notice.rotateX(0.01f);
-		notice.rotateY(0.01f);
-
 		android.opengl.Matrix.setLookAtM(mCamera, 0, 0.0f, 0.0f, CAMERA_Z,
 				0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
 
@@ -404,7 +404,7 @@ public class TestActivity extends CardboardActivity implements
 			// Create a texture out of the icon...:-)
 			Texture texture = new Texture(BitmapHelper.rescale(
 					BitmapHelper.convert(getResources().getDrawable(
-							R.drawable.icon)), 64, 64));
+							R.drawable.icon)), 64, 64),true);
 			TextureManager.getInstance().addTexture("texture", texture);
 
 			cube = Primitives.getCube(1);
@@ -456,11 +456,10 @@ public class TestActivity extends CardboardActivity implements
 			world.addObject(plane);
 			plane.setVisibility(false);
 			
-			notice = Primitives.getBox(2, 1);
+			notice = new Rectangle(1, 2, 1);
 			notice.rotateY(4.71f);
 			notice.translate(-5, 0, 0);
 			notice.setTexture("font");
-//			notice.setTransparencyMode(Object3D.TRANSPARENCY_MODE_ADD);
 			notice.build();
 			notice.strip();
 			world.addObject(notice);
@@ -485,14 +484,16 @@ public class TestActivity extends CardboardActivity implements
 	}
 
 	public void initFontBitmap(){  
-        String font = "需要渲染的文字测试！";
-        fontBitmap = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888);  
+        String font = "Fonts to be tested!";
+        fontBitmap = Bitmap.createBitmap(256, 128, Bitmap.Config.ARGB_8888);  
+        
         Canvas canvas = new Canvas(fontBitmap);  
+        
         //背景颜色  
-        canvas.drawColor(Color.GRAY);  
+        canvas.drawColor(Color.TRANSPARENT);  
         Paint p = new Paint();  
         //字体设置  
-        String fontType = "宋体";  
+        String fontType = "Calibri";  
         Typeface typeface = Typeface.create(fontType, Typeface.BOLD);  
         //消除锯齿  
         p.setAntiAlias(true);  
@@ -506,6 +507,9 @@ public class TestActivity extends CardboardActivity implements
 	
 	@Override
 	public void onSurfaceCreated(EGLConfig config) {
+		
+		GLES20.glEnable(GLES20.GL_BLEND);
+		GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
 		world = new World();
 	}
 

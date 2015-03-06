@@ -43,6 +43,7 @@ import com.threed.jpct.TextureInfo;
 import com.threed.jpct.TextureManager;
 import com.threed.jpct.World;
 import com.threed.jpct.util.BitmapHelper;
+import com.threed.jpct.util.LensFlare;
 import com.threed.jpct.util.MemoryHelper;
 import com.threed.jpct.util.SkyBox;
 
@@ -424,6 +425,9 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 
 	@Override
 	public void onSurfaceCreated(EGLConfig config) {
+		GLES20.glEnable(GLES20.GL_BLEND);
+		GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+		
 		Resources res = getResources();
 
 		TextureManager tm = TextureManager.getInstance();
@@ -572,7 +576,7 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 		GLES20.glBindTexture(3553, iArr[4 + offset]);
 		GLES20.glTexImage2D(3553, 0, 6409, width, height, 0, 6409, 5121,
 				ByteBuffer.wrap(mArrayImageContainer.getDataY(), start, count));
-
+		
 		width = width >> 1;
 		height = height >> 1;
 		GLES20.glActiveTexture(GLES20.GL_TEXTURE5 + offset);
