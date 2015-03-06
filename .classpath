@@ -7,5 +7,6 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/OpenCV Library - 2.4.10"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/Bones"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
