@@ -464,3 +464,4 @@ public class TestActivity extends CardboardActivity implements
 		super.onCardboardTrigger();
 	}
 }
+

@@ -1,0 +1,4 @@
+fp-treasure.3ds on-treasure tp-null rx-0.0 ry-1.5499996 rz-0.0 tx-6.0 ty-1.0 tz--11.0 oc-0 cx-0 cz-0.0 cc-true sl-false ot--1 bm-null pa-null os-0.5 st-0 sh-1 
+fp-island_green.3ds on-island_green tp-null rx-0.0 ry-0.0 rz-0.0 tx--10.0 ty-10.0 tz--10.0 oc-0 cx-0 cz-0.0 cc-true sl-false ot--1 bm-null pa-null os-1.4 st-0 sh-1 
+fp-island_volcano.3ds on-island_volcano tp-null rx-0.0 ry-0.0 rz-0.0 tx--20.0 ty-10.0 tz-0.0 oc-0 cx-0 cz-0.0 cc-true sl-false ot--1 bm-null pa-null os-1.6 st-0 sh-1 
+fp-island_ship.3ds on-island_ship tp-null rx-0.0 ry-0.0 rz-0.0 tx--10.0 ty-10.0 tz-10.0 oc-0 cx-0 cz-0.0 cc-true sl-false ot--1 bm-null pa-null os-0.30000103 st-0 sh-1 
