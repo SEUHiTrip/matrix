@@ -15,6 +15,11 @@ import seu.lab.dolphin.client.IGestureListener;
 import android.R.anim;
 import android.R.integer;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -174,6 +179,8 @@ public class TestActivity extends CardboardActivity implements
 	};
 	
 	Dolphin dolphin = null;
+	private Object3D notice;
+	private Bitmap fontBitmap;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -211,39 +218,49 @@ public class TestActivity extends CardboardActivity implements
         }
 		
 		mHandler = new Handler(getMainLooper());
+		
+		initFontBitmap();
+		TextureManager tm = TextureManager.getInstance();
+
+		if (!tm.containsTexture("font")) {
+
+			Texture fontTexture = new Texture(fontBitmap);
+			tm.addTexture("font", fontTexture);
+
+		}
 	}
 
 	@Override
 	protected void onStart() {
 		super.onStart();
 		
-		try {
-			dolphin.prepare(getApplicationContext());
-		} catch (DolphinException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//		try {
+//			dolphin.prepare(getApplicationContext());
+//		} catch (DolphinException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 	}
 	
 	@Override
 	protected void onPause() {
-		try {
-			dolphin.pause();
-		} catch (DolphinException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//		try {
+//			dolphin.pause();
+//		} catch (DolphinException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 		super.onPause();
 	}
 	
 	@Override
 	protected void onStop() {
-		try {
-			dolphin.stop();
-		} catch (DolphinException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//		try {
+//			dolphin.stop();
+//		} catch (DolphinException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 		super.onStop();
 	}
 	
@@ -328,6 +345,9 @@ public class TestActivity extends CardboardActivity implements
 	@Override
 	public void onNewFrame(HeadTransform headTransform) {
 
+		notice.rotateX(0.01f);
+		notice.rotateY(0.01f);
+
 		android.opengl.Matrix.setLookAtM(mCamera, 0, 0.0f, 0.0f, CAMERA_Z,
 				0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
 
@@ -376,7 +396,7 @@ public class TestActivity extends CardboardActivity implements
 		if (master == null) {
 
 			world = new World();
-			world.setAmbientLight(20, 20, 20);
+			world.setAmbientLight(120, 120, 120);
 
 			sun = new Light(world);
 			sun.setIntensity(250, 250, 250);
@@ -394,7 +414,8 @@ public class TestActivity extends CardboardActivity implements
 			cube.strip();
 			cube.build();
 			world.addObject(cube);
-
+			cube.setVisibility(false);
+			
 			cube1 = Primitives.getCube(1);
 			cube1.translate(-10, 0, 0);
 			cube1.calcTextureWrapSpherical();
@@ -433,7 +454,17 @@ public class TestActivity extends CardboardActivity implements
 			plane.strip();
 			plane.build();
 			world.addObject(plane);
-
+			plane.setVisibility(false);
+			
+			notice = Primitives.getBox(2, 1);
+			notice.rotateY(4.71f);
+			notice.translate(-5, 0, 0);
+			notice.setTexture("font");
+//			notice.setTransparencyMode(Object3D.TRANSPARENCY_MODE_ADD);
+			notice.build();
+			notice.strip();
+			world.addObject(notice);
+			
 			Camera cam = world.getCamera();
 			cam.lookAt(cube.getTransformedCenter());
 			// cam.moveCamera(Camera.CAMERA_MOVEOUT, 50);
@@ -441,8 +472,8 @@ public class TestActivity extends CardboardActivity implements
 
 			SimpleVector sv = new SimpleVector();
 			sv.set(cube.getTransformedCenter());
-			sv.y -= 100;
-			sv.z -= 100;
+			sv.y -= 50;
+			sv.z -= 50;
 			sun.setPosition(sv);
 			MemoryHelper.compact();
 
@@ -453,6 +484,26 @@ public class TestActivity extends CardboardActivity implements
 		}
 	}
 
+	public void initFontBitmap(){  
+        String font = "需要渲染的文字测试！";
+        fontBitmap = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888);  
+        Canvas canvas = new Canvas(fontBitmap);  
+        //背景颜色  
+        canvas.drawColor(Color.GRAY);  
+        Paint p = new Paint();  
+        //字体设置  
+        String fontType = "宋体";  
+        Typeface typeface = Typeface.create(fontType, Typeface.BOLD);  
+        //消除锯齿  
+        p.setAntiAlias(true);  
+        //字体为红色  
+        p.setColor(Color.RED);  
+        p.setTypeface(typeface);  
+        p.setTextSize(28);  
+        //绘制字体  
+        canvas.drawText(font, 0, 100, p);  
+    }
+	
 	@Override
 	public void onSurfaceCreated(EGLConfig config) {
 		world = new World();

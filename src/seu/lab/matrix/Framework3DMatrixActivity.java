@@ -6,6 +6,10 @@ import android.R.integer;
 import android.app.Activity;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.opengl.GLES20;
 import android.os.Bundle;
 import android.util.Log;
@@ -51,7 +55,7 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 	private ServerItem usbServerItem;
 	private IDisplayConnection iDisplayConnection;
 	private ConnectionMode currentMode;
-	
+
 	private FrameBuffer fb = null;
 	private SkyBox sky;
 	private World world = null;
@@ -60,6 +64,7 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 	private Object3D[] screens = null;
 	private Object3D[] islands = null;
 	private Object3D treasure = null;
+	private Object3D notice = null;
 	private GLSLShader[] screenShaders = null;
 
 	private RGBColor back = new RGBColor(50, 50, 100);
@@ -68,7 +73,6 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 
 	private int[] buffer;
 	private boolean canCamRotate = true;
-
 
 	private int mWidth = 1024;
 	private int mHeight = 1024;
@@ -177,6 +181,7 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 		}
 
 	};
+	private Bitmap fontBitmap;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -201,6 +206,8 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 		CardboardView cardboardView = (CardboardView) findViewById(R.id.cardboard_view);
 		cardboardView.setRenderer(this);
 		setCardboardView(cardboardView);
+		
+		initFontBitmap();
 	}
 
 	@Override
@@ -226,7 +233,7 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 	public void onDrawEye(Eye eye) {
 
 		screens[2].setVisibility(false);
-		
+
 		if (currentMode.type == IDisplayConnection.ConnectionType.Single) {
 
 		} else if (currentMode.type == IDisplayConnection.ConnectionType.Duel) {
@@ -238,7 +245,7 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 				screens[1].setVisibility(true);
 			}
 		} else {
-			
+
 		}
 
 		fillTexturesWithEye(buffer, eye);
@@ -254,7 +261,7 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 		screenShaders[2].setUniform("videoFrame", 10);
 		screenShaders[2].setUniform("videoFrame2", 11);
 		screenShaders[2].setUniform("videoFrame3", 12);
-		
+
 		fb.clear(back);
 
 		world.renderScene(fb);
@@ -297,24 +304,22 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 
 		if (master == null) {
 
-//			com.threed.jpct.util.SkyBox.SkyBox(String left, String front, String right, String back, String up, String 
-//					 down, float size)
-			
-			sky = new SkyBox("star_left", "star_forward", "star_left", "star_right", "star_back", "star_bottom", 10000f);
+			sky = new SkyBox("star_left", "star_forward", "star_left",
+					"star_right", "star_back", "star_bottom", 10000f);
 			sky.setCenter(new SimpleVector());
-			
+
 			world = new World();
 			world.setAmbientLight(120, 120, 120);
 
 			sun = new Light(world);
 			sun.setIntensity(250, 250, 250);
-			
+
 			spot = new Light(world);
 			spot.setIntensity(150, 150, 150);
-			
+
 			screens = new Object3D[3];
 			islands = new Object3D[4];
-			
+
 			screens[0] = Primitives.getPlane(1, 10);
 			screens[0].rotateY(4.71f);
 			screens[0].translate(10, 5, 5);
@@ -323,6 +328,15 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 			screens[0].build();
 			screens[0].strip();
 			world.addObject(screens[0]);
+			
+			notice = Primitives.getPlane(1, 2);
+			notice.rotateY(4.71f);
+			notice.translate(-5, 0, 0);
+			notice.setTexture("font");
+			notice.setTransparencyMode(Object3D.TRANSPARENCY_MODE_ADD);
+			notice.build();
+			notice.strip();
+			world.addObject(notice);
 
 			screens[1] = Primitives.getPlane(1, 10);
 			screens[1].rotateY(4.71f);
@@ -332,7 +346,7 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 			screens[1].build();
 			screens[1].strip();
 			world.addObject(screens[1]);
-			
+
 			screens[2] = Primitives.getPlane(1, 10);
 			screens[2].rotateY(4.71f);
 			screens[2].translate(10, 5, 5);
@@ -342,46 +356,50 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 			screens[2].strip();
 			world.addObject(screens[2]);
 			screens[2].setVisibility(false);
-			
-			islands[0] = Object3D.mergeAll(Loader.load3DS(getResources().openRawResource(R.raw.island_green), 1f));
+
+			islands[0] = Object3D.mergeAll(Loader.load3DS(getResources()
+					.openRawResource(R.raw.island_green), 1f));
 			islands[0].translate(-10, 0, -10);
-			islands[0].rotateY(3.14f/2);
-			islands[0].rotateZ(3.14f/4);
+			islands[0].rotateY(3.14f / 2);
+			islands[0].rotateZ(3.14f / 4);
 			world.addObjects(islands[0]);
-			
-			islands[1] = Object3D.mergeAll(Loader.load3DS(getResources().openRawResource(R.raw.island_volcano), 1f));
+
+			islands[1] = Object3D.mergeAll(Loader.load3DS(getResources()
+					.openRawResource(R.raw.island_volcano), 1f));
 			islands[1].translate(-10, 0, 0);
-			islands[1].rotateY(3.14f/2);
-			islands[1].rotateZ(3.14f/4);
+			islands[1].rotateY(3.14f / 2);
+			islands[1].rotateZ(3.14f / 4);
 			world.addObjects(islands[1]);
-			
-			islands[2] = Object3D.mergeAll(Loader.load3DS(getResources().openRawResource(R.raw.island_ship), 0.2f));
+
+			islands[2] = Object3D.mergeAll(Loader.load3DS(getResources()
+					.openRawResource(R.raw.island_ship), 0.2f));
 			islands[2].translate(-10, 0, 10);
-			islands[2].rotateY(3.14f/2);
-			islands[2].rotateZ(3.14f/4);
+			islands[2].rotateY(3.14f / 2);
+			islands[2].rotateZ(3.14f / 4);
 			world.addObjects(islands[2]);
-			
-			treasure = Object3D.mergeAll(Loader.load3DS(getResources().openRawResource(R.raw.treasure), 0.5f));
+
+			treasure = Object3D.mergeAll(Loader.load3DS(getResources()
+					.openRawResource(R.raw.treasure), 0.5f));
 			treasure.translate(5, 1, 0);
-			treasure.rotateY(3.14f/2);
-			treasure.rotateZ(3.14f/2);
+			treasure.rotateY(3.14f / 2);
+			treasure.rotateZ(3.14f / 2);
 			world.addObjects(treasure);
-			
+
 			if (currentMode.type == IDisplayConnection.ConnectionType.Single) {
 				screens[1].setVisibility(false);
 			} else if (currentMode.type == IDisplayConnection.ConnectionType.Duel) {
 
 			} else {
-				screens[1].translate(0,0,-12);
+				screens[1].translate(0, 0, -12);
 			}
 
 			Camera cam = world.getCamera();
 
 			SimpleVector sv = new SimpleVector(0, 0, 0);
 			sv.y -= 50;
-//			sv.z -= 50;
+			// sv.z -= 50;
 			sun.setPosition(sv);
-			
+
 			spot.setPosition(new SimpleVector());
 			MemoryHelper.compact();
 		}
@@ -407,47 +425,50 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 	@Override
 	public void onSurfaceCreated(EGLConfig config) {
 		Resources res = getResources();
-		
+
 		TextureManager tm = TextureManager.getInstance();
 
-		if(!tm.containsTexture("dummy")){
+		if (!tm.containsTexture("dummy")) {
 			Texture texture = new Texture(BitmapHelper.rescale(
 					BitmapHelper.convert(getResources().getDrawable(
 							R.drawable.icon)), 512, 512));
 			tm.addTexture("dummy", texture);
+
+			Texture fontTexture = new Texture(fontBitmap);
+			tm.addTexture("font", fontTexture);
 			
 			Texture star_back = new Texture(BitmapHelper.rescale(
 					BitmapHelper.convert(getResources().getDrawable(
 							R.drawable.star_back)), 512, 512));
 			tm.addTexture("star_back", star_back);
-			
+
 			Texture star_bottom = new Texture(BitmapHelper.rescale(
 					BitmapHelper.convert(getResources().getDrawable(
 							R.drawable.star_bottom)), 512, 512));
 			tm.addTexture("star_bottom", star_bottom);
-			
+
 			Texture star_forward = new Texture(BitmapHelper.rescale(
 					BitmapHelper.convert(getResources().getDrawable(
 							R.drawable.star_forward)), 512, 512));
 			tm.addTexture("star_forward", star_forward);
-			
+
 			Texture star_left = new Texture(BitmapHelper.rescale(
 					BitmapHelper.convert(getResources().getDrawable(
 							R.drawable.star_left)), 512, 512));
 			tm.addTexture("star_left", star_left);
-			
+
 			Texture star_right = new Texture(BitmapHelper.rescale(
 					BitmapHelper.convert(getResources().getDrawable(
 							R.drawable.star_right)), 512, 512));
 			tm.addTexture("star_right", star_right);
-			
+
 			Texture star_top = new Texture(BitmapHelper.rescale(
 					BitmapHelper.convert(getResources().getDrawable(
 							R.drawable.star_top)), 512, 512));
 			tm.addTexture("star_top", star_top);
 		}
-		
-//		TextureManager tm = TextureManager.getInstance();
+
+		// TextureManager tm = TextureManager.getInstance();
 
 		// face = new Texture(res.openRawResource(R.raw.face));
 		// video1 = new Texture(1024, 1024, new RGBColor(100, 0, 0));
@@ -462,7 +483,7 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 		// "texid "+tm.getTextureID("videoFrame")+" "+tm.getTextureID("videoFrame2")+" "+tm.getTextureID("videoFrame3"));
 
 		screenShaders = new GLSLShader[3];
-		
+
 		screenShaders[0] = new GLSLShader(Loader.loadTextFile(res
 				.openRawResource(R.raw.vertexshader_offset)),
 				Loader.loadTextFile(res
@@ -544,35 +565,55 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 		}
 	}
 
-	public void simpleFillTextures(int[] iArr, int offset, int start, int count, int width,
-			int height) {
+	public void simpleFillTextures(int[] iArr, int offset, int start,
+			int count, int width, int height) {
 
-		GLES20.glActiveTexture(GLES20.GL_TEXTURE4+offset);
-		GLES20.glBindTexture(3553, iArr[4+offset]);
+		GLES20.glActiveTexture(GLES20.GL_TEXTURE4 + offset);
+		GLES20.glBindTexture(3553, iArr[4 + offset]);
 		GLES20.glTexImage2D(3553, 0, 6409, width, height, 0, 6409, 5121,
 				ByteBuffer.wrap(mArrayImageContainer.getDataY(), start, count));
 
 		width = width >> 1;
 		height = height >> 1;
-		GLES20.glActiveTexture(GLES20.GL_TEXTURE5+offset);
-		GLES20.glBindTexture(3553, iArr[5+offset]);
+		GLES20.glActiveTexture(GLES20.GL_TEXTURE5 + offset);
+		GLES20.glBindTexture(3553, iArr[5 + offset]);
 		GLES20.glTexImage2D(3553, 0, 6409, width, height, 0, 6409, 5121,
 				ByteBuffer.wrap(mArrayImageContainer.getDataU(), start >> 2,
 						count >> 2));
 
-		GLES20.glActiveTexture(GLES20.GL_TEXTURE6+offset);
-		GLES20.glBindTexture(3553, iArr[6+offset]);
+		GLES20.glActiveTexture(GLES20.GL_TEXTURE6 + offset);
+		GLES20.glBindTexture(3553, iArr[6 + offset]);
 		GLES20.glTexImage2D(3553, 0, 6409, width, height, 0, 6409, 5121,
 				ByteBuffer.wrap(mArrayImageContainer.getDataV(), start >> 2,
 						count >> 2));
 	}
+	
+	public void initFontBitmap(){  
+        String font = "需要渲染的文字测试！";
+        fontBitmap = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888);  
+        Canvas canvas = new Canvas(fontBitmap);  
+        //背景颜色  
+        canvas.drawColor(Color.TRANSPARENT);  
+        Paint p = new Paint();  
+        //字体设置  
+        String fontType = "宋体";  
+        Typeface typeface = Typeface.create(fontType, Typeface.BOLD);  
+        //消除锯齿  
+        p.setAntiAlias(true);  
+        //字体为红色  
+        p.setColor(Color.RED);  
+        p.setTypeface(typeface);  
+        p.setTextSize(28);  
+        //绘制字体  
+        canvas.drawText(font, 0, 100, p);  
+    }
 
 	Matrix rotationMatrix1 = new Matrix();
 	Matrix translatMatrix1 = new Matrix();
 
 	Matrix rotationMatrix2 = new Matrix();
 	Matrix translatMatrix2 = new Matrix();
-	
+
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 		if (!(event.getAction() == MotionEvent.ACTION_UP))
@@ -589,7 +630,7 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 
 			screens[0].rotateY(4.71f);
 			screens[0].translate(new SimpleVector(-8, 0, 0));
-			
+
 			rotationMatrix2 = new Matrix(screens[1].getRotationMatrix());
 			translatMatrix2 = new Matrix(screens[1].getTranslationMatrix());
 
@@ -601,7 +642,7 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 		} else {
 			screens[0].setTranslationMatrix(translatMatrix1);
 			screens[0].setRotationMatrix(rotationMatrix1);
-			
+
 			screens[1].setTranslationMatrix(translatMatrix2);
 			screens[1].setRotationMatrix(rotationMatrix2);
 		}
