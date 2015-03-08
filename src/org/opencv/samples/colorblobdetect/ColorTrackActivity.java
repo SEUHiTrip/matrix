@@ -32,6 +32,7 @@ import com.google.vrtoolkit.cardboard.Viewport;
 import com.threed.jpct.Camera;
 import com.threed.jpct.FrameBuffer;
 import com.threed.jpct.Light;
+import com.threed.jpct.Matrix;
 import com.threed.jpct.Object3D;
 import com.threed.jpct.Primitives;
 import com.threed.jpct.RGBColor;
@@ -74,7 +75,7 @@ public class ColorTrackActivity extends CardboardActivity implements
 	private RGBColor back = new RGBColor(50, 50, 100);
 	private float[] mAngles = new float[3];
 	
-	private SimpleVector origin = new SimpleVector(0,0,-1);
+	private SimpleVector origin = new SimpleVector(0,0,5);
 
 	List<android.hardware.Camera.Size> mResolutionList;
 
@@ -211,17 +212,18 @@ public class ColorTrackActivity extends CardboardActivity implements
 		ball1.clearRotation();
 		
 		ball1.translate(camDir);
-		
+
 		if(points.size() > 0){
 			ball1.setRotationPivot(originInballView);
-			ball1.rotateY((float)(0.5f*points.get(0).x));
-			ball1.rotateX((float)(0.5f*points.get(0).y));
+			ball1.rotateAxis(cam.getUpVector(), (float)(0.5f*points.get(0).x));
+			ball1.rotateAxis(cam.getSideVector(), (float)(-0.5f*points.get(0).y));
 		}
 		
 		ball2.clearRotation();
 		ball2.setRotationPivot(origin);
 		ball2.rotateY(0.5f);
 		ball2.rotateX(0.5f);
+		
 //		if(points.size() > 1){
 //			ball2.setRotationPivot(origin);
 //			ball2.rotateY((float)(0.5f*points.get(1).x));
