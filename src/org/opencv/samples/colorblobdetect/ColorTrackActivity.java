@@ -61,6 +61,8 @@ public class ColorTrackActivity extends CardboardActivity implements
 
 	private static boolean isInit = false;
 	
+	private static float ballDistance = 5f;
+	
 	private FrameBuffer fb = null;
 	private World world = null;
 	private Light sun = null;
@@ -72,7 +74,7 @@ public class ColorTrackActivity extends CardboardActivity implements
 	private RGBColor back = new RGBColor(50, 50, 100);
 	private float[] mAngles = new float[3];
 	
-	private SimpleVector origin = new SimpleVector(0,0,5);
+	private SimpleVector origin = new SimpleVector(0,0,-1);
 
 	List<android.hardware.Camera.Size> mResolutionList;
 
@@ -193,10 +195,25 @@ public class ColorTrackActivity extends CardboardActivity implements
 		cam.rotateZ(0 - mAngles[2]);
 		cam.rotateX(mAngles[0]);
 
+		SimpleVector camDir = new SimpleVector();
+		cam.getDirection(camDir);
+		
+		camDir.x = camDir.x * ballDistance;
+		camDir.y = camDir.y * ballDistance;
+		camDir.z = camDir.z * ballDistance;
+		
+		SimpleVector originInballView = new SimpleVector(camDir);
+		originInballView.x = -originInballView.x;
+		originInballView.y = -originInballView.y;
+		originInballView.z = -originInballView.z;
+		
+		ball1.clearTranslation();
 		ball1.clearRotation();
-
+		
+		ball1.translate(camDir);
+		
 		if(points.size() > 0){
-			ball1.setRotationPivot(origin);
+			ball1.setRotationPivot(originInballView);
 			ball1.rotateY((float)(0.5f*points.get(0).x));
 			ball1.rotateX((float)(0.5f*points.get(0).y));
 		}
@@ -263,7 +280,7 @@ public class ColorTrackActivity extends CardboardActivity implements
 		world.addObject(plane);
 
 		Camera cam = world.getCamera();
-		cam.lookAt(cube.getTransformedCenter());
+		cam.lookAt(origin);
 		
 		SimpleVector sv = new SimpleVector();
 		sv.set(cube.getTransformedCenter());
