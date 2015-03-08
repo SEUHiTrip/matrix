@@ -6,6 +6,7 @@ import android.R.integer;
 import android.app.Activity;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.opengl.GLES20;
 import android.os.Bundle;
 import android.util.Log;
@@ -63,6 +64,7 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 	protected GLSLShader[] screenShaders = null;
 
 	protected RGBColor back = new RGBColor(50, 50, 100);
+	protected RGBColor wire = new RGBColor(100, 100, 100);
 
 	protected SimpleVector forward = new SimpleVector(-1, 0, 0);
 
@@ -257,7 +259,13 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 		
 		fb.clear(back);
 		world.renderScene(fb);
-		world.draw(fb);
+		
+		if(false && eye.getType() == Eye.Type.LEFT){
+			world.drawWireframe(fb, wire, 2, false);
+		}else {
+			world.draw(fb);
+		}
+		
 		fb.display();
 	}
 
@@ -289,14 +297,6 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 		headTransform.getEulerAngles(mAngles, 0);
 
 		Camera cam = world.getCamera();
-		cam.lookAt(forward);
-		if (canCamRotate) {
-			cam.rotateY(mAngles[1]);
-			cam.rotateZ(0 - mAngles[2]);
-			cam.rotateX(mAngles[0]);
-		}
-
-		
 		
 		SimpleVector center_island_green = new SimpleVector();
 		SimpleVector center_island_volcano = new SimpleVector();
@@ -329,9 +329,15 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 //		else
 //			islands[2].setScale(0.8f);
 		
-		if(isLookingAt(cam, treasure.getTransformedCenter())>0.95)
-			cam.setPosition(0,0,0);
+//		if(isLookingAt(cam, treasure.getTransformedCenter())>0.98)
+//			cam.setPosition(0,0,0);
 		
+		cam.lookAt(forward);
+		if (canCamRotate) {
+			cam.rotateY(mAngles[1]);
+			cam.rotateZ(0 - mAngles[2]);
+			cam.rotateX(mAngles[0]);
+		}
 		
 //		Log.e("cam", "transform_green: " + islands[0].getTransformedCenter());
 //		Log.e("cam", "transform_volcano: " + islands[1].getTransformedCenter());

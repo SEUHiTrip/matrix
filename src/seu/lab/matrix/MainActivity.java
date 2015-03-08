@@ -6,6 +6,7 @@ import org.opencv.samples.colorblobdetect.ColorBlobDetectionActivity;
 import org.opencv.samples.colorblobdetect.ColorTrackActivity;
 
 import seu.lab.matrix.ar.ARActivity;
+import seu.lab.matrix.bullet.BulletTestActivity;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.Response.ErrorListener;
@@ -129,7 +130,7 @@ public class MainActivity extends Activity {
 			@Override
 			public void onClick(View arg0) {
 				Intent intent = new Intent(getApplicationContext(),
-						TestActivity.class);
+						BulletTestActivity.class);
 				startActivity(intent);
 			}
 		});

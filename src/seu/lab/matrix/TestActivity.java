@@ -42,39 +42,25 @@ import com.threed.jpct.World;
 import com.threed.jpct.util.BitmapHelper;
 import com.threed.jpct.util.MemoryHelper;
 
-public class TestActivity extends CardboardActivity implements
-		CardboardView.StereoRenderer {
+public class TestActivity extends BaseTestActivity {
 
 	private static String TAG = "TestActivity";
 	private static TestActivity master = null;
 
-	private float[] mAngles;
 	private float[] mHeadView;
 	private float[] mForwardVec;
 	private float[] mRightVec;
 	private float[] mUpVec;
 
-	private FrameBuffer fb = null;
-	private World world = null;
-	private Light sun = null;
-	private Object3D plane = null;
-
-	private Object3D cube = null;
 	private Object3D cube1 = null;
 	private Object3D cube2 = null;
 	private Object3D cube3 = null;
 
 	private static final float CAMERA_Z = 0.01f;
 
-	private RGBColor back = new RGBColor(50, 50, 100);
-
-	Matrix mat = new Matrix();
-
 	private float[] mCamera;
 
 	private float[] mView;
-
-	private CardboardOverlayView mOverlayView;
 	
 	private Handler mHandler;
 	
@@ -433,12 +419,12 @@ public class TestActivity extends CardboardActivity implements
 			plane.strip();
 			plane.build();
 			world.addObject(plane);
-
+			
 			Camera cam = world.getCamera();
 			cam.lookAt(cube.getTransformedCenter());
 			// cam.moveCamera(Camera.CAMERA_MOVEOUT, 50);
 			// cam.setFOV(cam.getMinFOV());
-
+			
 			SimpleVector sv = new SimpleVector();
 			sv.set(cube.getTransformedCenter());
 			sv.y -= 100;
