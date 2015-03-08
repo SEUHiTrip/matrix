@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <string name="abs__action_bar_home_description">Navigate home</string>
     <string name="abs__action_bar_up_description">Navigate up</string>
     <string name="abs__action_menu_overflow_description">More options</string>
@@ -172,4 +173,8 @@ This is a link to an iDisplay log-file, please do not remove it.
     <string name="edit_server_menu">Edit</string>
     <string name="add_server_title">Add server</string>
     <string name="not_supported_Server_mode">This mode is not supported on your Android. Please change iDisplay mode by clicking on iDisplay icon in status bar of your Mac and selecting a different mode.</string>
+    <string name="title_activity_test">MainActivity</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="title_activity_scene">SceneActivity</string>
+
 </resources>

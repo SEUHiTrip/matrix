@@ -83,5 +83,13 @@
         android:layout_alignParentLeft="true"
         android:layout_below="@+id/track_btn"
         android:text="AR" />
+    
+     <Button
+        android:id="@+id/scene_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/ar_btn"
+        android:text="Scene" />
 
 </RelativeLayout>

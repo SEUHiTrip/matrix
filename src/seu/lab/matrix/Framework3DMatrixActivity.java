@@ -50,8 +50,8 @@ import com.threed.jpct.util.SkyBox;
 public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 		implements CardboardView.StereoRenderer, IDisplayConnectionCallback {
 
-	private static Activity master = null;
-	private static final String TAG = "Framework3DMatrixActivity";
+	protected static Activity master = null;
+	protected static final String TAG = "Framework3DMatrixActivity";
 
 	private ServerItem usbServerItem;
 	private IDisplayConnection iDisplayConnection;
@@ -68,19 +68,20 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 	private Object3D notice = null;
 	private GLSLShader[] screenShaders = null;
 
-	private RGBColor back = new RGBColor(50, 50, 100);
+	protected RGBColor back = new RGBColor(50, 50, 100);
+	protected RGBColor wire = new RGBColor(100, 100, 100);
 
-	private SimpleVector forward = new SimpleVector(-1, 0, 0);
+	protected SimpleVector forward = new SimpleVector(-1, 0, 0);
 
-	private int[] buffer;
-	private boolean canCamRotate = true;
+	protected int[] buffer;
+	protected boolean canCamRotate = true;
 
-	private int mWidth = 1024;
-	private int mHeight = 1024;
-	private int mStrideX = 1024;
-	private int mStrideY = 1024;
+	protected int mWidth = 1024;
+	protected int mHeight = 1024;
+	protected int mStrideX = 1024;
+	protected int mStrideY = 1024;
 
-	private float[] mAngles = new float[3];
+	protected float[] mAngles = new float[3];
 
 	ArrayImageContainer mArrayImageContainer;
 
@@ -133,8 +134,8 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 		int cnt;
 		long current;
 
-		private float mCursorMulX;
-		private float mCursorMulY;
+		protected float mCursorMulX;
+		protected float mCursorMulY;
 
 		float mCursorX = -2.0f;
 		float mCursorY = -2.0f;
@@ -267,26 +268,88 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 
 		world.renderScene(fb);
 		sky.render(world, fb);
-		world.draw(fb);
+
+		if(false && eye.getType() == Eye.Type.LEFT){
+			world.drawWireframe(fb, wire, 2, false);
+		}else {
+			world.draw(fb);
+		}
+		
 		fb.display();
 	}
 
 	@Override
 	public void onFinishFrame(Viewport viewport) {
 	}
+	
+	double isLookingAt(Camera cam, SimpleVector center){
+		SimpleVector camDir = new SimpleVector();
+		cam.getDirection(camDir);
+		SimpleVector camPos=cam.getPosition();
+		
+		//double sum = Math.pow(center.x, 2d) + Math.pow(center.y, 2d) + Math.pow(center.z, 2d);
+		double sum = Math.pow(center.x-camPos.x, 2d) + Math.pow(center.y-camPos.y, 2d) + Math.pow(center.z-camPos.z, 2d);
+		sum = Math.sqrt(sum);
+		center.x = (float) (center.x / sum);
+		center.y = (float) (center.y / sum);
+		center.z = (float) (center.z / sum);
 
+		//double dot = camDir.x * center.x + camDir.y * center.y + camDir.z * center.z;
+		double dot = camDir.x * (center.x-camPos.x) + camDir.y * (center.y-camPos.y) + camDir.z * (center.z-camPos.z);
+		return dot;
+	}
+	
 	@Override
 	public void onNewFrame(HeadTransform headTransform) {
 		headTransform.getEulerAngles(mAngles, 0);
 
 		Camera cam = world.getCamera();
+		
+		SimpleVector center_island_green = new SimpleVector();
+		SimpleVector center_island_volcano = new SimpleVector();
+		SimpleVector center_island_ship = new SimpleVector();	
+		
+		islands[0].getTransformedCenter(center_island_green);
+		islands[1].getTransformedCenter(center_island_volcano);
+		islands[2].getTransformedCenter(center_island_ship);
+			
+		if( isLookingAt(cam, center_island_green) >0.98){
+			cam.setPosition(islands[0].getTranslation().x,islands[0].getTranslation().y-2,islands[0].getTranslation().z);
+			cam.rotateY(-3.14f/2);
+		}
+		//Log.e("cam", "island_green: " + dot);
+		//			islands[0].setScale(1.2f);
+		//		else
+		//			islands[0].setScale(0.8f);
+		if( isLookingAt(cam, center_island_volcano) >0.98){
+			cam.setPosition(islands[1].getTranslation().x,islands[1].getTranslation().y-3,islands[1].getTranslation().z);
+			cam.lookAt(new SimpleVector(center_island_volcano.x,center_island_volcano.y,center_island_volcano.z+5));
+		}//Log.e("cam", "island_volcano: " + dot);
+//			islands[1].setScale(1.2f);
+//		else
+//			islands[1].setScale(0.8f);
+		if(isLookingAt(cam, center_island_ship) >0.98){
+			cam.setPosition(islands[2].getTranslation().x,islands[2].getTranslation().y-1,islands[2].getTranslation().z);
+			cam.rotateY(3.14f/2);
+		}//Log.e("cam", "island_ship: " + dot);
+//			islands[2].setScale(1.2f);
+//		else
+//			islands[2].setScale(0.8f);
+		
+//		if(isLookingAt(cam, treasure.getTransformedCenter())>0.98)
+//			cam.setPosition(0,0,0);
+		
 		cam.lookAt(forward);
 		if (canCamRotate) {
 			cam.rotateY(mAngles[1]);
 			cam.rotateZ(0 - mAngles[2]);
 			cam.rotateX(mAngles[0]);
 		}
-
+		
+//		Log.e("cam", "transform_green: " + islands[0].getTransformedCenter());
+//		Log.e("cam", "transform_volcano: " + islands[1].getTransformedCenter());
+//		Log.e("cam", "transform_ship: " + islands[2].getTransformedCenter());
+		Log.e("cam", "camDir: " + cam.getDirection());
 	}
 
 	@Override
@@ -357,26 +420,30 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 			screens[2].strip();
 			world.addObject(screens[2]);
 			screens[2].setVisibility(false);
-
-			islands[0] = Object3D.mergeAll(Loader.load3DS(getResources()
-					.openRawResource(R.raw.island_green), 1f));
-			islands[0].translate(-10, 0, -10);
-			islands[0].rotateY(3.14f / 2);
-			islands[0].rotateZ(3.14f / 4);
+			
+			islands[0] = Object3D.mergeAll(Loader.load3DS(getResources().openRawResource(R.raw.island_green), 0.8f));
+			//islands[0].translate(-10, 0, -10);
+			islands[0].translate(-10, 10, -5);
+			islands[0].rotateX(-3.14f/3f);
+			islands[0].rotateY(3.14f/2);
+			islands[0].rotateZ(3.14f/4);
 			world.addObjects(islands[0]);
-
-			islands[1] = Object3D.mergeAll(Loader.load3DS(getResources()
-					.openRawResource(R.raw.island_volcano), 1f));
-			islands[1].translate(-10, 0, 0);
-			islands[1].rotateY(3.14f / 2);
-			islands[1].rotateZ(3.14f / 4);
+			
+			islands[1] = Object3D.mergeAll(Loader.load3DS(getResources().openRawResource(R.raw.island_volcano), 1.6f));
+			//islands[1].translate(-10, 0, 0);
+			islands[1].translate(-15, 10, 0);
+			islands[1].rotateX(-3.14f/3f);
+			islands[1].rotateY(3.14f/2);
+			islands[1].rotateZ(3.14f/4);
 			world.addObjects(islands[1]);
+			
+			islands[2] = Object3D.mergeAll(Loader.load3DS(getResources().openRawResource(R.raw.island_ship), 0.2f));
+			//islands[2].translate(-10, 0, 10);
+			islands[2].translate(-10, 10, 5);
+			islands[2].rotateX(-3.14f/3f);
+			islands[2].rotateY(3.14f/2);
+			islands[2].rotateZ(3.14f/4);
 
-			islands[2] = Object3D.mergeAll(Loader.load3DS(getResources()
-					.openRawResource(R.raw.island_ship), 0.2f));
-			islands[2].translate(-10, 0, 10);
-			islands[2].rotateY(3.14f / 2);
-			islands[2].rotateZ(3.14f / 4);
 			world.addObjects(islands[2]);
 
 			treasure = Object3D.mergeAll(Loader.load3DS(getResources()

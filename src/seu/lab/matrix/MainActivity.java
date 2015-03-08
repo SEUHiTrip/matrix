@@ -6,6 +6,7 @@ import org.opencv.samples.colorblobdetect.ColorBlobDetectionActivity;
 import org.opencv.samples.colorblobdetect.ColorTrackActivity;
 
 import seu.lab.matrix.ar.ARActivity;
+import seu.lab.matrix.bullet.BulletTestActivity;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.Response.ErrorListener;
@@ -61,6 +62,7 @@ public class MainActivity extends Activity {
 		Button pickButton = (Button) findViewById(R.id.pick_btn);
 		Button trackButton = (Button) findViewById(R.id.track_btn);
 		Button arButton = (Button) findViewById(R.id.ar_btn);
+		Button sceneButton=(Button)findViewById(R.id.scene_btn);
 
 		imageView = (ImageView) findViewById(R.id.image_view);
 
@@ -128,7 +130,7 @@ public class MainActivity extends Activity {
 			@Override
 			public void onClick(View arg0) {
 				Intent intent = new Intent(getApplicationContext(),
-						TestActivity.class);
+						BulletTestActivity.class);
 				startActivity(intent);
 			}
 		});
@@ -159,6 +161,18 @@ public class MainActivity extends Activity {
 			public void onClick(View arg0) {
 				Intent intent = new Intent(getApplicationContext(),
 						ARActivity.class);
+				startActivity(intent);
+			}
+		});
+		
+		sceneButton.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+				Intent intent = new Intent(getApplicationContext(),
+						SceneActivity.class);
+				intent.putExtra("mode", new IDisplayConnection.ConnectionMode(
+						ConnectionType.Single.ordinal()));
 				startActivity(intent);
 			}
 		});
