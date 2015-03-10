@@ -130,7 +130,7 @@ public class MainActivity extends Activity {
 			@Override
 			public void onClick(View arg0) {
 				Intent intent = new Intent(getApplicationContext(),
-						BulletTestActivity.class);
+						PeopleTestActivity.class);
 				startActivity(intent);
 			}
 		});

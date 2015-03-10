@@ -493,10 +493,9 @@ public class TestActivity extends BaseTestActivity {
     }
 	
 	@Override
-	public void onSurfaceCreated(EGLConfig config) {
-		
-		GLES20.glEnable(GLES20.GL_BLEND);
-		GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+	public void onSurfaceCreated(EGLConfig config) {		
+//		GLES20.glEnable(GLES20.GL_BLEND);
+//		GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
 		world = new World();
 	}
 

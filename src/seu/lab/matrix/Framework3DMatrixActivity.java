@@ -53,20 +53,20 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 	protected static Activity master = null;
 	protected static final String TAG = "Framework3DMatrixActivity";
 
-	private ServerItem usbServerItem;
-	private IDisplayConnection iDisplayConnection;
-	private ConnectionMode currentMode;
+	protected ServerItem usbServerItem;
+	protected IDisplayConnection iDisplayConnection;
+	protected ConnectionMode currentMode;
 
-	private FrameBuffer fb = null;
-	private SkyBox sky;
-	private World world = null;
-	private Light sun = null;
-	private Light spot = null;
-	private Object3D[] screens = null;
-	private Object3D[] islands = null;
-	private Object3D treasure = null;
-	private Object3D notice = null;
-	private GLSLShader[] screenShaders = null;
+	protected FrameBuffer fb = null;
+	protected SkyBox sky;
+	protected World world = null;
+	protected Light sun = null;
+	protected Light spot = null;
+	protected Object3D[] screens = null;
+	protected Object3D[] islands = null;
+	protected Object3D treasure = null;
+	protected Object3D notice = null;
+	protected GLSLShader[] screenShaders = null;
 
 	protected RGBColor back = new RGBColor(50, 50, 100);
 	protected RGBColor wire = new RGBColor(100, 100, 100);
@@ -183,7 +183,7 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 		}
 
 	};
-	private Bitmap fontBitmap;
+	protected Bitmap fontBitmap;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -313,7 +313,7 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 		islands[1].getTransformedCenter(center_island_volcano);
 		islands[2].getTransformedCenter(center_island_ship);
 			
-		if( isLookingAt(cam, center_island_green) >0.98){
+		if( isLookingAt(cam, center_island_green) >0.99){
 			cam.setPosition(islands[0].getTranslation().x,islands[0].getTranslation().y-2,islands[0].getTranslation().z);
 			cam.rotateY(-3.14f/2);
 		}
@@ -321,14 +321,14 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 		//			islands[0].setScale(1.2f);
 		//		else
 		//			islands[0].setScale(0.8f);
-		if( isLookingAt(cam, center_island_volcano) >0.98){
+		if( isLookingAt(cam, center_island_volcano) >0.99){
 			cam.setPosition(islands[1].getTranslation().x,islands[1].getTranslation().y-3,islands[1].getTranslation().z);
 			cam.lookAt(new SimpleVector(center_island_volcano.x,center_island_volcano.y,center_island_volcano.z+5));
 		}//Log.e("cam", "island_volcano: " + dot);
 //			islands[1].setScale(1.2f);
 //		else
 //			islands[1].setScale(0.8f);
-		if(isLookingAt(cam, center_island_ship) >0.98){
+		if(isLookingAt(cam, center_island_ship) >0.99){
 			cam.setPosition(islands[2].getTranslation().x,islands[2].getTranslation().y-1,islands[2].getTranslation().z);
 			cam.rotateY(3.14f/2);
 		}//Log.e("cam", "island_ship: " + dot);
@@ -492,8 +492,8 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 
 	@Override
 	public void onSurfaceCreated(EGLConfig config) {
-		GLES20.glEnable(GLES20.GL_BLEND);
-		GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+//		GLES20.glEnable(GLES20.GL_BLEND);
+//		GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
 		
 		Resources res = getResources();
 

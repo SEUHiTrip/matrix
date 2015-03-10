@@ -1,5 +1,6 @@
 package seu.lab.matrix;
 
+import java.io.IOException;
 import java.util.Vector;
 import android.content.res.AssetManager;
 import android.opengl.GLES20;
@@ -18,19 +19,18 @@ import com.jbrush.ae.*;
 import com.threed.jpct.Camera;
 import com.threed.jpct.FrameBuffer;
 import com.threed.jpct.GLSLShader;
+import com.threed.jpct.Loader;
 import com.threed.jpct.Object3D;
 import com.threed.jpct.RGBColor;
 import com.threed.jpct.SimpleVector;
 import com.threed.jpct.World;
 
-
 public class SceneActivity extends Framework3DMatrixActivity {
-
-	private Vector<EditorObject> objects;
-    private Object3D object_jpct;
 	
     private static final String TAG = "SceneActivity";
-	
+    
+	protected SimpleVector forward = new SimpleVector(0, -1, 0);
+
 	@Override
 	public void onSurfaceChanged(int w, int h) {
 		// TODO Auto-generated method stub
@@ -39,11 +39,23 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		}
 		fb = new FrameBuffer(w, h);
 		world=new World();
-		AssetManager assetManager=getAssets();//just for jbrush_ae
-		objects=Scene.loadSerializedLevel("scene.txt",  objects,world, assetManager);//it is used for eclipse load the resource of /assets/
-//		object_jpct=Scene.findObject("treasure", objects);
-//		world.addObject(object_jpct);
 		
+		world.getCamera().setPosition(0, -8, 0.2f);
+		
+		Object3D[] object3ds = null;
+		try {
+			object3ds = Loader.load3DS(getAssets().open("mat.3ds"), 1);
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		for (int i = 0; i < object3ds.length; i++) {
+			Log.e(TAG, "name: "+ object3ds[i].getName()+ " id: "+object3ds[i].getID());
+		}
+		
+		world.addObjects(object3ds);
 		
 		if (buffer == null) {
 			// GLES20.glDeleteTextures(buffer.length, buffer, 0);
@@ -71,8 +83,8 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		Camera cam = world.getCamera();
 		cam.lookAt(forward);
 		if (canCamRotate) {
-			cam.rotateY(mAngles[1]);
-			cam.rotateZ(0 - mAngles[2]);
+			cam.rotateY(- mAngles[1]);
+			cam.rotateZ(- mAngles[2]+3.1415926f);
 			cam.rotateX(mAngles[0]);
 		}
 	}
