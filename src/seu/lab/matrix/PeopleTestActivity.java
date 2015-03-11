@@ -199,6 +199,7 @@ public class PeopleTestActivity extends BaseTestActivity {
 		// Waist
 		targetJoint(currentPose, 5, new SimpleVector(0, -1, 0), ballPos, 0.1f);
 
+		
 		ballSphere.translate(ballPos.calcSub(ballSphere.getTranslation()));
 	}
 
