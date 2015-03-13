@@ -500,6 +500,9 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 		TextureManager tm = TextureManager.getInstance();
 
 		if (!tm.containsTexture("dummy")) {
+			
+			Log.e(TAG, "addTexture dummy");
+			
 			Texture texture = new Texture(BitmapHelper.rescale(
 					BitmapHelper.convert(getResources().getDrawable(
 							R.drawable.icon)), 512, 512));
@@ -537,6 +540,9 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 					BitmapHelper.convert(getResources().getDrawable(
 							R.drawable.star_top)), 512, 512));
 			tm.addTexture("star_top", star_top);
+			
+			tm.addTexture("my", texture);
+
 		}
 
 		// TextureManager tm = TextureManager.getInstance();
