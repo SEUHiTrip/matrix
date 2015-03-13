@@ -8,6 +8,8 @@ import android.content.res.AssetManager;
 import android.opengl.GLES20;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.GestureDetector;
+import android.view.GestureDetector.OnGestureListener;
 import android.view.MotionEvent;
 
 import com.google.vrtoolkit.cardboard.CardboardView;
@@ -30,7 +32,7 @@ import com.threed.jpct.SimpleVector;
 import com.threed.jpct.World;
 import com.threed.jpct.util.MemoryHelper;
 
-public class SceneActivity extends Framework3DMatrixActivity {
+public class SceneActivity extends Framework3DMatrixActivity{
 	
     private static final String TAG = "SceneActivity";
     
@@ -46,6 +48,14 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 	private Camera cam;
 	
+	private Object3D treasure=null;
+	private Object3D ship=null;
+	private Object3D volcano=null;
+	private Object3D green=null;
+	
+	private Object3D screen=Object3D.createDummyObj();
+	private SimpleVector center_screen_origin=null;
+
 	@Override
 	public void onSurfaceChanged(int w, int h) {
 		// TODO Auto-generated method stub
@@ -89,6 +99,8 @@ public class SceneActivity extends Framework3DMatrixActivity {
 				GLES20.glTexParameteri(3553, 10241, 9729);
 			}
 		}
+		
+
 	}
 	
 	@Override
@@ -109,7 +121,12 @@ public class SceneActivity extends Framework3DMatrixActivity {
 				name = mObjects[i].getName();
 				Log.e(TAG, "name: " + name);
 				saveObject(name, mObjects[i]);
-			}			
+				getIslands(name, mObjects[i]);
+				getScreen(name, mObjects[i]);
+			}	
+			
+			center_screen_origin=screen.getTransformedCenter();
+			screen.setScale(5);
 		}
 		
 		headTransform.getEulerAngles(mAngles, 0);
@@ -128,6 +145,23 @@ public class SceneActivity extends Framework3DMatrixActivity {
 			cam.rotateZ(-mAngles[2]);
 			cam.rotateX(mAngles[0]);
 			
+		}
+	}
+	
+	private void getIslands(String name, Object3D object3d){
+		if(name.contains("i_trea"))
+			treasure=object3d;
+		else if(name.contains("i_ship"))
+			ship=object3d;
+		else if(name.contains("i_volcano"))
+			volcano=object3d;
+		else if(name.contains("i_green"))
+			green=object3d;
+	}
+	
+	private void getScreen(String name, Object3D object3d){
+		if(name.contains("x_")) {
+			screen.addChild(object3d);
 		}
 	}
 	
@@ -162,6 +196,11 @@ public class SceneActivity extends Framework3DMatrixActivity {
 	}
 
 	@Override
+	protected void onStart() {
+		super.onStart();
+	}
+	
+	@Override
 	public void onDrawEye(Eye eye) {
 
 		fb.clear(back);
@@ -175,9 +214,70 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		if (!(event.getAction() == MotionEvent.ACTION_UP))
 			return false;
 		
-		mCamViewIndex = mCamViewIndex + 1 > 4 ? 0 : mCamViewIndex + 1;
-		cam.setPosition(mCamViewspots[mCamViewIndex].getTransformedCenter());
+//		mCamViewIndex = mCamViewIndex + 1 > 4 ? 0 : mCamViewIndex + 1;
+//		cam.setPosition(mCamViewspots[mCamViewIndex].getTransformedCenter());
 		
+		
+		
+		SimpleVector center_island_green = new SimpleVector();
+		SimpleVector center_island_volcano = new SimpleVector();
+		SimpleVector center_island_ship = new SimpleVector();	
+		SimpleVector center_treasure = new SimpleVector();
+		
+		green.getTransformedCenter(center_island_green);
+		volcano.getTransformedCenter(center_island_volcano);
+		ship.getTransformedCenter(center_island_ship);
+		treasure.getTransformedCenter(center_treasure);
+		
+		if( isLookingAt(cam, center_island_green) >0.99){
+			cam.setPosition(mCamViewspots[1].getTransformedCenter());
+			SimpleVector center_screen=screen.getTransformedCenter();
+			//SimpleVector target=mCamViewspots[1].getTransformedCenter();
+			SimpleVector target=center_island_green;
+			target.x-=90;
+			target.y-=140;
+			SimpleVector distance=new SimpleVector(target.x-center_screen.x, target.y-center_screen.y, target.z-center_screen.z);
+			screen.translate(distance);
+			
+		}
+		else if( isLookingAt(cam, center_island_volcano) >0.99){
+			cam.setPosition(mCamViewspots[2].getTransformedCenter());
+			SimpleVector center_screen=screen.getTransformedCenter();
+			//SimpleVector target=mCamViewspots[2].getTransformedCenter();
+			SimpleVector target=center_island_volcano;
+			target.x-=90;
+			target.y-=180;
+			SimpleVector distance=new SimpleVector(target.x-center_screen.x, target.y-center_screen.y, target.z-center_screen.z);
+			screen.translate(distance);
+		}
+		else if( isLookingAt(cam, center_island_ship) >0.99){
+			cam.setPosition(mCamViewspots[3].getTransformedCenter());
+			SimpleVector center_screen=screen.getTransformedCenter();
+			//SimpleVector target=mCamViewspots[3].getTransformedCenter();
+			SimpleVector target=center_island_ship;
+			target.x-=90;
+			target.y-=160;
+//			target.x-=40;
+//			target.y-=120;
+			SimpleVector distance=new SimpleVector(target.x-center_screen.x, target.y-center_screen.y, target.z-center_screen.z);
+			screen.translate(distance);
+			
+		}
+		else if( isLookingAt(cam, center_treasure) >0.99){
+			cam.setPosition(mCamViewspots[0].getTransformedCenter());
+			SimpleVector center_screen=screen.getTransformedCenter();
+			SimpleVector target=center_screen_origin;
+			SimpleVector distance=new SimpleVector(target.x-center_screen.x, target.y-center_screen.y, target.z-center_screen.z);
+			screen.translate(distance);
+		}
+		
+//		Log.e("pos", "green"+center_island_green);
+//		Log.e("pos", "ship"+center_island_ship);
+//		Log.e("pos", "volcano"+center_island_volcano);
+//		
+//		Log.e("pos", "camGreen"+mCamViewspots[1].getTransformedCenter());
+//		Log.e("pos", "camVolcano"+mCamViewspots[2].getTransformedCenter());
+//		Log.e("pos", "camShip"+mCamViewspots[3].getTransformedCenter());
 		return false;
 	}
 }

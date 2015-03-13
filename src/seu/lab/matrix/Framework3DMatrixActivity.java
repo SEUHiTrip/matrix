@@ -290,12 +290,12 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 		//double sum = Math.pow(center.x, 2d) + Math.pow(center.y, 2d) + Math.pow(center.z, 2d);
 		double sum = Math.pow(center.x-camPos.x, 2d) + Math.pow(center.y-camPos.y, 2d) + Math.pow(center.z-camPos.z, 2d);
 		sum = Math.sqrt(sum);
-		center.x = (float) (center.x / sum);
-		center.y = (float) (center.y / sum);
-		center.z = (float) (center.z / sum);
+//		center.x = (float) (center.x / sum);
+//		center.y = (float) (center.y / sum);
+//		center.z = (float) (center.z / sum);
 
 		//double dot = camDir.x * center.x + camDir.y * center.y + camDir.z * center.z;
-		double dot = camDir.x * (center.x-camPos.x) + camDir.y * (center.y-camPos.y) + camDir.z * (center.z-camPos.z);
+		double dot = (camDir.x * (center.x-camPos.x) + camDir.y * (center.y-camPos.y) + camDir.z * (center.z-camPos.z))/sum;
 		return dot;
 	}
 	
@@ -660,22 +660,22 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 	}
 	
 	public void initFontBitmap(){  
-        String font = "需要渲染的文字测试！";
+        String font = "闇�娓叉煋鐨勬枃瀛楁祴璇曪紒";
         fontBitmap = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888);  
         Canvas canvas = new Canvas(fontBitmap);  
-        //背景颜色  
+        //鑳屾櫙棰滆壊  
         canvas.drawColor(Color.TRANSPARENT);  
         Paint p = new Paint();  
-        //字体设置  
-        String fontType = "宋体";  
+        //瀛椾綋璁剧疆  
+        String fontType = "瀹嬩綋";  
         Typeface typeface = Typeface.create(fontType, Typeface.BOLD);  
-        //消除锯齿  
+        //娑堥櫎閿娇  
         p.setAntiAlias(true);  
-        //字体为红色  
+        //瀛椾綋涓虹孩鑹� 
         p.setColor(Color.RED);  
         p.setTypeface(typeface);  
         p.setTextSize(28);  
-        //绘制字体  
+        //缁樺埗瀛椾綋  
         canvas.drawText(font, 0, 100, p);  
     }
 
