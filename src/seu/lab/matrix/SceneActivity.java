@@ -60,6 +60,13 @@ public class SceneActivity extends Framework3DMatrixActivity {
 	private Object3D ball2 = null;
 	List<Point> points = new LinkedList<Point>();
 
+	List<Animatable> animatables = new LinkedList<Animatable>();
+
+	private LiveTile[] mTiles = new LiveTile[]{
+		new LiveTile(), new LiveTile(),
+		new LiveTile(), new LiveTile()
+	};
+	
 	GestureDetector gestureDetector = null;
 
 	SimpleOnGestureListener gestureListener = new SimpleOnGestureListener() {
@@ -189,7 +196,7 @@ public class SceneActivity extends Framework3DMatrixActivity {
 			frameCounter++;
 
 			mCamViewspots = new Object3D[5];
-
+			
 			String name = null;
 			for (int i = 0; i < mObjects.length; i++) {
 				name = mObjects[i].getName();
@@ -200,6 +207,19 @@ public class SceneActivity extends Framework3DMatrixActivity {
 			for (int i = 0; i < mObjects.length; i++) {
 				name = mObjects[i].getName();
 				getScreen(name, mObjects[i]);
+			}
+			
+			for (int i = 0; i < mTiles.length; i++) {
+				animatables.add(mTiles[i]);
+			}
+		}else {
+			// animations
+			for (Animatable a : animatables) {
+				if(a.isOver()){
+					animatables.remove(a);
+				}else {
+					a.animate();
+				}
 			}
 		}
 
@@ -275,6 +295,28 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		}
 	}
 	
+	private void getLiveTile(String name, Object3D object3d){
+		
+		if(name.startsWith("x_b_mine")){
+			mTiles[0].setTile1(object3d, new SimpleVector(0.839, -1, 0));
+		}else if (name.startsWith("x_b_m2ine")) {
+			mTiles[0].setTile2(object3d, new SimpleVector(0.839, -1, 0));
+		}else if (name.startsWith("x_b_car")) {
+			mTiles[1].setTile1(object3d, new SimpleVector(0.839, -1, 0));
+		}else if (name.startsWith("x_b_c2ar")) {
+			mTiles[1].setTile2(object3d, new SimpleVector(0.839, -1, 0));
+		}else if (name.startsWith("x_b_video")) {
+			mTiles[2].setTile1(object3d, new SimpleVector(0.839, -1, 0));
+		}else if (name.startsWith("x_b_v2ideo")) {
+			mTiles[2].setTile2(object3d, new SimpleVector(0.839, -1, 0));
+		}else if (name.startsWith("x_b_pic")) {
+			mTiles[3].setTile1(object3d, new SimpleVector(1.729, -1, 0));
+		}else if (name.startsWith("x_b_p2ic")) {
+			mTiles[3].setTile2(object3d, new SimpleVector(1.729, -1, 0));
+		}
+		
+	}
+	
 	private void setBoardTexture(String name, Object3D object3d) {
 		TextureManager tm = TextureManager.getInstance();
 		String tname = name.substring(2, name.indexOf("_Plane"));
@@ -330,6 +372,7 @@ public class SceneActivity extends Framework3DMatrixActivity {
 			Log.e(TAG, "x_b");
 
 			setBoardTexture(name, object3d);
+			getLiveTile(name, object3d);
 
 			return;
 		} else if (name.startsWith("x_scr")) {
