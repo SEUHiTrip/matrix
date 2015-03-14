@@ -1,7 +1,11 @@
 package seu.lab.matrix;
 
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Vector;
+
+import org.opencv.core.Point;
 
 import android.R.integer;
 import android.content.res.AssetManager;
@@ -10,6 +14,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.GestureDetector.OnGestureListener;
+import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.MotionEvent;
 
 import com.google.vrtoolkit.cardboard.CardboardView;
@@ -45,9 +50,51 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 	protected Object3D[] mObjects = null;
 
+	private static float ballDistance = 5f;
+
 	private int frameCounter = 0;
 
 	private Camera cam;
+
+	private Object3D ball1 = null;
+	private Object3D ball2 = null;
+	List<Point> points = new LinkedList<Point>();
+
+	GestureDetector gestureDetector = null;
+
+	SimpleOnGestureListener gestureListener = new SimpleOnGestureListener() {
+		public boolean onDoubleTap(MotionEvent e) {
+			return super.onDoubleTap(e);
+		}
+
+		public boolean onSingleTapConfirmed(MotionEvent e) {
+			return super.onSingleTapConfirmed(e);
+		}
+
+		public void onLongPress(MotionEvent e) {
+
+		}
+
+		public boolean onScroll(MotionEvent e1, MotionEvent e2,
+				float distanceX, float distanceY) {
+
+			Log.d(TAG, "x: " + distanceX + ", y: " + distanceY);
+
+			double x = points.get(0).x + -distanceX * 0.003;
+			double y = points.get(0).y + distanceY * 0.003;
+
+			x = x > 1 ? 1 : x;
+			x = x < -1 ? -1 : x;
+			y = y > 1 ? 1 : y;
+			y = y < -1 ? -1 : y;
+
+			points.get(0).x = x;
+			points.get(0).y = y;
+			
+			return false;
+		}
+
+	};
 
 	@Override
 	public void onSurfaceChanged(int w, int h) {
@@ -81,7 +128,25 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		sun.setIntensity(250, 250, 250);
 
 		spot = new Light(world);
-		spot.setIntensity(150, 150, 150);
+		spot.setIntensity(10, 10, 10);
+
+		ball1 = Primitives.getSphere(0.2f);
+		ball1.translate(0, 0, -5);
+		ball1.calcTextureWrapSpherical();
+		ball1.setAdditionalColor(new RGBColor(100, 0, 0));
+		ball1.strip();
+		ball1.build();
+		world.addObject(ball1);
+
+		ball2 = Primitives.getSphere(0.2f);
+		ball2.translate(0, 0, -5);
+		ball2.calcTextureWrapSpherical();
+		ball2.setAdditionalColor(new RGBColor(0, 100, 0));
+		ball2.strip();
+		ball2.build();
+		world.addObject(ball2);
+
+		points.add(new Point(0, 0));
 
 		// notice = Primitives.getPlane(1, 2);
 		// notice.rotateY(4.71f);
@@ -159,6 +224,40 @@ public class SceneActivity extends Framework3DMatrixActivity {
 			cam.rotateX(mAngles[0]);
 
 		}
+
+		SimpleVector camDir = new SimpleVector();
+		cam.getDirection(camDir);
+
+		camDir.x = camDir.x * ballDistance;
+		camDir.y = camDir.y * ballDistance;
+		camDir.z = camDir.z * ballDistance;
+
+		SimpleVector originInballView = new SimpleVector(camDir);
+		originInballView.x = -originInballView.x;
+		originInballView.y = -originInballView.y;
+		originInballView.z = -originInballView.z;
+
+		ball1.clearTranslation();
+		ball1.clearRotation();
+
+		ball1.translate(camDir);
+
+		if (points.size() > 0) {
+			ball1.setRotationPivot(originInballView);
+			ball1.rotateAxis(cam.getUpVector(),
+					(float) (0.5f * points.get(0).x));
+			ball1.rotateAxis(cam.getSideVector(),
+					(float) (-0.5f * points.get(0).y));
+		}
+
+		ball2.clearTranslation();
+		ball2.clearRotation();
+
+		ball2.translate(camDir);
+		ball2.setRotationPivot(originInballView);
+		ball2.rotateAxis(cam.getUpVector(), 0.5f);
+		ball2.rotateAxis(cam.getSideVector(), -0.5f);
+
 	}
 
 	private void getIslands(String name, Object3D object3d) {
@@ -179,17 +278,6 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 			mCamViewspots[4].addChild(object3d);
 
-			// SimpleVector center_screen = object3d.getTransformedCenter();
-			// // SimpleVector target=mCamViewspots[1].getTransformedCenter();
-			// SimpleVector target = new SimpleVector();
-			// SimpleVector distance = new SimpleVector(target.x
-			// - center_screen.x, target.y - center_screen.y, target.z
-			// - center_screen.z);
-			// Log.e(TAG, "ori: "+object3d.getTransformedCenter());
-			//
-			// object3d.translate(distance);
-			//
-			// Log.e(TAG, "pos: "+object3d);
 		}
 	}
 
@@ -249,8 +337,10 @@ public class SceneActivity extends Framework3DMatrixActivity {
 	}
 
 	@Override
-	protected void onStart() {
-		super.onStart();
+	protected void onCreate(Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		super.onCreate(savedInstanceState);
+		gestureDetector = new GestureDetector(this, gestureListener);
 	}
 
 	@Override
@@ -269,7 +359,9 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
-
+		if (true)
+			return gestureDetector.onTouchEvent(event);
+		
 		if (!(event.getAction() == MotionEvent.ACTION_UP))
 			return false;
 
