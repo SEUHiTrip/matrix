@@ -8,6 +8,8 @@ import android.content.res.AssetManager;
 import android.opengl.GLES20;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.GestureDetector;
+import android.view.GestureDetector.OnGestureListener;
 import android.view.MotionEvent;
 
 import com.google.vrtoolkit.cardboard.CardboardView;
@@ -32,9 +34,9 @@ import com.threed.jpct.World;
 import com.threed.jpct.util.MemoryHelper;
 
 public class SceneActivity extends Framework3DMatrixActivity {
-	
-    private static final String TAG = "SceneActivity";
-    
+
+	private static final String TAG = "SceneActivity";
+
 	protected SimpleVector forward = new SimpleVector(-1, 0, 0);
 	protected SimpleVector up = new SimpleVector(0, -1, 0);
 
@@ -46,7 +48,7 @@ public class SceneActivity extends Framework3DMatrixActivity {
 	private int frameCounter = 0;
 
 	private Camera cam;
-	
+
 	@Override
 	public void onSurfaceChanged(int w, int h) {
 		// TODO Auto-generated method stub
@@ -54,41 +56,43 @@ public class SceneActivity extends Framework3DMatrixActivity {
 			fb.dispose();
 		}
 		fb = new FrameBuffer(w, h);
-		world=new World();
-		
+		world = new World();
+
 		world.getCamera().setPosition(0, 0, 0);
-		
+
 		try {
 			// mObjects = Loader.load3DS(getAssets().open("tex.3ds"), 1);
-			
-			mObjects = Loader.loadOBJ(getAssets().open("workspace.obj"), getAssets().open("workspace.mtl"), 1);
-			
+
+			mObjects = Loader.loadOBJ(getAssets().open("matsimple.obj"),
+					getAssets().open("matsimple.mtl"), 1);
+
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		Object3D plane = Primitives.getPlane(1, 1);
+
+		screens = new Object3D[3];
+		islands = new Object3D[4];
 
 		world.addObjects(mObjects);
 		world.setAmbientLight(120, 120, 120);
 
 		sun = new Light(world);
 		sun.setIntensity(250, 250, 250);
-		
+
 		spot = new Light(world);
 		spot.setIntensity(150, 150, 150);
-		
-//		notice = Primitives.getPlane(1, 2);
-//		notice.rotateY(4.71f);
-//		notice.translate(-5, 0, 0);
-//		notice.setTexture("dummy");
-//		notice.build();
-//		notice.strip();
-//		world.addObject(notice);
-		
+
+		// notice = Primitives.getPlane(1, 2);
+		// notice.rotateY(4.71f);
+		// notice.translate(-5, 0, 0);
+		// notice.setTexture("dummy");
+		// notice.build();
+		// notice.strip();
+		// world.addObject(notice);
+
 		MemoryHelper.compact();
-		
+
 		if (buffer == null) {
 			// GLES20.glDeleteTextures(buffer.length, buffer, 0);
 
@@ -105,98 +109,148 @@ public class SceneActivity extends Framework3DMatrixActivity {
 				GLES20.glTexParameteri(3553, 10241, 9729);
 			}
 		}
+
 	}
-	
+
 	@Override
 	public void onNewFrame(HeadTransform headTransform) {
-		
-		if(frameCounter == 0){
+
+		if (frameCounter == 0) {
 			frameCounter++;
 
 			cam = world.getCamera();
 
-		}else if(frameCounter == 1) {
+		} else if (frameCounter == 1) {
 			frameCounter++;
 
 			mCamViewspots = new Object3D[5];
-			
+
 			String name = null;
 			for (int i = 0; i < mObjects.length; i++) {
 				name = mObjects[i].getName();
 				Log.e(TAG, "name: " + name);
 				saveObject(name, mObjects[i]);
-			}			
+				getIslands(name, mObjects[i]);
+			}
+			for (int i = 0; i < mObjects.length; i++) {
+				name = mObjects[i].getName();
+
+				getScreen(name, mObjects[i]);
+			}
+
+		} else {
+
 		}
-		
+
 		headTransform.getEulerAngles(mAngles, 0);
 
-//		if(mCamViewspots != null){
-//			cam.setOrientation(forward, up);
-//		}else {
-//			cam.setOrientation(forward, up);
-//		}
+		// if(mCamViewspots != null){
+		// cam.setOrientation(forward, up);
+		// }else {
+		// cam.setOrientation(forward, up);
+		// }
 		cam.setOrientation(forward, up);
-		
+
 		if (canCamRotate) {
-			cam.rotateZ(3.1415926f/2);
-			
+			cam.rotateZ(3.1415926f / 2);
+
 			cam.rotateY(mAngles[1]);
 			cam.rotateZ(-mAngles[2]);
 			cam.rotateX(mAngles[0]);
-			
+
 		}
 	}
-	
+
+	private void getIslands(String name, Object3D object3d) {
+		if (name.contains("i_trea"))
+			islands[3] = object3d;
+		else if (name.contains("i_ship"))
+			islands[2] = object3d;
+		else if (name.contains("i_volcano"))
+			islands[1] = object3d;
+		else if (name.contains("i_green"))
+			islands[0] = object3d;
+	}
+
+	private void getScreen(String name, Object3D object3d) {
+		if (name.contains("x_")) {
+
+			Log.e(TAG, "getScreen: " + name);
+
+			mCamViewspots[4].addChild(object3d);
+
+			// SimpleVector center_screen = object3d.getTransformedCenter();
+			// // SimpleVector target=mCamViewspots[1].getTransformedCenter();
+			// SimpleVector target = new SimpleVector();
+			// SimpleVector distance = new SimpleVector(target.x
+			// - center_screen.x, target.y - center_screen.y, target.z
+			// - center_screen.z);
+			// Log.e(TAG, "ori: "+object3d.getTransformedCenter());
+			//
+			// object3d.translate(distance);
+			//
+			// Log.e(TAG, "pos: "+object3d);
+		}
+	}
+
 	private void saveObject(String name, Object3D object3d) {
-		
+
 		if (name.startsWith("c_green")) {
-			object3d.setVisibility(false);
-			mCamViewspots[1] = object3d;
-			return;
-		}else if(name.startsWith("c_ship")){
-			object3d.setVisibility(false);
-			mCamViewspots[3] = object3d;
-			return;
-		}else if(name.startsWith("c_volcano")) {
-			object3d.setVisibility(false);
-			mCamViewspots[2] = object3d;
-			return;
-		}else if(name.startsWith("c_treasure")) {
 			object3d.setVisibility(false);
 			mCamViewspots[0] = object3d;
 			return;
-		}else if(name.startsWith("x_c_works")) {
+		} else if (name.startsWith("c_ship")) {
+			object3d.setVisibility(false);
+			mCamViewspots[2] = object3d;
+			return;
+		} else if (name.startsWith("c_volcano")) {
+			object3d.setVisibility(false);
+			mCamViewspots[1] = object3d;
+			return;
+		} else if (name.startsWith("c_treasure")) {
+			object3d.setVisibility(false);
+			mCamViewspots[3] = object3d;
+			return;
+		} else if (name.startsWith("x_c_works")) {
 			object3d.setVisibility(false);
 			mCamViewspots[4] = object3d;
+
 			return;
-		}else if(name.startsWith("weather")) {
+		} else if (name.startsWith("weather")) {
 			SimpleVector sv = new SimpleVector(object3d.getTransformedCenter());
 			sv.y -= 10;
 			sun.setPosition(sv);
 			return;
-		}else if(name.startsWith("x_b")) {
-			
+		} else if (name.startsWith("x_b")) {
+
 			Log.e(TAG, "x_b");
-			
+
 			object3d.clearAdditionalColor();
 			object3d.setTexture("dummy");
 			object3d.calcTextureWrapSpherical();
 			object3d.strip();
 			object3d.build();
-			
+
 			return;
-		}else if(name.startsWith("x_scr")) {
-			
+		} else if (name.startsWith("x_scr")) {
+
 			Log.e(TAG, "x_scr");
-			
+
 			object3d.clearAdditionalColor();
-			object3d.setShader(screenShaders[name.charAt(5)-'1']);
+			object3d.setShader(screenShaders[name.charAt(5) - '1']);
 			object3d.calcTextureWrapSpherical();
 			object3d.build();
 			object3d.strip();
-			
+
+			screens[name.charAt(5) - '1'] = object3d;
+
 			return;
 		}
+	}
+
+	@Override
+	protected void onStart() {
+		super.onStart();
 	}
 
 	@Override
@@ -218,14 +272,29 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 		if (!(event.getAction() == MotionEvent.ACTION_UP))
 			return false;
-		
-		mCamViewIndex = mCamViewIndex + 1 > 4 ? 0 : mCamViewIndex + 1;
-		
-		if(mCamViewspots == null) return false;
-		
-		if(mCamViewspots[mCamViewIndex] != null){
-			cam.setPosition(mCamViewspots[mCamViewIndex].getTransformedCenter());
-			spot.setPosition(mCamViewspots[mCamViewIndex].getTransformedCenter());
+
+		if (mCamViewspots == null)
+			return false;
+
+		SimpleVector[] island_center = new SimpleVector[4];
+		for (int i = 0; i < island_center.length; i++) {
+			island_center[i] = new SimpleVector();
+			islands[i].getTransformedCenter(island_center[i]);
+		}
+
+		for (int i = 0; i < 3; i++) {
+			if (isLookingAt(cam, island_center[i]) > 0.99) {
+				cam.setPosition(mCamViewspots[i].getTransformedCenter());
+				SimpleVector center_screen = mCamViewspots[4]
+						.getTransformedCenter();
+				SimpleVector target = island_center[i];
+				target.z += 1;
+				SimpleVector distance = new SimpleVector(target.x
+						- center_screen.x, target.y - center_screen.y, target.z
+						- center_screen.z);
+				mCamViewspots[4].translate(distance);
+				spot.setPosition(mCamViewspots[i].getTransformedCenter());
+			}
 		}
 
 		return false;
