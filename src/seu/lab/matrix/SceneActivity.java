@@ -50,7 +50,7 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 	protected Object3D[] mObjects = null;
 
-	private static float ballDistance = 5f;
+	private static float ballDistance = 2f;
 
 	private int frameCounter = 0;
 
@@ -110,8 +110,8 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		try {
 			// mObjects = Loader.load3DS(getAssets().open("tex.3ds"), 1);
 
-			mObjects = Loader.loadOBJ(getAssets().open("matsimple.obj"),
-					getAssets().open("matsimple.mtl"), 1);
+			mObjects = Loader.loadOBJ(getAssets().open("workspace.obj"),
+					getAssets().open("workspace.mtl"), 1);
 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -130,16 +130,16 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		spot = new Light(world);
 		spot.setIntensity(10, 10, 10);
 
-		ball1 = Primitives.getSphere(0.2f);
-		ball1.translate(0, 0, -5);
+		ball1 = Primitives.getSphere(0.05f);
+		ball1.translate(0, 0, -2);
 		ball1.calcTextureWrapSpherical();
 		ball1.setAdditionalColor(new RGBColor(100, 0, 0));
 		ball1.strip();
 		ball1.build();
 		world.addObject(ball1);
 
-		ball2 = Primitives.getSphere(0.2f);
-		ball2.translate(0, 0, -5);
+		ball2 = Primitives.getSphere(0.05f);
+		ball2.translate(0, 0, -2);
 		ball2.calcTextureWrapSpherical();
 		ball2.setAdditionalColor(new RGBColor(0, 100, 0));
 		ball2.strip();
@@ -199,12 +199,8 @@ public class SceneActivity extends Framework3DMatrixActivity {
 			}
 			for (int i = 0; i < mObjects.length; i++) {
 				name = mObjects[i].getName();
-
 				getScreen(name, mObjects[i]);
 			}
-
-		} else {
-
 		}
 
 		headTransform.getEulerAngles(mAngles, 0);
@@ -273,16 +269,30 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 	private void getScreen(String name, Object3D object3d) {
 		if (name.contains("x_")) {
-
 			Log.e(TAG, "getScreen: " + name);
-
-			mCamViewspots[4].addChild(object3d);
-
+			if(mCamViewspots[4] != object3d)
+				mCamViewspots[4].addChild(object3d);
 		}
+	}
+	
+	private void setBoardTexture(String name, Object3D object3d) {
+		TextureManager tm = TextureManager.getInstance();
+		String tname = name.substring(2, name.indexOf("_Plane"));
+		object3d.clearAdditionalColor();
+
+		Log.e(TAG, "matching tname:"+tname);
+		
+		if (tm.containsTexture(tname)) {
+			object3d.setTexture(tname);
+		}else {
+			object3d.setTexture("dummy");
+		}
+		object3d.calcTextureWrapSpherical();
+		object3d.strip();
+		object3d.build();
 	}
 
 	private void saveObject(String name, Object3D object3d) {
-
 		if (name.startsWith("c_green")) {
 			object3d.setVisibility(false);
 			mCamViewspots[0] = object3d;
@@ -302,22 +312,24 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		} else if (name.startsWith("x_c_works")) {
 			object3d.setVisibility(false);
 			mCamViewspots[4] = object3d;
-
 			return;
 		} else if (name.startsWith("weather")) {
 			SimpleVector sv = new SimpleVector(object3d.getTransformedCenter());
 			sv.y -= 10;
 			sun.setPosition(sv);
 			return;
+		} else if (name.startsWith("i_")) {
+
+			Log.e(TAG, "i_");
+
+			getIslands(name, object3d);
+
+			return;
 		} else if (name.startsWith("x_b")) {
 
 			Log.e(TAG, "x_b");
 
-			object3d.clearAdditionalColor();
-			object3d.setTexture("dummy");
-			object3d.calcTextureWrapSpherical();
-			object3d.strip();
-			object3d.build();
+			setBoardTexture(name, object3d);
 
 			return;
 		} else if (name.startsWith("x_scr")) {
