@@ -18,6 +18,11 @@ public class LiveTileAnimation extends BaseValueAnimation{
 		loop = true;
 	}
 
+	public LiveTileAnimation(String tag, boolean loop) {
+		super(tag, Math.PI);
+		this.loop = loop;
+	}
+	
 	public Object3D tile1;
 	public Object3D tile2;
 	
@@ -38,7 +43,7 @@ public class LiveTileAnimation extends BaseValueAnimation{
 	
 	public void init(){
 		if(tile1 == null || tile2 == null)return;
-		frames *= (int )(Math.random() * 2 + 1);
+		frames *= 1;// (int )(Math.random() * 2 + 1);
 	}
 	
 	public void reset(){

@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 
 import org.opencv.core.Point;
@@ -12,6 +13,7 @@ import org.opencv.core.Point;
 import seu.lab.matrix.animation.Animatable;
 import seu.lab.matrix.animation.DisplayAnimation;
 import seu.lab.matrix.animation.LiveTileAnimation;
+import seu.lab.matrix.animation.PickGroup;
 import seu.lab.matrix.animation.ScaleAnimation;
 import seu.lab.matrix.animation.TranslationAnimation;
 
@@ -70,18 +72,27 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 	List<Animatable> animatables = new LinkedList<Animatable>();
 
-	private LiveTileAnimation[] mTiles = new LiveTileAnimation[] {
+	private LiveTileAnimation[] mBoardTiles = new LiveTileAnimation[] {
 			new LiveTileAnimation("minecraft"), new LiveTileAnimation(""),
-			new LiveTileAnimation(""), new LiveTileAnimation("") };
-
+			new LiveTileAnimation(""), new LiveTileAnimation(""),
+	};
+	
+	private LiveTileAnimation[] mListTiles = new LiveTileAnimation[] {
+			new LiveTileAnimation(""), new LiveTileAnimation(""),
+			new LiveTileAnimation(""), new LiveTileAnimation(""),
+			new LiveTileAnimation(""), new LiveTileAnimation(""), 
+	};
+	
 	private Map<String, Object3D> clickableBoards = new HashMap<String, Object3D>();
 	private Map<String, Object3D> clickableIcons = new HashMap<String, Object3D>();
 	private Map<String, Object3D> clickableLists = new HashMap<String, Object3D>();
+	
+	PickGroup[] pickGroupBoards = new PickGroup[11];
 
 	GestureDetector gestureDetector = null;
 
 	SimpleOnGestureListener gestureListener = new SimpleOnGestureListener() {
-		
+
 		public boolean onDoubleTap(MotionEvent e) {
 			return super.onDoubleTap(e);
 		}
@@ -120,6 +131,8 @@ public class SceneActivity extends Framework3DMatrixActivity {
 	private Object3D mSkype;
 
 	private Object3D mList;
+
+	private boolean isListShown = true;
 
 	@Override
 	public void onSurfaceChanged(int w, int h) {
@@ -218,15 +231,21 @@ public class SceneActivity extends Framework3DMatrixActivity {
 				name = mObjects[i].getName();
 				Log.e(TAG, "name: " + name);
 				saveObject(name, mObjects[i]);
-				getIslands(name, mObjects[i]);
 			}
 			for (int i = 0; i < mObjects.length; i++) {
 				name = mObjects[i].getName();
 				getScreen(name, mObjects[i]);
 			}
-
-			for (int i = 0; i < mTiles.length; i++) {
-				animatables.add(mTiles[i]);
+			
+			postInitBoard();
+			postInitList();
+			
+			for (int i = 0; i < mBoardTiles.length; i++) {
+				animatables.add(mBoardTiles[i]);
+			}
+			
+			for (int i = 0; i < mListTiles.length; i++) {
+				animatables.add(mListTiles[i]);
 			}
 
 			// animatables.add(new ScaleAnimation(new Object3D[]{
@@ -239,18 +258,30 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 			mSkype = clickableBoards.get("b_skype");
 
-			mList = clickableLists.get("l_list");
-			
+			mList = clickableLists.get("l_l2");
+
 		} else {
-			
+
 			// pick obj
-			
-			Log.e(TAG, "pick skype"+isLookingAt(cam, ball1, mSkype.getTransformedCenter()));
 
-			Log.e(TAG, "pick scr"+isLookingAt(cam, ball1, screens[0].getTransformedCenter()));
+			if (isLookingAt(cam, ball1, mSkype.getTransformedCenter()) > 0.8) {
+				Log.e(TAG, "pick skype");
 
-			Log.e(TAG, "pick list"+isLookingAt(cam, ball1, screens[0].getTransformedCenter()));
-			
+				pickBoard();
+
+			} else if (isLookingAt(cam, ball1,
+					screens[0].getTransformedCenter()) > 0.8) {
+				Log.e(TAG, "pick scr");
+
+				pickScr();
+
+			} else if (isListShown
+					&& isLookingAt(cam, ball1, mList.getTransformedCenter()) > 0.8) {
+				Log.e(TAG, "pick list");
+
+				pickList();
+			}
+
 			// animations
 			for (int i = 0; i < animatables.size();) {
 				Animatable a = animatables.get(i);
@@ -318,7 +349,21 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 	}
 
-	private void getIslands(String name, Object3D object3d) {
+	private void pickList() {
+		// TODO Auto-generated method stub
+
+	}
+
+	private void pickScr() {
+		// TODO Auto-generated method stub
+
+	}
+
+	private void pickBoard() {
+
+	}
+
+	private void initIslands(String name, Object3D object3d) {
 		if (name.contains("i_trea"))
 			islands[3] = object3d;
 		else if (name.contains("i_ship"))
@@ -329,83 +374,53 @@ public class SceneActivity extends Framework3DMatrixActivity {
 			islands[0] = object3d;
 	}
 
-	private void getScreen(String name, Object3D object3d) {
-		if (name.contains("x_")) {
-			Log.e(TAG, "getScreen: " + name);
-			if (mCamViewspots[4] != object3d)
-				mCamViewspots[4].addChild(object3d);
-		}
-	}
 
-	private void getLiveTile(String name, Object3D object3d) {
-
-		if (name.startsWith("x_b_mine")) {
-			mTiles[0].setTile1(object3d, new SimpleVector(0.839, -1, 0));
-		} else if (name.startsWith("x_b_m2ine")) {
-			mTiles[0].setTile2(object3d, new SimpleVector(0.839, -1, 0));
-		} else if (name.startsWith("x_b_car")) {
-			mTiles[1].setTile1(object3d, new SimpleVector(0.839, -1, 0));
-		} else if (name.startsWith("x_b_c2ar")) {
-			mTiles[1].setTile2(object3d, new SimpleVector(0.839, -1, 0));
-		} else if (name.startsWith("x_b_video")) {
-			mTiles[2].setTile1(object3d, new SimpleVector(0.839, -1, 0));
-		} else if (name.startsWith("x_b_v2ideo")) {
-			mTiles[2].setTile2(object3d, new SimpleVector(0.839, -1, 0));
-		} else if (name.startsWith("x_b_pic")) {
-			mTiles[3].setTile1(object3d, new SimpleVector(1.729, -1, 0));
-		} else if (name.startsWith("x_b_p2ic")) {
-			mTiles[3].setTile2(object3d, new SimpleVector(1.729, -1, 0));
-		}
-
-	}
-
-	private void setBoardTexture(String name, Object3D object3d) {
-		TextureManager tm = TextureManager.getInstance();
-		String tname = name.substring(2, name.indexOf("_Plane"));
-		object3d.clearAdditionalColor();
-
-		Log.e(TAG, "matching tname:" + tname);
-
-		clickableBoards.put(tname, object3d);
-		
-		if (tm.containsTexture(tname)) {
-			object3d.setTexture(tname);
-		} else {
-			object3d.setTexture("dummy");
-		}
-		object3d.calcTextureWrapSpherical();
-		object3d.strip();
-		object3d.build();
-	}
-	
-	private void setIconTexture(String name, Object3D object3d) {
-		TextureManager tm = TextureManager.getInstance();
-		String tname = name.substring(2, name.indexOf("_Plane"));
-		object3d.clearAdditionalColor();
-
-		Log.e(TAG, "matching tname:" + tname);
-
-		clickableIcons.put(tname, object3d);
-		
-		if (tm.containsTexture(tname)) {
-			object3d.setTexture(tname);
-		} else {
-			object3d.setTexture("dummy");
-		}
-		object3d.calcTextureWrapSpherical();
-		object3d.strip();
-		object3d.build();
-	}
-
-	private void setListTexture(String name, Object3D object3d) {
-		
-		String tname = name.substring(2, name.indexOf("_Plane"));
-		Log.e(TAG, "matching tname:" + tname);
-
-		clickableLists.put(tname, object3d);
-	}
-	
 	private void saveObject(String name, Object3D object3d) {
+		
+		if(name.startsWith("c_")){
+			initCamera(name, object3d);
+		}else if (name.startsWith("x_c_works")) {
+			object3d.setVisibility(false);
+			mCamViewspots[4] = object3d;
+			return;
+		} else if (name.startsWith("weather")) {
+			SimpleVector sv = new SimpleVector(object3d.getTransformedCenter());
+			sv.y -= 10;
+			sun.setPosition(sv);
+			return;
+		} else if (name.startsWith("i_")) {
+			Log.e(TAG, "i_");
+			initIslands(name, object3d);
+			return;
+		} else if (name.startsWith("x_b")) {
+			Log.e(TAG, "x_b");
+			initBoard(name, object3d);
+			return;
+		} else if (name.startsWith("x_i")) {
+			Log.e(TAG, "x_i");
+			initIcons(name, object3d);
+			return;
+		} else if (name.startsWith("x_l")) {
+			Log.e(TAG, "x_l");
+			initLists(name, object3d);
+			return;
+		} else if (name.startsWith("x_scr")) {
+			Log.e(TAG, "x_scr");
+			initScr(name, object3d);
+			return;
+		}
+	}
+	
+	private void initScr(String name, Object3D object3d) {
+		object3d.clearAdditionalColor();
+		object3d.setShader(screenShaders[name.charAt(5) - '1']);
+		object3d.calcTextureWrapSpherical();
+		object3d.build();
+		object3d.strip();
+		screens[name.charAt(5) - '1'] = object3d;
+	}
+
+	private void initCamera(String name, Object3D object3d) {
 		if (name.startsWith("c_green")) {
 			object3d.setVisibility(false);
 			mCamViewspots[0] = object3d;
@@ -422,60 +437,149 @@ public class SceneActivity extends Framework3DMatrixActivity {
 			object3d.setVisibility(false);
 			mCamViewspots[3] = object3d;
 			return;
-		} else if (name.startsWith("x_c_works")) {
-			object3d.setVisibility(false);
-			mCamViewspots[4] = object3d;
-			return;
-		} else if (name.startsWith("weather")) {
-			SimpleVector sv = new SimpleVector(object3d.getTransformedCenter());
-			sv.y -= 10;
-			sun.setPosition(sv);
-			return;
-		} else if (name.startsWith("i_")) {
+		} 
+	}
 
-			Log.e(TAG, "i_");
-
-			getIslands(name, object3d);
-
-			return;
-		} else if (name.startsWith("x_b")) {
-
-			Log.e(TAG, "x_b");
-
-			setBoardTexture(name, object3d);
-			getLiveTile(name, object3d);
-
-			return;
-		} else if (name.startsWith("x_i")) {
-
-			Log.e(TAG, "x_i");
-
-			setIconTexture(name, object3d);
-
-			return;
-		} else if (name.startsWith("x_l")) {
-
-			Log.e(TAG, "x_l");
-			
-			setListTexture(name, object3d);
-
-			return;
-		} else if (name.startsWith("x_scr")) {
-
-			Log.e(TAG, "x_scr");
-
-			object3d.clearAdditionalColor();
-			object3d.setShader(screenShaders[name.charAt(5) - '1']);
-			object3d.calcTextureWrapSpherical();
-			object3d.build();
-			object3d.strip();
-
-			screens[name.charAt(5) - '1'] = object3d;
-
-			return;
+	private void getScreen(String name, Object3D object3d) {
+		if (name.contains("x_")) {
+			Log.e(TAG, "getScreen: " + name);
+			if (mCamViewspots[4] != object3d)
+				mCamViewspots[4].addChild(object3d);
 		}
 	}
 
+	private void initBoard(String name, Object3D object3d) {
+
+		TextureManager tm = TextureManager.getInstance();
+		String tname = name.substring(2, name.indexOf("_Plane"));
+		object3d.clearAdditionalColor();
+
+		Log.e(TAG, "matching tname:" + tname);
+
+		clickableBoards.put(tname, object3d);
+
+		if (tm.containsTexture(tname)) {
+			object3d.setTexture(tname);
+		} else {
+			object3d.setTexture("dummy");
+		}
+		object3d.calcTextureWrapSpherical();
+		object3d.strip();
+		object3d.build();
+	}
+	
+	private void postInitBoard(){
+
+		for (int i = 0; i < 4; i++) {
+			pickGroupBoards[i] = new PickGroup(false);
+		}
+		for (int i = 4; i < pickGroupBoards.length; i++) {
+			pickGroupBoards[i] = new PickGroup(true);
+		}
+		
+		Object3D tmp;
+		tmp = clickableBoards.get("b_minecraft");
+		mBoardTiles[0].setTile1(tmp, new SimpleVector(0.839, -1, 0));
+		pickGroupBoards[0].group[0] = tmp;
+
+		tmp = clickableBoards.get("b_m2inecraft");
+		mBoardTiles[0].setTile2(tmp, new SimpleVector(0.839, -1, 0));
+		pickGroupBoards[0].group[1] = tmp;
+		
+		tmp = clickableBoards.get("b_car");
+		mBoardTiles[1].setTile1(tmp, new SimpleVector(0.839, -1, 0));
+		pickGroupBoards[1].group[0] = tmp;
+		
+		tmp = clickableBoards.get("b_c2ar");
+		mBoardTiles[1].setTile2(tmp, new SimpleVector(0.839, -1, 0));
+		pickGroupBoards[1].group[1] = tmp;
+
+		tmp = clickableBoards.get("b_video");
+		mBoardTiles[2].setTile1(tmp, new SimpleVector(0.839, -1, 0));
+		pickGroupBoards[2].group[0] = tmp;
+		
+		tmp = clickableBoards.get("b_v2ideo");
+		mBoardTiles[2].setTile2(tmp, new SimpleVector(0.839, -1, 0));
+		pickGroupBoards[2].group[1] = tmp;
+
+		tmp = clickableBoards.get("b_pic");
+		mBoardTiles[3].setTile1(tmp, new SimpleVector(1.732, -1, 0));
+		pickGroupBoards[3].group[0] = tmp;
+		
+		tmp = clickableBoards.get("b_p2ic");
+		mBoardTiles[3].setTile2(tmp, new SimpleVector(1.732, -1, 0));
+		pickGroupBoards[3].group[1] = tmp;
+		
+		tmp = clickableBoards.get("b_skype");
+		pickGroupBoards[3].group[0] = tmp;
+		tmp = clickableBoards.get("b_ie");
+		pickGroupBoards[5].group[0] = tmp;
+		tmp = clickableBoards.get("b_file");
+		pickGroupBoards[6].group[0] = tmp;
+		tmp = clickableBoards.get("b_word");
+		pickGroupBoards[7].group[0] = tmp;
+		tmp = clickableBoards.get("b_excel");
+		pickGroupBoards[8].group[0] = tmp;
+		tmp = clickableBoards.get("b_ppt");
+		pickGroupBoards[9].group[0] = tmp;
+		tmp = clickableBoards.get("b_null");
+		pickGroupBoards[10].group[0] = tmp;
+	}
+
+
+	private void initIcons(String name, Object3D object3d) {
+		TextureManager tm = TextureManager.getInstance();
+		String tname = name.substring(2, name.indexOf("_Plane"));
+		object3d.clearAdditionalColor();
+
+		Log.e(TAG, "matching tname:" + tname);
+
+		clickableIcons.put(tname, object3d);
+
+		if (tm.containsTexture(tname)) {
+			object3d.setTexture(tname);
+		} else {
+			object3d.setTexture("dummy");
+		}
+		object3d.calcTextureWrapSpherical();
+		object3d.strip();
+		object3d.build();
+	}
+
+
+	private void initLists(String name, Object3D object3d) {
+		TextureManager tm = TextureManager.getInstance();
+
+		String tname = name.substring(2, name.indexOf("_Plane"));
+		Log.e(TAG, "matching tname:" + tname);
+
+		if (tm.containsTexture(tname)) {
+			object3d.setTexture(tname);
+		} else {
+			object3d.setTexture("dummy");
+		}
+		object3d.calcTextureWrapSpherical();
+		object3d.strip();
+		object3d.build();
+
+		clickableLists.put(tname, object3d);
+	}
+
+	private void postInitList(){
+		mListTiles[0].setTile1(clickableLists.get("l_l1"), new SimpleVector(1.729, 1, 0));
+		mListTiles[1].setTile1(clickableLists.get("l_l2"), new SimpleVector(1.729, 1, 0));
+		mListTiles[2].setTile1(clickableLists.get("l_l3"), new SimpleVector(1.729, 1, 0));
+		mListTiles[3].setTile1(clickableLists.get("l_l4"), new SimpleVector(3.732, 1, 0));
+		mListTiles[4].setTile1(clickableLists.get("l_l5"), new SimpleVector(3.732, 1, 0));
+		mListTiles[5].setTile1(clickableLists.get("l_l6"), new SimpleVector(3.732, 1, 0));
+		mListTiles[0].setTile2(clickableLists.get("l_l7"), new SimpleVector(1.729, 1, 0));
+		mListTiles[1].setTile2(clickableLists.get("l_l8"), new SimpleVector(1.729, 1, 0));
+		mListTiles[2].setTile2(clickableLists.get("l_l9"), new SimpleVector(1.729, 1, 0));
+		mListTiles[3].setTile2(clickableLists.get("l_la"), new SimpleVector(3.732, 1, 0));
+		mListTiles[4].setTile2(clickableLists.get("l_lb"), new SimpleVector(3.732, 1, 0));
+		mListTiles[5].setTile2(clickableLists.get("l_lc"), new SimpleVector(3.732, 1, 0));
+	}
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
