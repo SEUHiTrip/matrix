@@ -1,11 +1,19 @@
 package seu.lab.matrix;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 import org.opencv.core.Point;
+
+import seu.lab.matrix.animation.Animatable;
+import seu.lab.matrix.animation.DisplayAnimation;
+import seu.lab.matrix.animation.LiveTileAnimation;
+import seu.lab.matrix.animation.ScaleAnimation;
+import seu.lab.matrix.animation.TranslationAnimation;
 
 import android.R.integer;
 import android.content.res.AssetManager;
@@ -62,14 +70,18 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 	List<Animatable> animatables = new LinkedList<Animatable>();
 
-	private LiveTile[] mTiles = new LiveTile[]{
-		new LiveTile(), new LiveTile(),
-		new LiveTile(), new LiveTile()
-	};
-	
+	private LiveTileAnimation[] mTiles = new LiveTileAnimation[] {
+			new LiveTileAnimation("minecraft"), new LiveTileAnimation(""),
+			new LiveTileAnimation(""), new LiveTileAnimation("") };
+
+	private Map<String, Object3D> clickableBoards = new HashMap<String, Object3D>();
+	private Map<String, Object3D> clickableIcons = new HashMap<String, Object3D>();
+	private Map<String, Object3D> clickableLists = new HashMap<String, Object3D>();
+
 	GestureDetector gestureDetector = null;
 
 	SimpleOnGestureListener gestureListener = new SimpleOnGestureListener() {
+		
 		public boolean onDoubleTap(MotionEvent e) {
 			return super.onDoubleTap(e);
 		}
@@ -97,11 +109,17 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 			points.get(0).x = x;
 			points.get(0).y = y;
-			
+
 			return false;
 		}
 
 	};
+
+	private boolean test = true;
+
+	private Object3D mSkype;
+
+	private Object3D mList;
 
 	@Override
 	public void onSurfaceChanged(int w, int h) {
@@ -189,14 +207,12 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 		if (frameCounter == 0) {
 			frameCounter++;
-
 			cam = world.getCamera();
-
 		} else if (frameCounter == 1) {
 			frameCounter++;
 
 			mCamViewspots = new Object3D[5];
-			
+
 			String name = null;
 			for (int i = 0; i < mObjects.length; i++) {
 				name = mObjects[i].getName();
@@ -208,17 +224,43 @@ public class SceneActivity extends Framework3DMatrixActivity {
 				name = mObjects[i].getName();
 				getScreen(name, mObjects[i]);
 			}
-			
+
 			for (int i = 0; i < mTiles.length; i++) {
 				animatables.add(mTiles[i]);
 			}
-		}else {
+
+			// animatables.add(new ScaleAnimation(new Object3D[]{
+			// mTiles[0].tile1, mTiles[0].tile2
+			// }, "tile scale", 2f));
+
+			// animatables.add(new DisplayAnimation(new Object3D[]{
+			// mTiles[1].tile1, mTiles[1].tile2
+			// }, "tile scale", true));
+
+			mSkype = clickableBoards.get("b_skype");
+
+			mList = clickableLists.get("l_list");
+			
+		} else {
+			
+			// pick obj
+			
+			Log.e(TAG, "pick skype"+isLookingAt(cam, ball1, mSkype.getTransformedCenter()));
+
+			Log.e(TAG, "pick scr"+isLookingAt(cam, ball1, screens[0].getTransformedCenter()));
+
+			Log.e(TAG, "pick list"+isLookingAt(cam, ball1, screens[0].getTransformedCenter()));
+			
 			// animations
-			for (Animatable a : animatables) {
-				if(a.isOver()){
-					animatables.remove(a);
-				}else {
+			for (int i = 0; i < animatables.size();) {
+				Animatable a = animatables.get(i);
+				if (a.isOver()) {
+					a.onAnimateSuccess();
+					animatables.remove(i);
+
+				} else {
 					a.animate();
+					i++;
 				}
 			}
 		}
@@ -290,43 +332,64 @@ public class SceneActivity extends Framework3DMatrixActivity {
 	private void getScreen(String name, Object3D object3d) {
 		if (name.contains("x_")) {
 			Log.e(TAG, "getScreen: " + name);
-			if(mCamViewspots[4] != object3d)
+			if (mCamViewspots[4] != object3d)
 				mCamViewspots[4].addChild(object3d);
 		}
 	}
-	
-	private void getLiveTile(String name, Object3D object3d){
-		
-		if(name.startsWith("x_b_mine")){
+
+	private void getLiveTile(String name, Object3D object3d) {
+
+		if (name.startsWith("x_b_mine")) {
 			mTiles[0].setTile1(object3d, new SimpleVector(0.839, -1, 0));
-		}else if (name.startsWith("x_b_m2ine")) {
+		} else if (name.startsWith("x_b_m2ine")) {
 			mTiles[0].setTile2(object3d, new SimpleVector(0.839, -1, 0));
-		}else if (name.startsWith("x_b_car")) {
+		} else if (name.startsWith("x_b_car")) {
 			mTiles[1].setTile1(object3d, new SimpleVector(0.839, -1, 0));
-		}else if (name.startsWith("x_b_c2ar")) {
+		} else if (name.startsWith("x_b_c2ar")) {
 			mTiles[1].setTile2(object3d, new SimpleVector(0.839, -1, 0));
-		}else if (name.startsWith("x_b_video")) {
+		} else if (name.startsWith("x_b_video")) {
 			mTiles[2].setTile1(object3d, new SimpleVector(0.839, -1, 0));
-		}else if (name.startsWith("x_b_v2ideo")) {
+		} else if (name.startsWith("x_b_v2ideo")) {
 			mTiles[2].setTile2(object3d, new SimpleVector(0.839, -1, 0));
-		}else if (name.startsWith("x_b_pic")) {
+		} else if (name.startsWith("x_b_pic")) {
 			mTiles[3].setTile1(object3d, new SimpleVector(1.729, -1, 0));
-		}else if (name.startsWith("x_b_p2ic")) {
+		} else if (name.startsWith("x_b_p2ic")) {
 			mTiles[3].setTile2(object3d, new SimpleVector(1.729, -1, 0));
 		}
-		
+
 	}
-	
+
 	private void setBoardTexture(String name, Object3D object3d) {
 		TextureManager tm = TextureManager.getInstance();
 		String tname = name.substring(2, name.indexOf("_Plane"));
 		object3d.clearAdditionalColor();
 
-		Log.e(TAG, "matching tname:"+tname);
+		Log.e(TAG, "matching tname:" + tname);
+
+		clickableBoards.put(tname, object3d);
 		
 		if (tm.containsTexture(tname)) {
 			object3d.setTexture(tname);
-		}else {
+		} else {
+			object3d.setTexture("dummy");
+		}
+		object3d.calcTextureWrapSpherical();
+		object3d.strip();
+		object3d.build();
+	}
+	
+	private void setIconTexture(String name, Object3D object3d) {
+		TextureManager tm = TextureManager.getInstance();
+		String tname = name.substring(2, name.indexOf("_Plane"));
+		object3d.clearAdditionalColor();
+
+		Log.e(TAG, "matching tname:" + tname);
+
+		clickableIcons.put(tname, object3d);
+		
+		if (tm.containsTexture(tname)) {
+			object3d.setTexture(tname);
+		} else {
 			object3d.setTexture("dummy");
 		}
 		object3d.calcTextureWrapSpherical();
@@ -334,6 +397,14 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		object3d.build();
 	}
 
+	private void setListTexture(String name, Object3D object3d) {
+		
+		String tname = name.substring(2, name.indexOf("_Plane"));
+		Log.e(TAG, "matching tname:" + tname);
+
+		clickableLists.put(tname, object3d);
+	}
+	
 	private void saveObject(String name, Object3D object3d) {
 		if (name.startsWith("c_green")) {
 			object3d.setVisibility(false);
@@ -373,6 +444,20 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 			setBoardTexture(name, object3d);
 			getLiveTile(name, object3d);
+
+			return;
+		} else if (name.startsWith("x_i")) {
+
+			Log.e(TAG, "x_i");
+
+			setIconTexture(name, object3d);
+
+			return;
+		} else if (name.startsWith("x_l")) {
+
+			Log.e(TAG, "x_l");
+			
+			setListTexture(name, object3d);
 
 			return;
 		} else if (name.startsWith("x_scr")) {
@@ -416,7 +501,7 @@ public class SceneActivity extends Framework3DMatrixActivity {
 	public boolean onTouchEvent(MotionEvent event) {
 		if (true)
 			return gestureDetector.onTouchEvent(event);
-		
+
 		if (!(event.getAction() == MotionEvent.ACTION_UP))
 			return false;
 

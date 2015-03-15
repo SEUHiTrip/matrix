@@ -285,16 +285,23 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 		SimpleVector camDir = new SimpleVector();
 		cam.getDirection(camDir);
 		SimpleVector camPos=cam.getPosition();
-		
-		//double sum = Math.pow(center.x, 2d) + Math.pow(center.y, 2d) + Math.pow(center.z, 2d);
+
 		double sum = Math.pow(center.x-camPos.x, 2d) + Math.pow(center.y-camPos.y, 2d) + Math.pow(center.z-camPos.z, 2d);
 		sum = Math.sqrt(sum);
-//		center.x = (float) (center.x / sum);
-//		center.y = (float) (center.y / sum);
-//		center.z = (float) (center.z / sum);
 
-		//double dot = camDir.x * center.x + camDir.y * center.y + camDir.z * center.z;
 		double dot = (camDir.x * (center.x-camPos.x) + camDir.y * (center.y-camPos.y) + camDir.z * (center.z-camPos.z))/sum;
+		return dot;
+	}
+	
+	double isLookingAt(Camera cam, Object3D hand, SimpleVector center){
+		SimpleVector handDir = hand.getTransformedCenter().calcSub(cam.getPosition());
+		SimpleVector camPos = center.calcSub(cam.getPosition());
+
+		handDir = handDir.normalize();
+		camPos = camPos.normalize();
+
+		double dot = handDir.calcDot(camPos);
+
 		return dot;
 	}
 	

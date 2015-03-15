@@ -1,4 +1,4 @@
-package seu.lab.matrix;
+package seu.lab.matrix.animation;
 
 import java.util.Random;
 
@@ -11,16 +11,16 @@ import com.threed.jpct.Matrix;
 import com.threed.jpct.Object3D;
 import com.threed.jpct.SimpleVector;
 
-public class LiveTile implements Animatable{
+public class LiveTileAnimation extends BaseValueAnimation{
 
-	private Object3D tile1;
-	private Object3D tile2;
+	public LiveTileAnimation(String tag) {
+		super(tag, Math.PI);
+		loop = true;
+	}
+
+	public Object3D tile1;
+	public Object3D tile2;
 	
-	private int index = 0;
-	private int duration = 300;
-	private static final double factor = 0.75;
-	private double base;
-
 	private SimpleVector axis1 = new SimpleVector(1, -1, 0);
 	private SimpleVector axis2 = new SimpleVector(1, -1, 0);
 	
@@ -38,8 +38,7 @@ public class LiveTile implements Animatable{
 	
 	public void init(){
 		if(tile1 == null || tile2 == null)return;
-		duration *= (int )(Math.random() * 3 + 1);
-		base = 3.1415926 * (1-factor) / factor;
+		frames *= (int )(Math.random() * 2 + 1);
 	}
 	
 	public void reset(){
@@ -47,14 +46,20 @@ public class LiveTile implements Animatable{
 		tile2.clearRotation();
 	}
 	
-	public void animate() {
-		index = index + 1 > duration ? index = 1 : index + 1;
-		
-		tile1.rotateAxis(axis1, (float)(Math.pow(factor, index) * base));
-		tile2.rotateAxis(axis2, (float)(Math.pow(factor, index) * base));
+	@Override
+	public void onAnimateSuccess() {
+
 	}
 
-	public boolean isOver() {
-		return false;
+	@Override
+	void onChange(double v) {
+		tile1.rotateAxis(axis1, (float) v);
+		tile2.rotateAxis(axis2, (float) v);
+	}
+	
+	@Override
+	public void stop() {
+		reset();
+		super.stop();
 	}
 }
