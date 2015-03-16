@@ -1,7 +1,6 @@
 package seu.lab.matrix;
 
 import java.io.IOException;
-import java.util.Vector;
 
 import android.R.integer;
 import android.content.res.AssetManager;
@@ -11,6 +10,7 @@ import android.util.Log;
 import android.view.GestureDetector;
 import android.view.GestureDetector.OnGestureListener;
 import android.view.MotionEvent;
+import android.widget.Toast;
 
 import com.google.vrtoolkit.cardboard.CardboardView;
 import com.google.vrtoolkit.cardboard.Eye;
@@ -269,6 +269,9 @@ public class SceneActivity extends Framework3DMatrixActivity{
 			SimpleVector target=center_screen_origin;
 			SimpleVector distance=new SimpleVector(target.x-center_screen.x, target.y-center_screen.y, target.z-center_screen.z);
 			screen.translate(distance);
+			Toast.makeText(getApplicationContext(), "Treasure",
+				     Toast.LENGTH_SHORT).show();
+			flyAroundTreasure();
 		}
 		
 //		Log.e("pos", "green"+center_island_green);
@@ -279,5 +282,10 @@ public class SceneActivity extends Framework3DMatrixActivity{
 //		Log.e("pos", "camVolcano"+mCamViewspots[2].getTransformedCenter());
 //		Log.e("pos", "camShip"+mCamViewspots[3].getTransformedCenter());
 		return false;
+	}
+	
+	void flyAroundTreasure(){
+		SimpleVector originPosition=cam.getPosition();
+		cam.setPosition(originPosition.x,originPosition.y,originPosition.z+0);
 	}
 }
