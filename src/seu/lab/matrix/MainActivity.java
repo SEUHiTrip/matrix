@@ -2,11 +2,12 @@ package seu.lab.matrix;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.opencv.samples.colorblobdetect.ColorBlobDetectionActivity;
-import org.opencv.samples.colorblobdetect.ColorTrackActivity;
 
 import seu.lab.matrix.ar.ARActivity;
 import seu.lab.matrix.bullet.BulletTestActivity;
+import seu.lab.matrix.red.ColorBlobDetectionActivity;
+import seu.lab.matrix.red.ColorTrackActivity;
+import seu.lab.matrix.test.MatrixActivity;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.Response.ErrorListener;
@@ -61,10 +62,8 @@ public class MainActivity extends Activity {
 		Button duel = (Button) findViewById(R.id.connect_btn_duel);
 		Button side = (Button) findViewById(R.id.connect_btn_sidebyside);
 
-		Button cardboardButton = (Button) findViewById(R.id.cardboard_btn);
 		Button connetButton = (Button) findViewById(R.id.connect_btn);
 		Button testButton = (Button) findViewById(R.id.test);
-		Button pickButton = (Button) findViewById(R.id.pick_btn);
 		Button trackButton = (Button) findViewById(R.id.track_btn);
 		Button arButton = (Button) findViewById(R.id.ar_btn);
 		Button sceneButton=(Button)findViewById(R.id.scene_btn);
@@ -76,7 +75,7 @@ public class MainActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				Intent intent = new Intent(getApplicationContext(),
-						Framework3DMatrixActivity.class);
+						SceneActivity.class);
 				intent.putExtra("mode", new IDisplayConnection.ConnectionMode(
 						ConnectionType.Single.ordinal()));
 				startActivity(intent);
@@ -107,16 +106,6 @@ public class MainActivity extends Activity {
 			}
 		});
 
-		cardboardButton.setOnClickListener(new OnClickListener() {
-
-			@Override
-			public void onClick(View v) {
-				Intent intent = new Intent(getApplicationContext(),
-						MatrixActivity.class);
-				startActivity(intent);
-			}
-		});
-
 		connetButton.setOnClickListener(new OnClickListener() {
 
 			@Override
@@ -136,16 +125,6 @@ public class MainActivity extends Activity {
 			public void onClick(View arg0) {
 				Intent intent = new Intent(getApplicationContext(),
 						PeopleTestActivity.class);
-				startActivity(intent);
-			}
-		});
-
-		pickButton.setOnClickListener(new OnClickListener() {
-
-			@Override
-			public void onClick(View arg0) {
-				Intent intent = new Intent(getApplicationContext(),
-						ColorBlobDetectionActivity.class);
 				startActivity(intent);
 			}
 		});

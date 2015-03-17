@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package seu.lab.matrix;
+package seu.lab.matrix.obj;
 
 /**
  * Contains vertex, normal and color data.

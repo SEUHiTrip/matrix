@@ -91,22 +91,13 @@ public class TestActivity extends BaseTestActivity {
 		}
 		
 		@Override
-		public void onContinuousGestureUpdate(ContinuousGestureEvent event) {
-			// TODO Auto-generated method stub
-			
-		}
+		public void onContinuousGestureUpdate(ContinuousGestureEvent event) {}
 		
 		@Override
-		public void onContinuousGestureStart(ContinuousGestureEvent event) {
-			// TODO Auto-generated method stub
-			
-		}
+		public void onContinuousGestureStart(ContinuousGestureEvent event) {}
 		
 		@Override
-		public void onContinuousGestureEnd() {
-			// TODO Auto-generated method stub
-			
-		}
+		public void onContinuousGestureEnd() {}
 		
 		@Override
 		public JSONObject getGestureConfig() {

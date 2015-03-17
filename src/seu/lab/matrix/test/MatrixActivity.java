@@ -1,4 +1,4 @@
-package seu.lab.matrix;
+package seu.lab.matrix.test;
 
 import com.google.vrtoolkit.cardboard.CardboardActivity;
 import com.google.vrtoolkit.cardboard.CardboardView;
@@ -24,6 +24,15 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import javax.microedition.khronos.egl.EGLConfig;
+
+import seu.lab.matrix.CardboardOverlayView;
+import seu.lab.matrix.R;
+import seu.lab.matrix.R.id;
+import seu.lab.matrix.R.layout;
+import seu.lab.matrix.R.raw;
+import seu.lab.matrix.obj.Cube;
+import seu.lab.matrix.obj.Floor;
+import seu.lab.matrix.obj.WorldLayoutData;
 
 public class MatrixActivity extends CardboardActivity implements
 		CardboardView.StereoRenderer {

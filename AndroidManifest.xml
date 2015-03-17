@@ -100,25 +100,25 @@
             android:name="com.idisplay.VirtualScreenDisplay.ConnectionActivity"
             android:label="@string/app_name" />
         <activity
-            android:name=".MatrixActivity"
+            android:name="seu.lab.matrix.test.MatrixActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/app_name"
             android:screenOrientation="landscape" >
         </activity>
         <activity
-            android:name="org.opencv.samples.colorblobdetect.ColorBlobDetectionActivity"
+            android:name="seu.lab.matrix.red.ColorBlobDetectionActivity"
             android:configChanges="keyboardHidden|orientation"
             android:label="@string/app_name"
             android:screenOrientation="landscape" >
         </activity>
         <activity
-            android:name="org.opencv.samples.colorblobdetect.CopyOfColorBlobDetectionActivity"
+            android:name="seu.lab.matrix.red.CopyOfColorBlobDetectionActivity"
             android:configChanges="keyboardHidden|orientation"
             android:label="@string/app_name"
             android:screenOrientation="landscape" >
         </activity>
         <activity
-            android:name="org.opencv.samples.colorblobdetect.ColorTrackActivity"
+            android:name="seu.lab.matrix.red.ColorTrackActivity"
             android:configChanges="keyboardHidden|orientation"
             android:label="@string/app_name"
             android:screenOrientation="landscape" >

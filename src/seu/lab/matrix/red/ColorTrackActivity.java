@@ -1,4 +1,4 @@
-package org.opencv.samples.colorblobdetect;
+package seu.lab.matrix.red;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -21,8 +21,6 @@ import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.imgproc.Moments;
-import org.opencv.samples.colorblobdetect.RemoteManager.OnRemoteChangeListener;
-import org.opencv.samples.colorblobdetect.SimpleCameraBridge.DefaultCvCameraViewListener2;
 
 import com.google.vrtoolkit.cardboard.CardboardActivity;
 import com.google.vrtoolkit.cardboard.CardboardView;
@@ -44,6 +42,8 @@ import com.threed.jpct.util.BitmapHelper;
 import com.threed.jpct.util.MemoryHelper;
 
 import seu.lab.matrix.R;
+import seu.lab.matrix.red.RemoteManager.OnRemoteChangeListener;
+import seu.lab.matrix.red.SimpleCameraBridge.DefaultCvCameraViewListener2;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -57,7 +57,7 @@ import android.view.WindowManager;
 import android.view.View.OnTouchListener;
 
 public class ColorTrackActivity extends CardboardActivity implements
-		OnTouchListener, CardboardView.StereoRenderer, OnRemoteChangeListener{
+		CardboardView.StereoRenderer, OnRemoteChangeListener{
 	private static final String TAG = "SimpleColorBlobDetectionActivity";
 
 	private static boolean isInit = false;
@@ -77,8 +77,6 @@ public class ColorTrackActivity extends CardboardActivity implements
 	
 	private SimpleVector origin = new SimpleVector(0,0,5);
 
-	List<android.hardware.Camera.Size> mResolutionList;
-
 	Point point = new Point();
 	
 	private SimpleCameraBridge mOpenCvCameraView;
@@ -87,17 +85,15 @@ public class ColorTrackActivity extends CardboardActivity implements
 		@Override
 		public void onManagerConnected(int status) {
 			switch (status) {
-			case LoaderCallbackInterface.SUCCESS: {
-				Log.i(TAG, "OpenCV loaded successfully");
-				mOpenCvCameraView.enableView();
-				mOpenCvCameraView
-						.setOnTouchListener(ColorTrackActivity.this);
-			}
-				break;
-			default: {
-				super.onManagerConnected(status);
-			}
-				break;
+				case LoaderCallbackInterface.SUCCESS: {
+					Log.i(TAG, "OpenCV loaded successfully");
+					mOpenCvCameraView.enableView();
+				}
+					break;
+				default: {
+					super.onManagerConnected(status);
+				}
+					break;
 			}
 		}
 	};
@@ -160,19 +156,6 @@ public class ColorTrackActivity extends CardboardActivity implements
 		mOpenCvCameraView.surfaceDestroyed(null);
 	}
 	
-	public boolean onTouch(View v, MotionEvent event) {
-//		mResolutionList = mOpenCvCameraView.getResolutionList();
-
-//		 for (int i = 0; i < mResolutionList.size(); i++) {
-//		 Log.e(TAG, ""+mResolutionList.get(i).height);
-//		 }
-
-//		mOpenCvCameraView.setResolution(mResolutionList.get(5));
-
-		Log.e(TAG, "getResolution " + mOpenCvCameraView.getResolution().width);
-		return false;
-	}
-
 	@Override
 	public void onDrawEye(Eye eye) {
 		

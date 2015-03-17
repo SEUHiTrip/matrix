@@ -219,7 +219,7 @@ public class ConnectionChannelManager implements AccessConfirmedListener, Conten
 
     public void OnAudioServiceAccessibleOnPort(int i) {
         Logger.d(this.className + ":received OnAudioServiceAccessibleOnPort...port = " + i);
-        AudioChannel.getInstance().connectToPort(i);
+//        AudioChannel.getInstance().connectToPort(i);
     }
 
     public boolean OnRecivedAccessConfirmed(CFBaseTypes cFBaseTypes) {

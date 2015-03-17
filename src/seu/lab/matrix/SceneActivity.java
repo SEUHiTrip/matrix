@@ -8,18 +8,30 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.opencv.core.Point;
 
+import seu.lab.dolphin.client.ContinuousGestureEvent;
+import seu.lab.dolphin.client.GestureEvent;
+import seu.lab.dolphin.client.IGestureListener;
 import seu.lab.matrix.animation.Animatable;
 import seu.lab.matrix.animation.DisplayAnimation;
 import seu.lab.matrix.animation.LiveTileAnimation;
+import seu.lab.matrix.animation.PeopleAnimation;
 import seu.lab.matrix.animation.PickGroup;
 import seu.lab.matrix.animation.ScaleAnimation;
 import seu.lab.matrix.animation.SeqAnimation;
 import seu.lab.matrix.animation.TranslationAnimation;
+import seu.lab.matrix.red.RemoteManager.OnRemoteChangeListener;
 
 import android.R.integer;
 import android.content.res.AssetManager;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.opengl.GLES20;
 import android.os.Bundle;
 import android.util.Log;
@@ -31,12 +43,14 @@ import android.view.MotionEvent;
 import com.google.vrtoolkit.cardboard.CardboardView;
 import com.google.vrtoolkit.cardboard.Eye;
 import com.google.vrtoolkit.cardboard.HeadTransform;
+import com.google.vrtoolkit.cardboard.Viewport;
 import com.idisplay.VirtualScreenDisplay.IDisplayConnection;
 import com.idisplay.VirtualScreenDisplay.IDisplayConnection.ConnectionMode;
 import com.idisplay.VirtualScreenDisplay.IDisplayConnection.IDisplayConnectionCallback;
 import com.idisplay.util.ServerItem;
 import com.jbrush.ae.*;
 import com.threed.jpct.Camera;
+import com.threed.jpct.Config;
 import com.threed.jpct.FrameBuffer;
 import com.threed.jpct.GLSLShader;
 import com.threed.jpct.Light;
@@ -48,6 +62,9 @@ import com.threed.jpct.SimpleVector;
 import com.threed.jpct.TextureManager;
 import com.threed.jpct.World;
 import com.threed.jpct.util.MemoryHelper;
+import com.threed.jpct.util.SkyBox;
+
+// control the 3D scene
 
 public class SceneActivity extends Framework3DMatrixActivity {
 
@@ -67,20 +84,52 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 	private Camera cam;
 
+	protected FrameBuffer fb = null;
+	protected SkyBox sky;
+	protected World world = null;
+	protected Light sun = null;
+	protected Light spot = null;
+	protected Object3D[] screens = null;
+	protected Object3D[] islands = null;
+	protected Object3D notice = null;
+
+	protected PeopleAnimation peopleAnimation;
+
+	protected RGBColor back = new RGBColor(50, 50, 100);
+	protected RGBColor wire = new RGBColor(100, 100, 100);
+
+	protected Bitmap fontBitmap;
+
+	protected int[] buffer;
+	protected boolean canCamRotate = true;
+
 	private Object3D ball1 = null;
 	private Object3D ball2 = null;
-	List<Point> mPoints = new LinkedList<Point>();
 
 	List<Animatable> mAnimatables = new LinkedList<Animatable>();
+
+	private boolean test = true;
+
+	private Object3D mSkype;
+
+	private Object3D mList;
+
+	private Object3D mPeoplePositionDummy;
+	private Object3D[] mPicScrs;
+
+	private boolean isListShown = true;
 
 	private LiveTileAnimation[] mBoardTiles = new LiveTileAnimation[] {
 			new LiveTileAnimation("minecraft"), new LiveTileAnimation(""),
 			new LiveTileAnimation(""), new LiveTileAnimation(""), };
 
 	private LiveTileAnimation[] mListTiles = new LiveTileAnimation[] {
-			new LiveTileAnimation("",false,null), new LiveTileAnimation("",false,null),
-			new LiveTileAnimation("",false,null), new LiveTileAnimation("",false,null),
-			new LiveTileAnimation("",false,null), new LiveTileAnimation("",false,null), };
+			new LiveTileAnimation("", false, null),
+			new LiveTileAnimation("", false, null),
+			new LiveTileAnimation("", false, null),
+			new LiveTileAnimation("", false, null),
+			new LiveTileAnimation("", false, null),
+			new LiveTileAnimation("", false, null), };
 
 	private Map<String, Object3D> clickableBoards = new HashMap<String, Object3D>();
 	private Map<String, Object3D> clickableIcons = new HashMap<String, Object3D>();
@@ -92,9 +141,11 @@ public class SceneActivity extends Framework3DMatrixActivity {
 	GestureDetector mGestureDetector = null;
 
 	boolean isDoubleTapped = false;
-	
+
 	SimpleOnGestureListener mGestureListener = new SimpleOnGestureListener() {
 
+		int workspace = 0;
+		
 		public boolean onDoubleTap(MotionEvent e) {
 			isDoubleTapped = true;
 			return super.onDoubleTap(e);
@@ -105,7 +156,8 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		}
 
 		public void onLongPress(MotionEvent e) {
-
+			peopleAnimation.setWorkspace(workspace);
+			workspace = workspace + 1 > 3 ? 0 : workspace + 1;
 		}
 
 		public boolean onScroll(MotionEvent e1, MotionEvent e2,
@@ -113,33 +165,123 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 			Log.d(TAG, "x: " + distanceX + ", y: " + distanceY);
 
-			double x = mPoints.get(0).x + -distanceX * 0.003;
-			double y = mPoints.get(0).y + distanceY * 0.003;
+			double x = point.x + -distanceX * 0.003;
+			double y = point.y + -distanceY * 0.003;
 
 			x = x > 1 ? 1 : x;
 			x = x < -1 ? -1 : x;
 			y = y > 1 ? 1 : y;
 			y = y < -1 ? -1 : y;
 
-			mPoints.get(0).x = x;
-			mPoints.get(0).y = y;
+			point.x = x;
+			point.y = y;
 
 			return false;
 		}
 
 	};
 
-	private boolean test = true;
+	OnRemoteChangeListener remoteChangeListener = new OnRemoteChangeListener() {
+		@Override
+		public void onMove(Point p) {
+			Log.e(TAG, "remote : onMove x:" + p.x + " y: " + p.y);
+			point = p;
+		}
 
-	private Object3D mSkype;
+		@Override
+		public void onClick() {
+			Log.e(TAG, "remote : onClick");
+			isDoubleTapped = true;
+			if (test) {
+				test = false;
+				ball1.setAdditionalColor(new RGBColor(0, 100, 0));
+			} else {
+				test = true;
+				ball1.setAdditionalColor(new RGBColor(0, 0, 100));
+			}
+		}
 
-	private Object3D mList;
+		@Override
+		public void onPress() {
+			Log.e(TAG, "remote : onPress");
 
-	private boolean isListShown = true;
+			ball1.setAdditionalColor(new RGBColor(0, 100, 0));
+
+		}
+
+		@Override
+		public void onRaise() {
+			Log.e(TAG, "remote : onRaise");
+
+			ball1.setAdditionalColor(new RGBColor(0, 0, 100));
+
+		}
+	};
+
+	IGestureListener gestureListener = new IGestureListener() {
+
+		@Override
+		public void onGesture(final GestureEvent event) {
+			if (!event.isConclusion)
+				return;
+
+			mHandler.post(new Runnable() {
+
+				@Override
+				public void run() {
+					mOverlayView.show3DToast(event.result);
+				}
+			});
+
+		}
+
+		@Override
+		public void onContinuousGestureUpdate(ContinuousGestureEvent event) {
+		}
+
+		@Override
+		public void onContinuousGestureStart(ContinuousGestureEvent event) {
+		}
+
+		@Override
+		public void onContinuousGestureEnd() {
+		}
+
+		@Override
+		public JSONObject getGestureConfig() {
+			// claim the gesture you need to be true
+
+			JSONObject config = new JSONObject();
+			JSONObject masks = new JSONObject();
+
+			try {
+				masks.put("" + GestureEvent.Gestures.SWIPE_LEFT_L.ordinal(),
+						true);
+				masks.put("" + GestureEvent.Gestures.SWIPE_RIGHT_L.ordinal(),
+						true);
+				masks.put("" + GestureEvent.Gestures.PULL_PUSH_PULL.ordinal(),
+						true);
+				masks.put("" + GestureEvent.Gestures.PUSH_PULL_PUSH.ordinal(),
+						true);
+				masks.put(
+						"" + GestureEvent.Gestures.SWIPE_BACK_LEFT_L.ordinal(),
+						true);
+				masks.put(
+						"" + GestureEvent.Gestures.SWIPE_BACK_RIGHT_L.ordinal(),
+						true);
+				config.put("masks", masks);
+			} catch (JSONException e) {
+				Log.e(TAG, e.toString());
+			}
+
+			return config;
+		}
+	};
 
 	@Override
 	public void onSurfaceChanged(int w, int h) {
-		// TODO Auto-generated method stub
+		Config.maxAnimationSubSequences = 100;
+		
 		if (fb != null) {
 			fb.dispose();
 		}
@@ -161,7 +303,9 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 		screens = new Object3D[3];
 		islands = new Object3D[4];
-
+		peopleAnimation = new PeopleAnimation();
+		mPicScrs = new Object3D[2];
+		
 		world.addObjects(mObjects);
 		world.setAmbientLight(120, 120, 120);
 
@@ -186,8 +330,6 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		ball2.strip();
 		ball2.build();
 		world.addObject(ball2);
-
-		mPoints.add(new Point(0, 0));
 
 		// notice = Primitives.getPlane(1, 2);
 		// notice.rotateY(4.71f);
@@ -247,9 +389,9 @@ public class SceneActivity extends Framework3DMatrixActivity {
 				mAnimatables.add(mBoardTiles[i]);
 			}
 
-//			for (int i = 0; i < mListTiles.length; i++) {
-//				mAnimatables.add(mListTiles[i]);
-//			}
+			// for (int i = 0; i < mListTiles.length; i++) {
+			// mAnimatables.add(mListTiles[i]);
+			// }
 
 			// animatables.add(new ScaleAnimation(new Object3D[]{
 			// mTiles[0].tile1, mTiles[0].tile2
@@ -263,23 +405,32 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 			mList = clickableLists.get("l_l2");
 
+			peopleAnimation.init(getAssets(), world, mCamViewspots[4],
+					mPeoplePositionDummy.getTransformedCenter());
+			
+//			mAnimatables.add(peopleAnimation);
+			
+//			startIDisplay(currentMode);
+
 		} else {
 
 			// pick obj
 
-			if (isLookingAt(cam, ball1, mSkype.getTransformedCenter()) > 0.75) {
-//				Log.e(TAG, "pick skype");
+			if (SceneHelper.isLookingAt(cam, ball1,
+					mSkype.getTransformedCenter()) > 0.75) {
+				// Log.e(TAG, "pick skype");
 
 				pickBoard();
 
-			} else if (isLookingAt(cam, ball1,
+			} else if (SceneHelper.isLookingAt(cam, ball1,
 					screens[0].getTransformedCenter()) > 0.8) {
 				Log.e(TAG, "pick scr");
 
 				pickScr();
 
 			} else if (isListShown
-					&& isLookingAt(cam, ball1, mList.getTransformedCenter()) > 0.8) {
+					&& SceneHelper.isLookingAt(cam, ball1,
+							mList.getTransformedCenter()) > 0.8) {
 				Log.e(TAG, "pick list");
 
 				pickList();
@@ -334,13 +485,11 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 		ball1.translate(camDir);
 
-		if (mPoints.size() > 0) {
-			ball1.setRotationPivot(originInballView);
-			ball1.rotateAxis(cam.getUpVector(),
-					(float) (0.5f * mPoints.get(0).x));
-			ball1.rotateAxis(cam.getSideVector(),
-					(float) (-0.5f * mPoints.get(0).y));
-		}
+		ball1.setRotationPivot(originInballView);
+		ball1.rotateAxis(cam.getUpVector(),
+				(float) (0.5f * point.x));
+		ball1.rotateAxis(cam.getSideVector(),
+				(float) (0.5f * point.y));
 
 		ball2.clearTranslation();
 		ball2.clearRotation();
@@ -353,10 +502,11 @@ public class SceneActivity extends Framework3DMatrixActivity {
 	}
 
 	private void pickList() {
-		if(!isDoubleTapped)return;
-		
+		if (!isDoubleTapped)
+			return;
+
 		isDoubleTapped = false;
-		
+
 		PickGroup group = null;
 		Object3D object3d = null;
 		SimpleVector trans = new SimpleVector();
@@ -364,17 +514,19 @@ public class SceneActivity extends Framework3DMatrixActivity {
 			group = mPickGroupLists[i];
 			object3d = group.group[0];
 
-			if (isLookingAt(cam, ball1, object3d.getTransformedCenter()) > 0.99) {
-				if(object3d.getName().startsWith("x_l_next")
-					|| object3d.getName().startsWith("x_l_back")){
-					
+			if (SceneHelper.isLookingAt(cam, ball1,
+					object3d.getTransformedCenter()) > 0.995) {
+				if (object3d.getName().startsWith("x_l_next")
+						|| object3d.getName().startsWith("x_l_back")) {
+
 					for (int i1 = 0; i1 < mListTiles.length; i1++) {
 						mListTiles[i1].reset();
-//						mAnimatables.add(mListTiles[i1]);
+						// mAnimatables.add(mListTiles[i1]);
 					}
-					
-					mAnimatables.add(new SeqAnimation(mAnimatables, mListTiles));
-					
+
+					mAnimatables
+							.add(new SeqAnimation(mAnimatables, mListTiles));
+
 				}
 			}
 		}
@@ -390,13 +542,14 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		for (int i = 0; i < mPickGroupBoards.length; i++) {
 			group = mPickGroupBoards[i];
 
-			if (isLookingAt(cam, ball1, group.group[0].getTransformedCenter()) > 0.995) {
-				
-				Log.e(TAG, "trans:"+ group.group[0].getTranslation());
-				
+			if (SceneHelper.isLookingAt(cam, ball1,
+					group.group[0].getTransformedCenter()) > 0.995) {
+
+				Log.e(TAG, "trans:" + group.group[0].getTranslation());
+
 				if (group.state == 0) {
 					group.state = 1;
-					
+
 					if (group.animation == null) {
 						Log.e(TAG, "trans 0 -> 1 with null");
 
@@ -409,7 +562,6 @@ public class SceneActivity extends Framework3DMatrixActivity {
 					} else {
 						Log.e(TAG, "trans 0 -> 1 with animation");
 
-						
 						group.animation.stop();
 
 						trans = cam.getPosition()
@@ -464,13 +616,13 @@ public class SceneActivity extends Framework3DMatrixActivity {
 	}
 
 	private void initIslands(String name, Object3D object3d) {
-		if (name.contains("i_trea"))
+		if (name.startsWith("i_trea"))
 			islands[3] = object3d;
-		else if (name.contains("i_ship"))
+		else if (name.startsWith("i_ship"))
 			islands[2] = object3d;
-		else if (name.contains("i_volcano"))
+		else if (name.startsWith("i_volcano"))
 			islands[1] = object3d;
-		else if (name.contains("i_green"))
+		else if (name.startsWith("i_green"))
 			islands[0] = object3d;
 	}
 
@@ -510,7 +662,18 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		} else if (name.startsWith("x_p")) {
 			Log.e(TAG, "x_p");
 			object3d.setVisibility(false);
+			initPeople(name, object3d);
 			return;
+		}
+	}
+
+	private void initPeople(String name, Object3D object3d) {
+		if (name.startsWith("x_p_people")) {
+			mPeoplePositionDummy = object3d;
+		} else if (name.startsWith("x_p_s1lide")) {
+			mPicScrs[0] = object3d;
+		} else if (name.startsWith("x_p_s2lide")) {
+			mPicScrs[1] = object3d;
 		}
 	}
 
@@ -522,7 +685,7 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		object3d.strip();
 		screens[name.charAt(5) - '1'] = object3d;
 
-//		object3d.setVisibility(false);
+		// object3d.setVisibility(false);
 	}
 
 	private void initCamera(String name, Object3D object3d) {
@@ -546,7 +709,7 @@ public class SceneActivity extends Framework3DMatrixActivity {
 	}
 
 	private void getScreen(String name, Object3D object3d) {
-		if (name.contains("x_")) {
+		if (name.startsWith("x_")) {
 			Log.e(TAG, "getScreen: " + name);
 			if (mCamViewspots[4] != object3d)
 				mCamViewspots[4].addChild(object3d);
@@ -680,7 +843,7 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		for (int i = 0; i < mListTiles.length; i++) {
 			mListTiles[i].setFrames(40);
 		}
-		
+
 		Object3D tmp;
 		tmp = clickableLists.get("l_l1");
 		mListTiles[0].setTile1(tmp, new SimpleVector(1.729, 1, 0));
@@ -718,7 +881,7 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		tmp = clickableLists.get("l_lc");
 		mListTiles[5].setTile2(tmp, new SimpleVector(3.732, 1, 0));
 		mPickGroupLists[5].group[1] = tmp;
-		
+
 		tmp = clickableLists.get("l_next");
 		mPickGroupLists[6].group[0] = tmp;
 
@@ -749,7 +912,7 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		screenShaders[2].setUniform("videoFrame", 10);
 		screenShaders[2].setUniform("videoFrame2", 11);
 		screenShaders[2].setUniform("videoFrame3", 12);
-		
+
 		fb.clear(back);
 		world.renderScene(fb);
 		world.draw(fb);
@@ -774,7 +937,7 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		}
 
 		for (int i = 0; i < 3; i++) {
-			if (isLookingAt(cam, island_center[i]) > 0.99) {
+			if (SceneHelper.isLookingAt(cam, island_center[i]) > 0.99) {
 				cam.setPosition(mCamViewspots[i].getTransformedCenter());
 				SimpleVector center_screen = mCamViewspots[4]
 						.getTransformedCenter();
@@ -790,4 +953,54 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 		return false;
 	}
+
+	public void initFontBitmap() {
+		String font = "words to test";
+		fontBitmap = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888);
+		Canvas canvas = new Canvas(fontBitmap);
+
+		canvas.drawColor(Color.TRANSPARENT);
+		Paint p = new Paint();
+
+		String fontType = "consolas";
+		Typeface typeface = Typeface.create(fontType, Typeface.BOLD);
+
+		p.setAntiAlias(true);
+
+		p.setColor(Color.RED);
+		p.setTypeface(typeface);
+		p.setTextSize(28);
+		canvas.drawText(font, 0, 100, p);
+	}
+
+	@Override
+	public void onCardboardTrigger() {
+		mOverlayView.show3DToast("onCardboardTrigger");
+		super.onCardboardTrigger();
+	}
+
+	@Override
+	public void onIDisplayConnected() {
+		
+		mHandler.post(new Runnable() {
+
+			@Override
+			public void run() {
+				mOverlayView.show3DToast("onIDisplayConnected");
+			}
+		});
+		
+		super.onIDisplayConnected();
+	}
+
+	@Override
+	OnRemoteChangeListener getRemoteListener() {
+		return remoteChangeListener;
+	}
+
+	@Override
+	IGestureListener getDolphinGestureListener() {
+		return gestureListener;
+	}
+
 }

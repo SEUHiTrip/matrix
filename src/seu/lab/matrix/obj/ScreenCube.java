@@ -1,8 +1,13 @@
-package seu.lab.matrix;
+package seu.lab.matrix.obj;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+
+import seu.lab.matrix.IDisplayProgram;
+import seu.lab.matrix.R;
+import seu.lab.matrix.R.drawable;
+
 import com.google.vrtoolkit.cardboard.Eye;
 import com.idisplay.VirtualScreenDisplay.ConnectionActivity;
 import com.idisplay.VirtualScreenDisplay.FPSCounter;

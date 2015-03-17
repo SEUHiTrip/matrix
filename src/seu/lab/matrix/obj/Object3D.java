@@ -1,4 +1,4 @@
-package seu.lab.matrix;
+package seu.lab.matrix.obj;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

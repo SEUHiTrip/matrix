@@ -1,4 +1,4 @@
-package org.opencv.samples.colorblobdetect;
+package seu.lab.matrix.red;
 
 import java.util.ArrayList;
 import java.util.List;

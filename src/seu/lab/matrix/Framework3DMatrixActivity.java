@@ -2,21 +2,31 @@ package seu.lab.matrix;
 
 import java.nio.ByteBuffer;
 import javax.microedition.khronos.egl.EGLConfig;
-import android.R.integer;
+
+import org.json.JSONException;
+import org.opencv.android.BaseLoaderCallback;
+import org.opencv.android.LoaderCallbackInterface;
+import org.opencv.android.OpenCVLoader;
+import org.opencv.core.Point;
+
+import seu.lab.dolphin.client.Dolphin;
+import seu.lab.dolphin.client.DolphinException;
+import seu.lab.dolphin.client.IDolphinStateCallback;
+import seu.lab.dolphin.client.IGestureListener;
+import seu.lab.matrix.red.RemoteManager.OnRemoteChangeListener;
+import seu.lab.matrix.red.SimpleCameraBridge;
+import seu.lab.matrix.red.SimpleCameraBridge.DefaultCvCameraViewListener2;
 import android.app.Activity;
+import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Typeface;
+import android.media.AudioManager;
 import android.opengl.GLES20;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
-import android.view.MotionEvent;
 import com.google.vrtoolkit.cardboard.CardboardView;
 import com.google.vrtoolkit.cardboard.Eye;
-import com.google.vrtoolkit.cardboard.HeadTransform;
 import com.google.vrtoolkit.cardboard.Viewport;
 import com.idisplay.VirtualScreenDisplay.FPSCounter;
 import com.idisplay.VirtualScreenDisplay.IDisplayConnection;
@@ -25,29 +35,18 @@ import com.idisplay.VirtualScreenDisplay.IDisplayConnection.ConnectionMode;
 import com.idisplay.VirtualScreenDisplay.IDisplayConnection.IDisplayConnectionCallback;
 import com.idisplay.util.ArrayImageContainer;
 import com.idisplay.util.ImageContainer;
+import com.idisplay.util.Logger;
 import com.idisplay.util.RLEImage;
 import com.idisplay.util.ServerItem;
-import com.threed.jpct.Camera;
-import com.threed.jpct.FrameBuffer;
 import com.threed.jpct.GLSLShader;
-import com.threed.jpct.Light;
 import com.threed.jpct.Loader;
-import com.threed.jpct.Logger;
-import com.threed.jpct.Matrix;
-import com.threed.jpct.Object3D;
-import com.threed.jpct.Primitives;
-import com.threed.jpct.RGBColor;
-import com.threed.jpct.SimpleVector;
 import com.threed.jpct.Texture;
-import com.threed.jpct.TextureInfo;
 import com.threed.jpct.TextureManager;
-import com.threed.jpct.World;
 import com.threed.jpct.util.BitmapHelper;
-import com.threed.jpct.util.LensFlare;
-import com.threed.jpct.util.MemoryHelper;
-import com.threed.jpct.util.SkyBox;
 
-public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
+// merge and manage dolphin, cam, and IDisplay
+
+public abstract class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 		implements CardboardView.StereoRenderer, IDisplayConnectionCallback {
 
 	protected static Activity master = null;
@@ -56,34 +55,51 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 	protected ServerItem usbServerItem;
 	protected IDisplayConnection iDisplayConnection;
 	protected ConnectionMode currentMode;
-
-	protected FrameBuffer fb = null;
-	protected SkyBox sky;
-	protected World world = null;
-	protected Light sun = null;
-	protected Light spot = null;
-	protected Object3D[] screens = null;
-	protected Object3D[] islands = null;
-	protected Object3D notice = null;
-	protected GLSLShader[] screenShaders = null;
-
-	protected RGBColor back = new RGBColor(50, 50, 100);
-	protected RGBColor wire = new RGBColor(100, 100, 100);
-
-	protected SimpleVector forward = new SimpleVector(-1, 0, 0);
-
-	protected int[] buffer;
-	protected boolean canCamRotate = true;
-
+	
 	protected int mWidth = 1024;
 	protected int mHeight = 1024;
 	protected int mStrideX = 1024;
 	protected int mStrideY = 1024;
 
+	boolean mRedWorking = false;
+	
 	protected float[] mAngles = new float[3];
 
+	protected GLSLShader[] screenShaders = null;
+	
 	ArrayImageContainer mArrayImageContainer;
 
+	protected Point point = new Point();
+	
+	private SimpleCameraBridge mOpenCvCameraView;
+
+	Dolphin dolphin = null;
+	
+	protected CardboardOverlayView mOverlayView;
+	
+	protected Handler mHandler;
+	
+	public BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
+		@Override
+		public void onManagerConnected(int status) {
+			switch (status) {
+			case LoaderCallbackInterface.SUCCESS: {
+				Log.i(TAG, "OpenCV loaded successfully");
+				mRedWorking = true;
+				mOpenCvCameraView.enableView();
+			}
+				break;
+			default: {
+				mRedWorking = false;
+				super.onManagerConnected(status);
+			}
+				break;
+			}
+		}
+	};
+
+	DefaultCvCameraViewListener2 cvCameraViewListener2 = null;
+	
 	IIdisplayViewRendererContainer mContainer = new IIdisplayViewRendererContainer() {
 
 		public int getDataHeight() {
@@ -103,12 +119,7 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 		}
 
 		public void renderDataUpdated(boolean z) {
-			// if (z) {
-			// reInitTextureBuffer();
-			// }
-			// isDirty = true;
 			FPSCounter.imageRenderComplete();
-			// TODO requestRender();
 		}
 
 		public void setDataHeight(int i) {
@@ -182,7 +193,35 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 		}
 
 	};
-	protected Bitmap fontBitmap;
+	
+	IDolphinStateCallback stateCallback = new IDolphinStateCallback() {
+		
+		@Override
+		public void onNormal() {
+		}
+		
+		@Override
+		public void onNoisy() {
+		}
+		
+		@Override
+		public void onCoreReady() {
+			try {
+				dolphin.start();
+			} catch (DolphinException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		@Override
+		public void onCoreFail() {
+		}
+	};
+	
+	private boolean mIDisplayConnected;
+	private OnRemoteChangeListener remoteListener;
+	private IGestureListener gestureListener;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -208,293 +247,371 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 		cardboardView.setRenderer(this);
 		setCardboardView(cardboardView);
 		
-		initFontBitmap();
+		mOverlayView = (CardboardOverlayView) findViewById(R.id.overlay);
+		mOverlayView.show3DToast("Test start");
+		
+		remoteListener = getRemoteListener();
+		gestureListener = getDolphinGestureListener();
+		
+		mHandler = new Handler(getMainLooper());
+		
+		mOpenCvCameraView = new SimpleCameraBridge(getApplicationContext(), -1, remoteListener);
+		cvCameraViewListener2 = mOpenCvCameraView.new DefaultCvCameraViewListener2();
+		mOpenCvCameraView.setCvCameraViewListener(cvCameraViewListener2);
+		mOpenCvCameraView.surfaceCreated(null);
+		
+		mIDisplayConnected = false;
+		
+		try {
+            dolphin = Dolphin.getInstance(
+                    (AudioManager)getSystemService(Context.AUDIO_SERVICE), 
+                    getContentResolver(),
+                    stateCallback,
+                    null,
+                    gestureListener);
+        } catch (DolphinException e) {
+            Log.e(TAG, e.toString());
+        } catch (JSONException e) {
+            Log.e(TAG, e.toString());
+        }
 	}
 
 	@Override
 	protected void onStart() {
 		super.onStart();
-		Log.d(TAG, "usbServerItem : " + usbServerItem);
-
-		iDisplayConnection.connectToServer(usbServerItem, currentMode);
+		//startRed();		
+		//startDolphin();
 	}
 
 	@Override
 	protected void onPause() {
+		stopRed();
+		stopIDisplay();
+		
+		try {
+			dolphin.pause();
+		} catch (DolphinException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		super.onPause();
-		iDisplayConnection.listScreenHandler.sendEmptyMessage(1);
+	}
+
+	@Override
+	protected void onStop() {
+		try {
+			dolphin.stop();
+		} catch (DolphinException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		super.onStop();
+	}
+	
+	@Override
+	protected void onDestroy() {
+		if(mOpenCvCameraView != null)
+			mOpenCvCameraView.surfaceDestroyed(null);
+
+		super.onDestroy();
 	}
 
 	@Override
 	public void onIDisplayConnected() {
-
-	}
-
-	@Override
-	public void onDrawEye(Eye eye) {
-
-		screens[2].setVisibility(false);
-
-		if (currentMode.type == IDisplayConnection.ConnectionType.Single) {
-
-		} else if (currentMode.type == IDisplayConnection.ConnectionType.Duel) {
-			if (eye.getType() == Eye.Type.LEFT) {
-				screens[0].setVisibility(true);
-				screens[1].setVisibility(false);
-			} else {
-				screens[0].setVisibility(false);
-				screens[1].setVisibility(true);
-			}
-		} else {
-
-		}
-
-		fillTexturesWithEye(buffer, eye);
-
-		screenShaders[0].setUniform("videoFrame", 4);
-		screenShaders[0].setUniform("videoFrame2", 5);
-		screenShaders[0].setUniform("videoFrame3", 6);
-
-		screenShaders[1].setUniform("videoFrame", 7);
-		screenShaders[1].setUniform("videoFrame2", 8);
-		screenShaders[1].setUniform("videoFrame3", 9);
-
-		screenShaders[2].setUniform("videoFrame", 10);
-		screenShaders[2].setUniform("videoFrame2", 11);
-		screenShaders[2].setUniform("videoFrame3", 12);
-
-		fb.clear(back);
-
-		world.renderScene(fb);
-//		sky.render(world, fb);
-
-		if(false && eye.getType() == Eye.Type.LEFT){
-			world.drawWireframe(fb, wire, 2, false);
-		}else {
-			world.draw(fb);
-		}
-		
-		fb.display();
-	}
-
-	@Override
-	public void onFinishFrame(Viewport viewport) {
+		mIDisplayConnected = true;
 	}
 	
-	double isLookingAt(Camera cam, SimpleVector center){
-		SimpleVector camDir = new SimpleVector();
-		cam.getDirection(camDir);
-		SimpleVector camPos=cam.getPosition();
-
-		double sum = Math.pow(center.x-camPos.x, 2d) + Math.pow(center.y-camPos.y, 2d) + Math.pow(center.z-camPos.z, 2d);
-		sum = Math.sqrt(sum);
-
-		double dot = (camDir.x * (center.x-camPos.x) + camDir.y * (center.y-camPos.y) + camDir.z * (center.z-camPos.z))/sum;
-		return dot;
+	protected void startIDisplay(ConnectionMode mode) {
+		currentMode = mode;
+		if(!mIDisplayConnected)
+			IDisplayConnection.connectToServer(usbServerItem, currentMode);
 	}
 	
-	double isLookingAt(Camera cam, Object3D hand, SimpleVector center){
-		SimpleVector handDir = hand.getTransformedCenter().calcSub(cam.getPosition());
-		SimpleVector camPos = center.calcSub(cam.getPosition());
-
-		handDir = handDir.normalize();
-		camPos = camPos.normalize();
-
-		double dot = handDir.calcDot(camPos);
-
-		return dot;
+	protected void stopIDisplay() {
+		if(mIDisplayConnected)
+			IDisplayConnection.listScreenHandler.sendEmptyMessage(1);
+		mIDisplayConnected = false;
 	}
 	
-	@Override
-	public void onNewFrame(HeadTransform headTransform) {
-		headTransform.getEulerAngles(mAngles, 0);
-
-		Camera cam = world.getCamera();
-		
-		SimpleVector center_island_green = new SimpleVector();
-		SimpleVector center_island_volcano = new SimpleVector();
-		SimpleVector center_island_ship = new SimpleVector();	
-		
-		islands[0].getTransformedCenter(center_island_green);
-		islands[1].getTransformedCenter(center_island_volcano);
-		islands[2].getTransformedCenter(center_island_ship);
+	protected void startRed() {
+		if(!mRedWorking){
+			OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_3, this,
+					mLoaderCallback);
 			
-		if( isLookingAt(cam, center_island_green) >0.99){
-			cam.setPosition(islands[0].getTranslation().x,islands[0].getTranslation().y-2,islands[0].getTranslation().z);
-			cam.rotateY(-3.14f/2);
-		}
-		//Log.e("cam", "island_green: " + dot);
-		//			islands[0].setScale(1.2f);
-		//		else
-		//			islands[0].setScale(0.8f);
-		if( isLookingAt(cam, center_island_volcano) >0.99){
-			cam.setPosition(islands[1].getTranslation().x,islands[1].getTranslation().y-3,islands[1].getTranslation().z);
-			cam.lookAt(new SimpleVector(center_island_volcano.x,center_island_volcano.y,center_island_volcano.z+5));
-		}//Log.e("cam", "island_volcano: " + dot);
-//			islands[1].setScale(1.2f);
-//		else
-//			islands[1].setScale(0.8f);
-		if(isLookingAt(cam, center_island_ship) >0.99){
-			cam.setPosition(islands[2].getTranslation().x,islands[2].getTranslation().y-1,islands[2].getTranslation().z);
-			cam.rotateY(3.14f/2);
-		}//Log.e("cam", "island_ship: " + dot);
-//			islands[2].setScale(1.2f);
-//		else
-//			islands[2].setScale(0.8f);
-		
-//		if(isLookingAt(cam, treasure.getTransformedCenter())>0.98)
-//			cam.setPosition(0,0,0);
-		
-		cam.lookAt(forward);
-		if (canCamRotate) {
-			cam.rotateY(mAngles[1]);
-			cam.rotateZ(0 - mAngles[2]);
-			cam.rotateX(mAngles[0]);
-		}
-		
-//		Log.e("cam", "transform_green: " + islands[0].getTransformedCenter());
-//		Log.e("cam", "transform_volcano: " + islands[1].getTransformedCenter());
-//		Log.e("cam", "transform_ship: " + islands[2].getTransformedCenter());
-		Log.e("cam", "camDir: " + cam.getDirection());
-	}
-
-	@Override
-	public void onRendererShutdown() {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void onSurfaceChanged(int w, int h) {
-		if (fb != null) {
-			fb.dispose();
-		}
-
-		fb = new FrameBuffer(w, h);
-
-		if (master == null) {
-
-			sky = new SkyBox("star_left", "star_forward", "star_left",
-					"star_right", "star_back", "star_bottom", 10000f);
-			sky.setCenter(new SimpleVector());
-
-			world = new World();
-			world.setAmbientLight(120, 120, 120);
-
-			sun = new Light(world);
-			sun.setIntensity(250, 250, 250);
-
-			spot = new Light(world);
-			spot.setIntensity(150, 150, 150);
-
-			screens = new Object3D[3];
-			islands = new Object3D[4];
-
-			notice = Primitives.getPlane(1, 2);
-			notice.rotateY(4.71f);
-			notice.translate(-5, 0, 0);
-			notice.setTexture("font");
-			notice.setTransparencyMode(Object3D.TRANSPARENCY_MODE_ADD);
-			notice.build();
-			notice.strip();
-			world.addObject(notice);
-			
-			screens[0] = Primitives.getPlane(1, 10);
-			screens[0].rotateY(4.71f);
-			screens[0].translate(10, 5, 5);
-			screens[0].setShader(screenShaders[0]);
-			screens[0].calcTextureWrapSpherical();
-			screens[0].build();
-			screens[0].strip();
-			world.addObject(screens[0]);
-
-			screens[1] = Primitives.getPlane(1, 10);
-			screens[1].rotateY(4.71f);
-			screens[1].translate(10, 5, 5);
-			screens[1].setShader(screenShaders[1]);
-			screens[1].calcTextureWrapSpherical();
-			screens[1].build();
-			screens[1].strip();
-			world.addObject(screens[1]);
-
-			screens[2] = Primitives.getPlane(1, 10);
-			screens[2].rotateY(4.71f);
-			screens[2].translate(10, 5, 5);
-			screens[2].setShader(screenShaders[2]);
-			screens[2].calcTextureWrapSpherical();
-			screens[2].build();
-			screens[2].strip();
-			world.addObject(screens[2]);
-			
-			islands[0] = Object3D.mergeAll(Loader.load3DS(getResources().openRawResource(R.raw.island_green), 0.8f));
-			islands[0].setVisibility(false);
-			islands[0].translate(-10, 10, -5);
-			islands[0].rotateX(-3.14f/3f);
-			islands[0].rotateY(3.14f/2);
-			islands[0].rotateZ(3.14f/4);
-			world.addObjects(islands[0]);
-			
-			islands[1] = Object3D.mergeAll(Loader.load3DS(getResources().openRawResource(R.raw.island_volcano), 1.6f));
-			islands[1].setVisibility(false);
-			islands[1].translate(-15, 10, 0);
-			islands[1].rotateX(-3.14f/3f);
-			islands[1].rotateY(3.14f/2);
-			islands[1].rotateZ(3.14f/4);
-			world.addObjects(islands[1]);
-			
-			islands[2] = Object3D.mergeAll(Loader.load3DS(getResources().openRawResource(R.raw.island_ship), 0.2f));
-			islands[2].setVisibility(false);
-			islands[2].translate(-10, 10, 5);
-			islands[2].rotateX(-3.14f/3f);
-			islands[2].rotateY(3.14f/2);
-			islands[2].rotateZ(3.14f/4);
-
-			world.addObjects(islands[2]);
-
-			islands[3] = Object3D.mergeAll(Loader.load3DS(getResources()
-					.openRawResource(R.raw.treasure), 0.5f));
-			islands[3].translate(5, 1, 0);
-			islands[3].rotateY(3.14f / 2);
-			islands[3].rotateZ(3.14f / 2);
-			world.addObjects(islands[3]);
-
-			if (currentMode.type == IDisplayConnection.ConnectionType.Single) {
-				screens[1].setVisibility(false);
-			} else if (currentMode.type == IDisplayConnection.ConnectionType.Duel) {
-				screens[1].setVisibility(false);
-				screens[2].setVisibility(false);
-			} else {
-				screens[1].translate(0, 0, -12);
-			}
-
-			Camera cam = world.getCamera();
-
-			SimpleVector sv = new SimpleVector(0, 0, 0);
-			sv.y -= 50;
-			// sv.z -= 50;
-			sun.setPosition(sv);
-
-			spot.setPosition(new SimpleVector());
-			MemoryHelper.compact();
-		}
-
-		if (buffer == null) {
-			// GLES20.glDeleteTextures(buffer.length, buffer, 0);
-
-			int numOfTextures = 4 + 3 + 3 + 3;
-			buffer = new int[numOfTextures];
-			GLES20.glGenTextures(numOfTextures, buffer, 0);
-			for (int i = 0; i < numOfTextures; i++) {
-				int i2 = buffer[i];
-				Log.d("Texture", "Texture is at " + i2);
-				GLES20.glBindTexture(3553, i2);
-				GLES20.glTexParameteri(3553, 10242, 33071);
-				GLES20.glTexParameteri(3553, 10243, 33071);
-				GLES20.glTexParameteri(3553, 10240, 9729);
-				GLES20.glTexParameteri(3553, 10241, 9729);
-			}
+			mOpenCvCameraView.surfaceChanged(null, 0, 0, 0);
 		}
 	}
+
+	protected void stopRed() {
+		if(mRedWorking){
+			mRedWorking = false;
+			if (mOpenCvCameraView != null)
+				mOpenCvCameraView.disableView();
+		}
+	}
+	
+	protected void startDolphin() {
+		try {
+			dolphin.prepare(getApplicationContext());
+		} catch (DolphinException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	protected void stopDolphin() {
+		try {
+			dolphin.pause();
+		} catch (DolphinException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
+	abstract OnRemoteChangeListener getRemoteListener();
+	abstract IGestureListener getDolphinGestureListener();
+
+//	@Override
+//	public void onDrawEye(Eye eye) {
+//
+//		screens[2].setVisibility(false);
+//
+//		if (currentMode.type == IDisplayConnection.ConnectionType.Single) {
+//
+//		} else if (currentMode.type == IDisplayConnection.ConnectionType.Duel) {
+//			if (eye.getType() == Eye.Type.LEFT) {
+//				screens[0].setVisibility(true);
+//				screens[1].setVisibility(false);
+//			} else {
+//				screens[0].setVisibility(false);
+//				screens[1].setVisibility(true);
+//			}
+//		} else {
+//
+//		}
+//
+//		fillTexturesWithEye(buffer, eye);
+//
+//		screenShaders[0].setUniform("videoFrame", 4);
+//		screenShaders[0].setUniform("videoFrame2", 5);
+//		screenShaders[0].setUniform("videoFrame3", 6);
+//
+//		screenShaders[1].setUniform("videoFrame", 7);
+//		screenShaders[1].setUniform("videoFrame2", 8);
+//		screenShaders[1].setUniform("videoFrame3", 9);
+//
+//		screenShaders[2].setUniform("videoFrame", 10);
+//		screenShaders[2].setUniform("videoFrame2", 11);
+//		screenShaders[2].setUniform("videoFrame3", 12);
+//
+//		fb.clear(back);
+//
+//		world.renderScene(fb);
+////		sky.render(world, fb);
+//
+//		if(false && eye.getType() == Eye.Type.LEFT){
+//			world.drawWireframe(fb, wire, 2, false);
+//		}else {
+//			world.draw(fb);
+//		}
+//		
+//		fb.display();
+//	}
+
+	
+//	@Override
+//	public void onNewFrame(HeadTransform headTransform) {
+//		headTransform.getEulerAngles(mAngles, 0);
+//
+//		Camera cam = world.getCamera();
+//		
+//		SimpleVector center_island_green = new SimpleVector();
+//		SimpleVector center_island_volcano = new SimpleVector();
+//		SimpleVector center_island_ship = new SimpleVector();	
+//		
+//		islands[0].getTransformedCenter(center_island_green);
+//		islands[1].getTransformedCenter(center_island_volcano);
+//		islands[2].getTransformedCenter(center_island_ship);
+//			
+//		if( isLookingAt(cam, center_island_green) >0.99){
+//			cam.setPosition(islands[0].getTranslation().x,islands[0].getTranslation().y-2,islands[0].getTranslation().z);
+//			cam.rotateY(-3.14f/2);
+//		}
+//		//Log.e("cam", "island_green: " + dot);
+//		//			islands[0].setScale(1.2f);
+//		//		else
+//		//			islands[0].setScale(0.8f);
+//		if( isLookingAt(cam, center_island_volcano) >0.99){
+//			cam.setPosition(islands[1].getTranslation().x,islands[1].getTranslation().y-3,islands[1].getTranslation().z);
+//			cam.lookAt(new SimpleVector(center_island_volcano.x,center_island_volcano.y,center_island_volcano.z+5));
+//		}//Log.e("cam", "island_volcano: " + dot);
+////			islands[1].setScale(1.2f);
+////		else
+////			islands[1].setScale(0.8f);
+//		if(isLookingAt(cam, center_island_ship) >0.99){
+//			cam.setPosition(islands[2].getTranslation().x,islands[2].getTranslation().y-1,islands[2].getTranslation().z);
+//			cam.rotateY(3.14f/2);
+//		}//Log.e("cam", "island_ship: " + dot);
+////			islands[2].setScale(1.2f);
+////		else
+////			islands[2].setScale(0.8f);
+//		
+////		if(isLookingAt(cam, treasure.getTransformedCenter())>0.98)
+////			cam.setPosition(0,0,0);
+//		
+//		cam.lookAt(forward);
+//		if (canCamRotate) {
+//			cam.rotateY(mAngles[1]);
+//			cam.rotateZ(0 - mAngles[2]);
+//			cam.rotateX(mAngles[0]);
+//		}
+//		
+////		Log.e("cam", "transform_green: " + islands[0].getTransformedCenter());
+////		Log.e("cam", "transform_volcano: " + islands[1].getTransformedCenter());
+////		Log.e("cam", "transform_ship: " + islands[2].getTransformedCenter());
+//		Log.e("cam", "camDir: " + cam.getDirection());
+//	}
+
+//	@Override
+//	public void onRendererShutdown() {
+//		// TODO Auto-generated method stub
+//
+//	}
+
+//	@Override
+//	public void onSurfaceChanged(int w, int h) {
+//		if (fb != null) {
+//			fb.dispose();
+//		}
+//
+//		fb = new FrameBuffer(w, h);
+//
+//		if (master == null) {
+//
+//			sky = new SkyBox("star_left", "star_forward", "star_left",
+//					"star_right", "star_back", "star_bottom", 10000f);
+//			sky.setCenter(new SimpleVector());
+//
+//			world = new World();
+//			world.setAmbientLight(120, 120, 120);
+//
+//			sun = new Light(world);
+//			sun.setIntensity(250, 250, 250);
+//
+//			spot = new Light(world);
+//			spot.setIntensity(150, 150, 150);
+//
+//			screens = new Object3D[3];
+//			islands = new Object3D[4];
+//
+//			notice = Primitives.getPlane(1, 2);
+//			notice.rotateY(4.71f);
+//			notice.translate(-5, 0, 0);
+//			notice.setTexture("font");
+//			notice.setTransparencyMode(Object3D.TRANSPARENCY_MODE_ADD);
+//			notice.build();
+//			notice.strip();
+//			world.addObject(notice);
+//			
+//			screens[0] = Primitives.getPlane(1, 10);
+//			screens[0].rotateY(4.71f);
+//			screens[0].translate(10, 5, 5);
+//			screens[0].setShader(screenShaders[0]);
+//			screens[0].calcTextureWrapSpherical();
+//			screens[0].build();
+//			screens[0].strip();
+//			world.addObject(screens[0]);
+//
+//			screens[1] = Primitives.getPlane(1, 10);
+//			screens[1].rotateY(4.71f);
+//			screens[1].translate(10, 5, 5);
+//			screens[1].setShader(screenShaders[1]);
+//			screens[1].calcTextureWrapSpherical();
+//			screens[1].build();
+//			screens[1].strip();
+//			world.addObject(screens[1]);
+//
+//			screens[2] = Primitives.getPlane(1, 10);
+//			screens[2].rotateY(4.71f);
+//			screens[2].translate(10, 5, 5);
+//			screens[2].setShader(screenShaders[2]);
+//			screens[2].calcTextureWrapSpherical();
+//			screens[2].build();
+//			screens[2].strip();
+//			world.addObject(screens[2]);
+//			
+//			islands[0] = Object3D.mergeAll(Loader.load3DS(getResources().openRawResource(R.raw.island_green), 0.8f));
+//			islands[0].setVisibility(false);
+//			islands[0].translate(-10, 10, -5);
+//			islands[0].rotateX(-3.14f/3f);
+//			islands[0].rotateY(3.14f/2);
+//			islands[0].rotateZ(3.14f/4);
+//			world.addObjects(islands[0]);
+//			
+//			islands[1] = Object3D.mergeAll(Loader.load3DS(getResources().openRawResource(R.raw.island_volcano), 1.6f));
+//			islands[1].setVisibility(false);
+//			islands[1].translate(-15, 10, 0);
+//			islands[1].rotateX(-3.14f/3f);
+//			islands[1].rotateY(3.14f/2);
+//			islands[1].rotateZ(3.14f/4);
+//			world.addObjects(islands[1]);
+//			
+//			islands[2] = Object3D.mergeAll(Loader.load3DS(getResources().openRawResource(R.raw.island_ship), 0.2f));
+//			islands[2].setVisibility(false);
+//			islands[2].translate(-10, 10, 5);
+//			islands[2].rotateX(-3.14f/3f);
+//			islands[2].rotateY(3.14f/2);
+//			islands[2].rotateZ(3.14f/4);
+//
+//			world.addObjects(islands[2]);
+//
+//			islands[3] = Object3D.mergeAll(Loader.load3DS(getResources()
+//					.openRawResource(R.raw.treasure), 0.5f));
+//			islands[3].translate(5, 1, 0);
+//			islands[3].rotateY(3.14f / 2);
+//			islands[3].rotateZ(3.14f / 2);
+//			world.addObjects(islands[3]);
+//
+//			if (currentMode.type == IDisplayConnection.ConnectionType.Single) {
+//				screens[1].setVisibility(false);
+//			} else if (currentMode.type == IDisplayConnection.ConnectionType.Duel) {
+//				screens[1].setVisibility(false);
+//				screens[2].setVisibility(false);
+//			} else {
+//				screens[1].translate(0, 0, -12);
+//			}
+//
+//			Camera cam = world.getCamera();
+//
+//			SimpleVector sv = new SimpleVector(0, 0, 0);
+//			sv.y -= 50;
+//			// sv.z -= 50;
+//			sun.setPosition(sv);
+//
+//			spot.setPosition(new SimpleVector());
+//			MemoryHelper.compact();
+//		}
+//
+//		if (buffer == null) {
+//			// GLES20.glDeleteTextures(buffer.length, buffer, 0);
+//
+//			int numOfTextures = 4 + 3 + 3 + 3;
+//			buffer = new int[numOfTextures];
+//			GLES20.glGenTextures(numOfTextures, buffer, 0);
+//			for (int i = 0; i < numOfTextures; i++) {
+//				int i2 = buffer[i];
+//				Log.d("Texture", "Texture is at " + i2);
+//				GLES20.glBindTexture(3553, i2);
+//				GLES20.glTexParameteri(3553, 10242, 33071);
+//				GLES20.glTexParameteri(3553, 10243, 33071);
+//				GLES20.glTexParameteri(3553, 10240, 9729);
+//				GLES20.glTexParameteri(3553, 10241, 9729);
+//			}
+//		}
+//	}
 
 	@Override
 	public void onSurfaceCreated(EGLConfig config) {
@@ -513,9 +630,6 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 					BitmapHelper.convert(getResources().getDrawable(
 							R.drawable.icon)), 512, 512));
 			tm.addTexture("dummy", texture);
-
-			Texture fontTexture = new Texture(fontBitmap);
-			tm.addTexture("font", fontTexture);
 
 			loadSkyboxTexture(tm);
 			
@@ -538,7 +652,7 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 						.openRawResource(R.raw.fragmentshader_offset)));
 	}
 	
-	void loadBoardTexture(TextureManager tm){
+	protected void loadBoardTexture(TextureManager tm){
 		Texture b_c2ar = new Texture(BitmapHelper.rescale(
 				BitmapHelper.convert(getResources().getDrawable(
 						R.drawable.b_c2ar)), 512, 512));
@@ -610,7 +724,7 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 		tm.addTexture("b_word", b_word);
 	}
 
-	void loadSkyboxTexture(TextureManager tm) {
+	protected void loadSkyboxTexture(TextureManager tm) {
 		Texture star_back = new Texture(BitmapHelper.rescale(
 				BitmapHelper.convert(getResources().getDrawable(
 						R.drawable.star_back)), 512, 512));
@@ -649,7 +763,6 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 
 	@Override
 	public void onInstanceCursorPositionChange(int i, int i2) {
-		// TODO Auto-generated method stub
 
 	}
 
@@ -696,15 +809,15 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 			int x = mArrayImageContainer.getStrideX();
 			int y = mArrayImageContainer.getStrideY();
 			int len = x * y;
-
-			com.idisplay.util.Logger.d(TAG, "y:" + y + " len:"+len);
+			
+			Logger.d("len:"+len);
 			
 			if (currentMode.type == IDisplayConnection.ConnectionType.Single) {
 				simpleFillTextures(iArr, 0, 0, len, x, y);
 			} else {
 				simpleFillTextures(iArr, 0, 0, 			len  / 4, x, y / 4);
 				simpleFillTextures(iArr, 3, len / 4, 	len  / 4, x, y / 4);
-				simpleFillTextures(iArr, 6, len / 2, len  / 4, x, y / 4);
+				simpleFillTextures(iArr, 6, len / 2, 	len  / 4, x, y / 4);
 				
 //				if (eye.getType() == Eye.Type.LEFT) {
 //					simpleFillTextures(iArr, 0, 0, len >> 1, x, y >> 1);
@@ -738,67 +851,61 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 						count >> 2));
 	}
 	
-	public void initFontBitmap(){  
-        String font = "words to test";
-        fontBitmap = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888);  
-        Canvas canvas = new Canvas(fontBitmap);  
-
-        canvas.drawColor(Color.TRANSPARENT);  
-        Paint p = new Paint();  
-
-        String fontType = "consolas";  
-        Typeface typeface = Typeface.create(fontType, Typeface.BOLD);  
-
-        p.setAntiAlias(true);  
-
-        p.setColor(Color.RED);  
-        p.setTypeface(typeface);  
-        p.setTextSize(28);  
-        canvas.drawText(font, 0, 100, p);  
-    }
-
-	Matrix rotationMatrix1 = new Matrix();
-	Matrix translatMatrix1 = new Matrix();
-
-	Matrix rotationMatrix2 = new Matrix();
-	Matrix translatMatrix2 = new Matrix();
+//	Matrix rotationMatrix1 = new Matrix();
+//	Matrix translatMatrix1 = new Matrix();
+//
+//	Matrix rotationMatrix2 = new Matrix();
+//	Matrix translatMatrix2 = new Matrix();
+//	
+//	Matrix rotationMatrix3 = new Matrix();
+//	Matrix translatMatrix3 = new Matrix();
+//
+//	@Override
+//	public boolean onTouchEvent(MotionEvent event) {
+//		if (!(event.getAction() == MotionEvent.ACTION_UP))
+//			return false;
+//
+//		canCamRotate = canCamRotate ? false : true;
+//
+//		if (!canCamRotate) {
+//			rotationMatrix1 = new Matrix(screens[0].getRotationMatrix());
+//			translatMatrix1 = new Matrix(screens[0].getTranslationMatrix());
+//
+//			screens[0].clearRotation();
+//			screens[0].clearTranslation();
+//
+//			screens[0].rotateY(4.71f);
+//			screens[0].translate(new SimpleVector(-8, 0, 0));
+//
+//			rotationMatrix2 = new Matrix(screens[1].getRotationMatrix());
+//			translatMatrix2 = new Matrix(screens[1].getTranslationMatrix());
+//
+//			screens[1].clearRotation();
+//			screens[1].clearTranslation();
+//
+//			screens[1].rotateY(4.71f);
+//			screens[1].translate(new SimpleVector(-8, 0, 0));
+//		} else {
+//			screens[0].setTranslationMatrix(translatMatrix1);
+//			screens[0].setRotationMatrix(rotationMatrix1);
+//
+//			screens[1].setTranslationMatrix(translatMatrix2);
+//			screens[1].setRotationMatrix(rotationMatrix2);
+//		}
+//
+//		return false;
+//	}
 	
-	Matrix rotationMatrix3 = new Matrix();
-	Matrix translatMatrix3 = new Matrix();
 
 	@Override
-	public boolean onTouchEvent(MotionEvent event) {
-		if (!(event.getAction() == MotionEvent.ACTION_UP))
-			return false;
+	public void onFinishFrame(Viewport arg0) {
+		// TODO Auto-generated method stub
+		
+	}
 
-		canCamRotate = canCamRotate ? false : true;
-
-		if (!canCamRotate) {
-			rotationMatrix1 = new Matrix(screens[0].getRotationMatrix());
-			translatMatrix1 = new Matrix(screens[0].getTranslationMatrix());
-
-			screens[0].clearRotation();
-			screens[0].clearTranslation();
-
-			screens[0].rotateY(4.71f);
-			screens[0].translate(new SimpleVector(-8, 0, 0));
-
-			rotationMatrix2 = new Matrix(screens[1].getRotationMatrix());
-			translatMatrix2 = new Matrix(screens[1].getTranslationMatrix());
-
-			screens[1].clearRotation();
-			screens[1].clearTranslation();
-
-			screens[1].rotateY(4.71f);
-			screens[1].translate(new SimpleVector(-8, 0, 0));
-		} else {
-			screens[0].setTranslationMatrix(translatMatrix1);
-			screens[0].setRotationMatrix(rotationMatrix1);
-
-			screens[1].setTranslationMatrix(translatMatrix2);
-			screens[1].setRotationMatrix(rotationMatrix2);
-		}
-
-		return false;
+	@Override
+	public void onRendererShutdown() {
+		// TODO Auto-generated method stub
+		
 	}
 }

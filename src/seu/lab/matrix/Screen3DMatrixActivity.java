@@ -25,6 +25,10 @@ import android.os.Vibrator;
 import android.util.Log;
 import javax.microedition.khronos.egl.EGLConfig;
 
+import seu.lab.matrix.obj.Floor;
+import seu.lab.matrix.obj.ScreenCube;
+import seu.lab.matrix.obj.WorldLayoutData;
+
 public class Screen3DMatrixActivity extends AbstractScreenMatrixActivity
 		implements CardboardView.StereoRenderer, IDisplayConnectionCallback{
 

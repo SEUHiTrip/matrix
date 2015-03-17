@@ -1,4 +1,4 @@
-package org.opencv.samples.colorblobdetect;
+package seu.lab.matrix.red;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -18,7 +18,8 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.imgproc.Moments;
-import org.opencv.samples.colorblobdetect.RemoteManager.OnRemoteChangeListener;
+
+import seu.lab.matrix.red.RemoteManager.OnRemoteChangeListener;
 
 import android.content.Context;
 import android.graphics.ImageFormat;

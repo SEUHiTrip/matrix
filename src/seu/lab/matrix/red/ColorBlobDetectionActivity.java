@@ -1,4 +1,4 @@
-package org.opencv.samples.colorblobdetect;
+package seu.lab.matrix.red;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
