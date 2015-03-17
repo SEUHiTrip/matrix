@@ -4,9 +4,11 @@ import com.threed.jpct.Object3D;
 
 public class PickGroup {
 
-	int state;
+	public int state;
 	
 	public Object3D[] group;
+	
+	public Animatable animation;
 	
 	public PickGroup(boolean single){
 		if (single) {

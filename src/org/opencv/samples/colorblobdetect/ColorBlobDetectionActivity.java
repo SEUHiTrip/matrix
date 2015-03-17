@@ -1,5 +1,12 @@
 package org.opencv.samples.colorblobdetect;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.StreamCorruptedException;
 import java.util.List;
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewFrame;
@@ -34,12 +41,12 @@ public class ColorBlobDetectionActivity extends Activity implements
 		OnTouchListener, CvCameraViewListener2 {
 	private static final String TAG = "OCVSample::Activity";
 
-	public static boolean mIsColorSelected = false;
+	public boolean mIsColorSelected = false;
 	private Mat mRgba;
-	public static Scalar mBlobColorRgba = new Scalar(255);
-	public static Scalar mBlobColorHsv = new Scalar(255);
-	public static  ColorBlobDetector mDetector;
-	public static Mat mSpectrum;
+	public Scalar mBlobColorRgba = new Scalar(255);
+	public Scalar mBlobColorHsv = new Scalar(255);
+	public ColorBlobDetector mDetector;
+	public Mat mSpectrum;
 	private Size SPECTRUM_SIZE;
 	private Scalar CONTOUR_COLOR;
 
@@ -173,6 +180,24 @@ public class ColorBlobDetectionActivity extends Activity implements
 		touchedRegionRgba.release();
 		touchedRegionHsv.release();
 
+		FileOutputStream fStream = null;
+		try {
+			fStream = new FileOutputStream("/sdcard/matrix/track_color");
+			ObjectOutputStream oStream = new ObjectOutputStream(fStream);
+			oStream.writeObject(mBlobColorHsv.val);
+			oStream.close();
+			fStream.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (StreamCorruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		return false; // don't need subsequent touch events
 	}
 

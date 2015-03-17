@@ -7,6 +7,7 @@ public abstract class BaseAnimation implements Animatable {
 	protected int frames = 300;
 	protected double factor = 0.75;
 	protected boolean loop = false;
+	public boolean stopped = false;
 	
 	public BaseAnimation(String tag){
 		this.tag = tag;
@@ -14,11 +15,13 @@ public abstract class BaseAnimation implements Animatable {
 	
 	@Override
 	public boolean isOver() {
+		if(stopped ) return true;
 		return (!loop) && index == frames;
 	}
 
 	@Override
 	public void stop() {
+		stopped = true;
 		index = 0;
 	}
 

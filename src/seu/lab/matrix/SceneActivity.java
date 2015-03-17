@@ -15,6 +15,7 @@ import seu.lab.matrix.animation.DisplayAnimation;
 import seu.lab.matrix.animation.LiveTileAnimation;
 import seu.lab.matrix.animation.PickGroup;
 import seu.lab.matrix.animation.ScaleAnimation;
+import seu.lab.matrix.animation.SeqAnimation;
 import seu.lab.matrix.animation.TranslationAnimation;
 
 import android.R.integer;
@@ -60,40 +61,42 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 	protected Object3D[] mObjects = null;
 
-	private static float ballDistance = 2f;
+	private static float BALL_DISTANCE = 2f;
 
-	private int frameCounter = 0;
+	private int mFrameCounter = 0;
 
 	private Camera cam;
 
 	private Object3D ball1 = null;
 	private Object3D ball2 = null;
-	List<Point> points = new LinkedList<Point>();
+	List<Point> mPoints = new LinkedList<Point>();
 
-	List<Animatable> animatables = new LinkedList<Animatable>();
+	List<Animatable> mAnimatables = new LinkedList<Animatable>();
 
 	private LiveTileAnimation[] mBoardTiles = new LiveTileAnimation[] {
 			new LiveTileAnimation("minecraft"), new LiveTileAnimation(""),
-			new LiveTileAnimation(""), new LiveTileAnimation(""),
-	};
-	
+			new LiveTileAnimation(""), new LiveTileAnimation(""), };
+
 	private LiveTileAnimation[] mListTiles = new LiveTileAnimation[] {
-			new LiveTileAnimation(""), new LiveTileAnimation(""),
-			new LiveTileAnimation(""), new LiveTileAnimation(""),
-			new LiveTileAnimation(""), new LiveTileAnimation(""), 
-	};
-	
+			new LiveTileAnimation("",false,null), new LiveTileAnimation("",false,null),
+			new LiveTileAnimation("",false,null), new LiveTileAnimation("",false,null),
+			new LiveTileAnimation("",false,null), new LiveTileAnimation("",false,null), };
+
 	private Map<String, Object3D> clickableBoards = new HashMap<String, Object3D>();
 	private Map<String, Object3D> clickableIcons = new HashMap<String, Object3D>();
 	private Map<String, Object3D> clickableLists = new HashMap<String, Object3D>();
+
+	PickGroup[] mPickGroupBoards = new PickGroup[11];
+	PickGroup[] mPickGroupLists = new PickGroup[6 + 2];
+
+	GestureDetector mGestureDetector = null;
+
+	boolean isDoubleTapped = false;
 	
-	PickGroup[] pickGroupBoards = new PickGroup[11];
-
-	GestureDetector gestureDetector = null;
-
-	SimpleOnGestureListener gestureListener = new SimpleOnGestureListener() {
+	SimpleOnGestureListener mGestureListener = new SimpleOnGestureListener() {
 
 		public boolean onDoubleTap(MotionEvent e) {
+			isDoubleTapped = true;
 			return super.onDoubleTap(e);
 		}
 
@@ -110,16 +113,16 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 			Log.d(TAG, "x: " + distanceX + ", y: " + distanceY);
 
-			double x = points.get(0).x + -distanceX * 0.003;
-			double y = points.get(0).y + distanceY * 0.003;
+			double x = mPoints.get(0).x + -distanceX * 0.003;
+			double y = mPoints.get(0).y + distanceY * 0.003;
 
 			x = x > 1 ? 1 : x;
 			x = x < -1 ? -1 : x;
 			y = y > 1 ? 1 : y;
 			y = y < -1 ? -1 : y;
 
-			points.get(0).x = x;
-			points.get(0).y = y;
+			mPoints.get(0).x = x;
+			mPoints.get(0).y = y;
 
 			return false;
 		}
@@ -184,7 +187,7 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		ball2.build();
 		world.addObject(ball2);
 
-		points.add(new Point(0, 0));
+		mPoints.add(new Point(0, 0));
 
 		// notice = Primitives.getPlane(1, 2);
 		// notice.rotateY(4.71f);
@@ -218,11 +221,11 @@ public class SceneActivity extends Framework3DMatrixActivity {
 	@Override
 	public void onNewFrame(HeadTransform headTransform) {
 
-		if (frameCounter == 0) {
-			frameCounter++;
+		if (mFrameCounter == 0) {
+			mFrameCounter++;
 			cam = world.getCamera();
-		} else if (frameCounter == 1) {
-			frameCounter++;
+		} else if (mFrameCounter == 1) {
+			mFrameCounter++;
 
 			mCamViewspots = new Object3D[5];
 
@@ -236,17 +239,17 @@ public class SceneActivity extends Framework3DMatrixActivity {
 				name = mObjects[i].getName();
 				getScreen(name, mObjects[i]);
 			}
-			
+
 			postInitBoard();
 			postInitList();
-			
+
 			for (int i = 0; i < mBoardTiles.length; i++) {
-				animatables.add(mBoardTiles[i]);
+				mAnimatables.add(mBoardTiles[i]);
 			}
-			
-			for (int i = 0; i < mListTiles.length; i++) {
-				animatables.add(mListTiles[i]);
-			}
+
+//			for (int i = 0; i < mListTiles.length; i++) {
+//				mAnimatables.add(mListTiles[i]);
+//			}
 
 			// animatables.add(new ScaleAnimation(new Object3D[]{
 			// mTiles[0].tile1, mTiles[0].tile2
@@ -264,8 +267,8 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 			// pick obj
 
-			if (isLookingAt(cam, ball1, mSkype.getTransformedCenter()) > 0.8) {
-				Log.e(TAG, "pick skype");
+			if (isLookingAt(cam, ball1, mSkype.getTransformedCenter()) > 0.75) {
+//				Log.e(TAG, "pick skype");
 
 				pickBoard();
 
@@ -283,11 +286,11 @@ public class SceneActivity extends Framework3DMatrixActivity {
 			}
 
 			// animations
-			for (int i = 0; i < animatables.size();) {
-				Animatable a = animatables.get(i);
+			for (int i = 0; i < mAnimatables.size();) {
+				Animatable a = mAnimatables.get(i);
 				if (a.isOver()) {
 					a.onAnimateSuccess();
-					animatables.remove(i);
+					mAnimatables.remove(i);
 
 				} else {
 					a.animate();
@@ -317,9 +320,9 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		SimpleVector camDir = new SimpleVector();
 		cam.getDirection(camDir);
 
-		camDir.x = camDir.x * ballDistance;
-		camDir.y = camDir.y * ballDistance;
-		camDir.z = camDir.z * ballDistance;
+		camDir.x = camDir.x * BALL_DISTANCE;
+		camDir.y = camDir.y * BALL_DISTANCE;
+		camDir.z = camDir.z * BALL_DISTANCE;
 
 		SimpleVector originInballView = new SimpleVector(camDir);
 		originInballView.x = -originInballView.x;
@@ -331,12 +334,12 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 		ball1.translate(camDir);
 
-		if (points.size() > 0) {
+		if (mPoints.size() > 0) {
 			ball1.setRotationPivot(originInballView);
 			ball1.rotateAxis(cam.getUpVector(),
-					(float) (0.5f * points.get(0).x));
+					(float) (0.5f * mPoints.get(0).x));
 			ball1.rotateAxis(cam.getSideVector(),
-					(float) (-0.5f * points.get(0).y));
+					(float) (-0.5f * mPoints.get(0).y));
 		}
 
 		ball2.clearTranslation();
@@ -350,17 +353,114 @@ public class SceneActivity extends Framework3DMatrixActivity {
 	}
 
 	private void pickList() {
-		// TODO Auto-generated method stub
+		if(!isDoubleTapped)return;
+		
+		isDoubleTapped = false;
+		
+		PickGroup group = null;
+		Object3D object3d = null;
+		SimpleVector trans = new SimpleVector();
+		for (int i = 6; i < mPickGroupLists.length; i++) {
+			group = mPickGroupLists[i];
+			object3d = group.group[0];
 
+			if (isLookingAt(cam, ball1, object3d.getTransformedCenter()) > 0.99) {
+				if(object3d.getName().startsWith("x_l_next")
+					|| object3d.getName().startsWith("x_l_back")){
+					
+					for (int i1 = 0; i1 < mListTiles.length; i1++) {
+						mListTiles[i1].reset();
+//						mAnimatables.add(mListTiles[i1]);
+					}
+					
+					mAnimatables.add(new SeqAnimation(mAnimatables, mListTiles));
+					
+				}
+			}
+		}
 	}
 
 	private void pickScr() {
-		// TODO Auto-generated method stub
 
 	}
 
 	private void pickBoard() {
+		PickGroup group = null;
+		SimpleVector trans = new SimpleVector();
+		for (int i = 0; i < mPickGroupBoards.length; i++) {
+			group = mPickGroupBoards[i];
 
+			if (isLookingAt(cam, ball1, group.group[0].getTransformedCenter()) > 0.995) {
+				
+				Log.e(TAG, "trans:"+ group.group[0].getTranslation());
+				
+				if (group.state == 0) {
+					group.state = 1;
+					
+					if (group.animation == null) {
+						Log.e(TAG, "trans 0 -> 1 with null");
+
+						trans = cam.getPosition()
+								.calcSub(group.group[0].getTransformedCenter())
+								.normalize();
+						group.animation = new TranslationAnimation("",
+								group.group, new SimpleVector(trans), group);
+						mAnimatables.add(group.animation);
+					} else {
+						Log.e(TAG, "trans 0 -> 1 with animation");
+
+						
+						group.animation.stop();
+
+						trans = cam.getPosition()
+								.calcSub(group.group[0].getTransformedCenter())
+								.normalize();
+
+						SimpleVector hasTrns = new SimpleVector();
+						group.group[0].getTranslation(hasTrns);
+
+						group.animation = new TranslationAnimation("",
+								group.group, trans.calcSub(hasTrns), group);
+						mAnimatables.add(group.animation);
+					}
+
+				} else {
+
+				}
+			} else {
+				if (group.state == 0) {
+
+				} else {
+					group.state = 0;
+
+					if (group.animation == null) {
+						Log.e(TAG, "trans 1 -> 0 with null");
+
+						SimpleVector trns = new SimpleVector();
+						group.group[0].getTranslation(trns);
+						trns.x = -trns.x;
+						trns.y = -trns.y;
+						trns.z = -trns.z;
+						group.animation = new TranslationAnimation("",
+								group.group, trns, group);
+						mAnimatables.add(group.animation);
+					} else {
+						Log.e(TAG, "trans 1 -> 0 with animation");
+
+						group.animation.stop();
+						SimpleVector trns = new SimpleVector();
+						group.group[0].getTranslation(trns);
+						trns.x = -trns.x;
+						trns.y = -trns.y;
+						trns.z = -trns.z;
+
+						group.animation = new TranslationAnimation("",
+								group.group, trns, group);
+						mAnimatables.add(group.animation);
+					}
+				}
+			}
+		}
 	}
 
 	private void initIslands(String name, Object3D object3d) {
@@ -374,12 +474,11 @@ public class SceneActivity extends Framework3DMatrixActivity {
 			islands[0] = object3d;
 	}
 
-
 	private void saveObject(String name, Object3D object3d) {
-		
-		if(name.startsWith("c_")){
+
+		if (name.startsWith("c_")) {
 			initCamera(name, object3d);
-		}else if (name.startsWith("x_c_works")) {
+		} else if (name.startsWith("x_c_works")) {
 			object3d.setVisibility(false);
 			mCamViewspots[4] = object3d;
 			return;
@@ -408,9 +507,13 @@ public class SceneActivity extends Framework3DMatrixActivity {
 			Log.e(TAG, "x_scr");
 			initScr(name, object3d);
 			return;
+		} else if (name.startsWith("x_p")) {
+			Log.e(TAG, "x_p");
+			object3d.setVisibility(false);
+			return;
 		}
 	}
-	
+
 	private void initScr(String name, Object3D object3d) {
 		object3d.clearAdditionalColor();
 		object3d.setShader(screenShaders[name.charAt(5) - '1']);
@@ -418,6 +521,8 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		object3d.build();
 		object3d.strip();
 		screens[name.charAt(5) - '1'] = object3d;
+
+//		object3d.setVisibility(false);
 	}
 
 	private void initCamera(String name, Object3D object3d) {
@@ -437,7 +542,7 @@ public class SceneActivity extends Framework3DMatrixActivity {
 			object3d.setVisibility(false);
 			mCamViewspots[3] = object3d;
 			return;
-		} 
+		}
 	}
 
 	private void getScreen(String name, Object3D object3d) {
@@ -467,65 +572,64 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		object3d.strip();
 		object3d.build();
 	}
-	
-	private void postInitBoard(){
+
+	private void postInitBoard() {
 
 		for (int i = 0; i < 4; i++) {
-			pickGroupBoards[i] = new PickGroup(false);
+			mPickGroupBoards[i] = new PickGroup(false);
 		}
-		for (int i = 4; i < pickGroupBoards.length; i++) {
-			pickGroupBoards[i] = new PickGroup(true);
+		for (int i = 4; i < mPickGroupBoards.length; i++) {
+			mPickGroupBoards[i] = new PickGroup(true);
 		}
-		
+
 		Object3D tmp;
 		tmp = clickableBoards.get("b_minecraft");
 		mBoardTiles[0].setTile1(tmp, new SimpleVector(0.839, -1, 0));
-		pickGroupBoards[0].group[0] = tmp;
+		mPickGroupBoards[0].group[0] = tmp;
 
 		tmp = clickableBoards.get("b_m2inecraft");
 		mBoardTiles[0].setTile2(tmp, new SimpleVector(0.839, -1, 0));
-		pickGroupBoards[0].group[1] = tmp;
-		
+		mPickGroupBoards[0].group[1] = tmp;
+
 		tmp = clickableBoards.get("b_car");
 		mBoardTiles[1].setTile1(tmp, new SimpleVector(0.839, -1, 0));
-		pickGroupBoards[1].group[0] = tmp;
-		
+		mPickGroupBoards[1].group[0] = tmp;
+
 		tmp = clickableBoards.get("b_c2ar");
 		mBoardTiles[1].setTile2(tmp, new SimpleVector(0.839, -1, 0));
-		pickGroupBoards[1].group[1] = tmp;
+		mPickGroupBoards[1].group[1] = tmp;
 
 		tmp = clickableBoards.get("b_video");
 		mBoardTiles[2].setTile1(tmp, new SimpleVector(0.839, -1, 0));
-		pickGroupBoards[2].group[0] = tmp;
-		
+		mPickGroupBoards[2].group[0] = tmp;
+
 		tmp = clickableBoards.get("b_v2ideo");
 		mBoardTiles[2].setTile2(tmp, new SimpleVector(0.839, -1, 0));
-		pickGroupBoards[2].group[1] = tmp;
+		mPickGroupBoards[2].group[1] = tmp;
 
 		tmp = clickableBoards.get("b_pic");
 		mBoardTiles[3].setTile1(tmp, new SimpleVector(1.732, -1, 0));
-		pickGroupBoards[3].group[0] = tmp;
-		
+		mPickGroupBoards[3].group[0] = tmp;
+
 		tmp = clickableBoards.get("b_p2ic");
 		mBoardTiles[3].setTile2(tmp, new SimpleVector(1.732, -1, 0));
-		pickGroupBoards[3].group[1] = tmp;
-		
-		tmp = clickableBoards.get("b_skype");
-		pickGroupBoards[3].group[0] = tmp;
-		tmp = clickableBoards.get("b_ie");
-		pickGroupBoards[5].group[0] = tmp;
-		tmp = clickableBoards.get("b_file");
-		pickGroupBoards[6].group[0] = tmp;
-		tmp = clickableBoards.get("b_word");
-		pickGroupBoards[7].group[0] = tmp;
-		tmp = clickableBoards.get("b_excel");
-		pickGroupBoards[8].group[0] = tmp;
-		tmp = clickableBoards.get("b_ppt");
-		pickGroupBoards[9].group[0] = tmp;
-		tmp = clickableBoards.get("b_null");
-		pickGroupBoards[10].group[0] = tmp;
-	}
+		mPickGroupBoards[3].group[1] = tmp;
 
+		tmp = clickableBoards.get("b_skype");
+		mPickGroupBoards[4].group[0] = tmp;
+		tmp = clickableBoards.get("b_ie");
+		mPickGroupBoards[5].group[0] = tmp;
+		tmp = clickableBoards.get("b_file");
+		mPickGroupBoards[6].group[0] = tmp;
+		tmp = clickableBoards.get("b_word");
+		mPickGroupBoards[7].group[0] = tmp;
+		tmp = clickableBoards.get("b_excel");
+		mPickGroupBoards[8].group[0] = tmp;
+		tmp = clickableBoards.get("b_ppt");
+		mPickGroupBoards[9].group[0] = tmp;
+		tmp = clickableBoards.get("b_null");
+		mPickGroupBoards[10].group[0] = tmp;
+	}
 
 	private void initIcons(String name, Object3D object3d) {
 		TextureManager tm = TextureManager.getInstance();
@@ -546,7 +650,6 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		object3d.build();
 	}
 
-
 	private void initLists(String name, Object3D object3d) {
 		TextureManager tm = TextureManager.getInstance();
 
@@ -565,26 +668,70 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		clickableLists.put(tname, object3d);
 	}
 
-	private void postInitList(){
-		mListTiles[0].setTile1(clickableLists.get("l_l1"), new SimpleVector(1.729, 1, 0));
-		mListTiles[1].setTile1(clickableLists.get("l_l2"), new SimpleVector(1.729, 1, 0));
-		mListTiles[2].setTile1(clickableLists.get("l_l3"), new SimpleVector(1.729, 1, 0));
-		mListTiles[3].setTile1(clickableLists.get("l_l4"), new SimpleVector(3.732, 1, 0));
-		mListTiles[4].setTile1(clickableLists.get("l_l5"), new SimpleVector(3.732, 1, 0));
-		mListTiles[5].setTile1(clickableLists.get("l_l6"), new SimpleVector(3.732, 1, 0));
-		mListTiles[0].setTile2(clickableLists.get("l_l7"), new SimpleVector(1.729, 1, 0));
-		mListTiles[1].setTile2(clickableLists.get("l_l8"), new SimpleVector(1.729, 1, 0));
-		mListTiles[2].setTile2(clickableLists.get("l_l9"), new SimpleVector(1.729, 1, 0));
-		mListTiles[3].setTile2(clickableLists.get("l_la"), new SimpleVector(3.732, 1, 0));
-		mListTiles[4].setTile2(clickableLists.get("l_lb"), new SimpleVector(3.732, 1, 0));
-		mListTiles[5].setTile2(clickableLists.get("l_lc"), new SimpleVector(3.732, 1, 0));
+	private void postInitList() {
+
+		for (int i = 0; i < 6; i++) {
+			mPickGroupLists[i] = new PickGroup(false);
+		}
+		for (int i = 6; i < mPickGroupLists.length; i++) {
+			mPickGroupLists[i] = new PickGroup(true);
+		}
+
+		for (int i = 0; i < mListTiles.length; i++) {
+			mListTiles[i].setFrames(40);
+		}
+		
+		Object3D tmp;
+		tmp = clickableLists.get("l_l1");
+		mListTiles[0].setTile1(tmp, new SimpleVector(1.729, 1, 0));
+		mPickGroupLists[0].group[0] = tmp;
+		tmp = clickableLists.get("l_l2");
+		mListTiles[1].setTile1(tmp, new SimpleVector(1.729, 1, 0));
+		mPickGroupLists[1].group[0] = tmp;
+		tmp = clickableLists.get("l_l3");
+		mListTiles[2].setTile1(tmp, new SimpleVector(1.729, 1, 0));
+		mPickGroupLists[2].group[0] = tmp;
+		tmp = clickableLists.get("l_l4");
+		mListTiles[3].setTile1(tmp, new SimpleVector(3.732, 1, 0));
+		mPickGroupLists[3].group[0] = tmp;
+		tmp = clickableLists.get("l_l5");
+		mListTiles[4].setTile1(tmp, new SimpleVector(3.732, 1, 0));
+		mPickGroupLists[4].group[0] = tmp;
+		tmp = clickableLists.get("l_l6");
+		mListTiles[5].setTile1(tmp, new SimpleVector(3.732, 1, 0));
+		mPickGroupLists[5].group[0] = tmp;
+		tmp = clickableLists.get("l_l7");
+		mListTiles[0].setTile2(tmp, new SimpleVector(1.729, 1, 0));
+		mPickGroupLists[0].group[1] = tmp;
+		tmp = clickableLists.get("l_l8");
+		mListTiles[1].setTile2(tmp, new SimpleVector(1.729, 1, 0));
+		mPickGroupLists[1].group[1] = tmp;
+		tmp = clickableLists.get("l_l9");
+		mListTiles[2].setTile2(tmp, new SimpleVector(1.729, 1, 0));
+		mPickGroupLists[2].group[1] = tmp;
+		tmp = clickableLists.get("l_la");
+		mListTiles[3].setTile2(tmp, new SimpleVector(3.732, 1, 0));
+		mPickGroupLists[3].group[1] = tmp;
+		tmp = clickableLists.get("l_lb");
+		mListTiles[4].setTile2(tmp, new SimpleVector(3.732, 1, 0));
+		mPickGroupLists[4].group[1] = tmp;
+		tmp = clickableLists.get("l_lc");
+		mListTiles[5].setTile2(tmp, new SimpleVector(3.732, 1, 0));
+		mPickGroupLists[5].group[1] = tmp;
+		
+		tmp = clickableLists.get("l_next");
+		mPickGroupLists[6].group[0] = tmp;
+
+		tmp = clickableLists.get("l_back");
+		mPickGroupLists[7].group[0] = tmp;
+
 	}
-	
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
-		gestureDetector = new GestureDetector(this, gestureListener);
+		mGestureDetector = new GestureDetector(this, mGestureListener);
 	}
 
 	@Override
@@ -595,6 +742,14 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		screenShaders[0].setUniform("videoFrame2", 5);
 		screenShaders[0].setUniform("videoFrame3", 6);
 
+		screenShaders[1].setUniform("videoFrame", 7);
+		screenShaders[1].setUniform("videoFrame2", 8);
+		screenShaders[1].setUniform("videoFrame3", 9);
+
+		screenShaders[2].setUniform("videoFrame", 10);
+		screenShaders[2].setUniform("videoFrame2", 11);
+		screenShaders[2].setUniform("videoFrame3", 12);
+		
 		fb.clear(back);
 		world.renderScene(fb);
 		world.draw(fb);
@@ -604,7 +759,7 @@ public class SceneActivity extends Framework3DMatrixActivity {
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 		if (true)
-			return gestureDetector.onTouchEvent(event);
+			return mGestureDetector.onTouchEvent(event);
 
 		if (!(event.getAction() == MotionEvent.ACTION_UP))
 			return false;

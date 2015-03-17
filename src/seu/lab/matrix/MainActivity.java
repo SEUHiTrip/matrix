@@ -27,6 +27,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 
@@ -48,6 +50,9 @@ public class MainActivity extends Activity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		getActionBar().hide();
+		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+		
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.activity_main);
@@ -83,7 +88,7 @@ public class MainActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				Intent intent = new Intent(getApplicationContext(),
-						Framework3DMatrixActivity.class);
+						SceneActivity.class);
 				intent.putExtra("mode", new IDisplayConnection.ConnectionMode(
 						ConnectionType.Duel.ordinal()));
 				startActivity(intent);
@@ -95,7 +100,7 @@ public class MainActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				Intent intent = new Intent(getApplicationContext(),
-						Framework3DMatrixActivity.class);
+						SceneActivity.class);
 				intent.putExtra("mode", new IDisplayConnection.ConnectionMode(
 						ConnectionType.SideBySide.ordinal()));
 				startActivity(intent);

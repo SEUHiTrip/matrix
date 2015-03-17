@@ -13,28 +13,12 @@
         android:text="Single" />
 
     <Button
-        android:id="@+id/connect_btn_duel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@+id/connect_btn_single"
-        android:text="Duel" />
-
-    <Button
         android:id="@+id/cardboard_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_below="@+id/connect_btn_duel"
         android:text="Cardboard" />
-
-    <Button
-        android:id="@+id/connect_btn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@+id/cardboard_btn"
-        android:text="Connect" />
 
     <Button
         android:id="@+id/test"
@@ -53,43 +37,61 @@
         android:src="@android:drawable/btn_star_big_off" />
 
     <Button
-        android:id="@+id/pick_btn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@+id/test"
-        android:text="Pick color" />
-
-    <Button
-        android:id="@+id/track_btn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@+id/pick_btn"
-        android:text="Track color" />
-
-    <Button
-        android:id="@+id/connect_btn_sidebyside"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/cardboard_btn"
-        android:layout_centerHorizontal="true"
-        android:text="Side by side" />
-
-    <Button
         android:id="@+id/ar_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_below="@+id/track_btn"
         android:text="AR" />
-    
+
      <Button
-        android:id="@+id/scene_btn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@+id/ar_btn"
-        android:text="Scene" />
+         android:id="@+id/connect_btn_duel"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_alignParentTop="true"
+         android:layout_toRightOf="@+id/connect_btn_single"
+         android:text="Duel" />
+
+     <Button
+         android:id="@+id/connect_btn_sidebyside"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_above="@+id/cardboard_btn"
+         android:layout_alignParentRight="true"
+         android:text="Side by side" />
+
+     <Button
+         android:id="@+id/connect_btn"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_below="@+id/connect_btn_duel"
+         android:layout_centerHorizontal="true"
+         android:text="Connect" />
+
+     <Button
+         android:id="@+id/pick_btn"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_alignBaseline="@+id/test"
+         android:layout_alignBottom="@+id/test"
+         android:layout_alignLeft="@+id/connect_btn_duel"
+         android:text="Pick color" />
+
+     <Button
+         android:id="@+id/track_btn"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_alignLeft="@+id/connect_btn_sidebyside"
+         android:layout_below="@+id/connect_btn"
+         android:text="Track color" />
+
+     <Button
+         android:id="@+id/scene_btn"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_alignBaseline="@+id/ar_btn"
+         android:layout_alignBottom="@+id/ar_btn"
+         android:layout_alignLeft="@+id/pick_btn"
+         android:text="Scene" />
 
 </RelativeLayout>

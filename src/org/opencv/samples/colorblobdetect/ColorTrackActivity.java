@@ -21,8 +21,8 @@ import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.imgproc.Moments;
+import org.opencv.samples.colorblobdetect.RemoteManager.OnRemoteChangeListener;
 import org.opencv.samples.colorblobdetect.SimpleCameraBridge.DefaultCvCameraViewListener2;
-import org.opencv.samples.colorblobdetect.SimpleCameraBridge.SimpleCameraBridgeCallback;
 
 import com.google.vrtoolkit.cardboard.CardboardActivity;
 import com.google.vrtoolkit.cardboard.CardboardView;
@@ -57,13 +57,13 @@ import android.view.WindowManager;
 import android.view.View.OnTouchListener;
 
 public class ColorTrackActivity extends CardboardActivity implements
-		OnTouchListener, CardboardView.StereoRenderer, SimpleCameraBridgeCallback{
+		OnTouchListener, CardboardView.StereoRenderer, OnRemoteChangeListener{
 	private static final String TAG = "SimpleColorBlobDetectionActivity";
 
 	private static boolean isInit = false;
 	
 	private static float ballDistance = 5f;
-	
+
 	private FrameBuffer fb = null;
 	private World world = null;
 	private Light sun = null;
@@ -79,7 +79,7 @@ public class ColorTrackActivity extends CardboardActivity implements
 
 	List<android.hardware.Camera.Size> mResolutionList;
 
-	List<Point> points = new LinkedList<Point>();
+	Point point = new Point();
 	
 	private SimpleCameraBridge mOpenCvCameraView;
 
@@ -103,6 +103,8 @@ public class ColorTrackActivity extends CardboardActivity implements
 	};
 
 	DefaultCvCameraViewListener2 cvCameraViewListener2 = null;
+
+	private boolean test;
 	 
 	public ColorTrackActivity() {
 		Log.i(TAG, "Instantiated new " + this.getClass());
@@ -182,8 +184,7 @@ public class ColorTrackActivity extends CardboardActivity implements
 
 	@Override
 	public void onFinishFrame(Viewport arg0) {
-		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -213,10 +214,10 @@ public class ColorTrackActivity extends CardboardActivity implements
 		
 		ball1.translate(camDir);
 
-		if(points.size() > 0){
+		if(point != null){
 			ball1.setRotationPivot(originInballView);
-			ball1.rotateAxis(cam.getUpVector(), (float)(0.5f*points.get(0).x));
-			ball1.rotateAxis(cam.getSideVector(), (float)(-0.5f*points.get(0).y));
+			ball1.rotateAxis(cam.getUpVector(), (float)(0.5f*point.x));
+			ball1.rotateAxis(cam.getSideVector(), (float)(0.5f*point.y));
 		}
 		
 		ball2.clearRotation();
@@ -298,8 +299,37 @@ public class ColorTrackActivity extends CardboardActivity implements
 	}
 
 	@Override
-	public void onUpdatePoints(List<Point> _points) {
-		points = (List<Point>) ((LinkedList<Point>)_points).clone();
+	public void onMove(Point p) {
+		Log.e(TAG, "remote : onMove x:"+p.x + " y: "+p.y);
+		point = p;
+	}
+
+	@Override
+	public void onClick() {
+		Log.e(TAG, "remote : onClick");
+		if(test){
+			test = false;
+			ball1.setAdditionalColor(new RGBColor(0, 100, 0));
+		}else {
+			test = true;
+			ball1.setAdditionalColor(new RGBColor(0, 0, 100));
+		}
+	}
+
+	@Override
+	public void onPress() {
+		Log.e(TAG, "remote : onPress");
+		
+		ball1.setAdditionalColor(new RGBColor(0, 100, 0));
+
+	}
+
+	@Override
+	public void onRaise() {
+		Log.e(TAG, "remote : onRaise");
+		
+		ball1.setAdditionalColor(new RGBColor(0, 0, 100));
+
 	}
 
 }

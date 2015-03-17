@@ -18,9 +18,10 @@ public class LiveTileAnimation extends BaseValueAnimation{
 		loop = true;
 	}
 
-	public LiveTileAnimation(String tag, boolean loop) {
+	public LiveTileAnimation(String tag, boolean loop, PickGroup group) {
 		super(tag, Math.PI);
 		this.loop = loop;
+		this.group = group;
 	}
 	
 	public Object3D tile1;
@@ -28,6 +29,8 @@ public class LiveTileAnimation extends BaseValueAnimation{
 	
 	private SimpleVector axis1 = new SimpleVector(1, -1, 0);
 	private SimpleVector axis2 = new SimpleVector(1, -1, 0);
+	
+	PickGroup group;
 	
 	public void setTile1(Object3D tile, SimpleVector vector){
 		tile1 = tile;
@@ -41,19 +44,26 @@ public class LiveTileAnimation extends BaseValueAnimation{
 		init();
 	}
 	
+	public void setFrames(int frames){
+		this.frames = frames > 30 && frames < 600 ? frames : 300; 
+	}
+	
 	public void init(){
 		if(tile1 == null || tile2 == null)return;
 		frames *= 1;// (int )(Math.random() * 2 + 1);
 	}
 	
 	public void reset(){
-		tile1.clearRotation();
-		tile2.clearRotation();
+//		tile1.clearRotation();
+//		tile2.clearRotation();
+		stopped = false;
+		index = 0;
 	}
 	
 	@Override
 	public void onAnimateSuccess() {
-
+		if(group != null)
+			group.animation = null;
 	}
 
 	@Override
@@ -61,10 +71,5 @@ public class LiveTileAnimation extends BaseValueAnimation{
 		tile1.rotateAxis(axis1, (float) v);
 		tile2.rotateAxis(axis2, (float) v);
 	}
-	
-	@Override
-	public void stop() {
-		reset();
-		super.stop();
-	}
+
 }

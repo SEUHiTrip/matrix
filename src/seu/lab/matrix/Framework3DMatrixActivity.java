@@ -266,7 +266,7 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 		fb.clear(back);
 
 		world.renderScene(fb);
-		sky.render(world, fb);
+//		sky.render(world, fb);
 
 		if(false && eye.getType() == Eye.Type.LEFT){
 			world.drawWireframe(fb, wire, 2, false);
@@ -390,15 +390,6 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 			screens = new Object3D[3];
 			islands = new Object3D[4];
 
-			screens[0] = Primitives.getPlane(1, 10);
-			screens[0].rotateY(4.71f);
-			screens[0].translate(10, 5, 5);
-			screens[0].setShader(screenShaders[0]);
-			screens[0].calcTextureWrapSpherical();
-			screens[0].build();
-			screens[0].strip();
-			world.addObject(screens[0]);
-			
 			notice = Primitives.getPlane(1, 2);
 			notice.rotateY(4.71f);
 			notice.translate(-5, 0, 0);
@@ -407,6 +398,15 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 			notice.build();
 			notice.strip();
 			world.addObject(notice);
+			
+			screens[0] = Primitives.getPlane(1, 10);
+			screens[0].rotateY(4.71f);
+			screens[0].translate(10, 5, 5);
+			screens[0].setShader(screenShaders[0]);
+			screens[0].calcTextureWrapSpherical();
+			screens[0].build();
+			screens[0].strip();
+			world.addObject(screens[0]);
 
 			screens[1] = Primitives.getPlane(1, 10);
 			screens[1].rotateY(4.71f);
@@ -425,10 +425,9 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 			screens[2].build();
 			screens[2].strip();
 			world.addObject(screens[2]);
-			screens[2].setVisibility(false);
 			
 			islands[0] = Object3D.mergeAll(Loader.load3DS(getResources().openRawResource(R.raw.island_green), 0.8f));
-			//islands[0].translate(-10, 0, -10);
+			islands[0].setVisibility(false);
 			islands[0].translate(-10, 10, -5);
 			islands[0].rotateX(-3.14f/3f);
 			islands[0].rotateY(3.14f/2);
@@ -436,7 +435,7 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 			world.addObjects(islands[0]);
 			
 			islands[1] = Object3D.mergeAll(Loader.load3DS(getResources().openRawResource(R.raw.island_volcano), 1.6f));
-			//islands[1].translate(-10, 0, 0);
+			islands[1].setVisibility(false);
 			islands[1].translate(-15, 10, 0);
 			islands[1].rotateX(-3.14f/3f);
 			islands[1].rotateY(3.14f/2);
@@ -444,7 +443,7 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 			world.addObjects(islands[1]);
 			
 			islands[2] = Object3D.mergeAll(Loader.load3DS(getResources().openRawResource(R.raw.island_ship), 0.2f));
-			//islands[2].translate(-10, 0, 10);
+			islands[2].setVisibility(false);
 			islands[2].translate(-10, 10, 5);
 			islands[2].rotateX(-3.14f/3f);
 			islands[2].rotateY(3.14f/2);
@@ -462,7 +461,8 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 			if (currentMode.type == IDisplayConnection.ConnectionType.Single) {
 				screens[1].setVisibility(false);
 			} else if (currentMode.type == IDisplayConnection.ConnectionType.Duel) {
-
+				screens[1].setVisibility(false);
+				screens[2].setVisibility(false);
 			} else {
 				screens[1].translate(0, 0, -12);
 			}
@@ -481,7 +481,7 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 		if (buffer == null) {
 			// GLES20.glDeleteTextures(buffer.length, buffer, 0);
 
-			int numOfTextures = 3 + 4 + 3 + 3;
+			int numOfTextures = 4 + 3 + 3 + 3;
 			buffer = new int[numOfTextures];
 			GLES20.glGenTextures(numOfTextures, buffer, 0);
 			for (int i = 0; i < numOfTextures; i++) {
@@ -697,14 +697,20 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 			int y = mArrayImageContainer.getStrideY();
 			int len = x * y;
 
+			com.idisplay.util.Logger.d(TAG, "y:" + y + " len:"+len);
+			
 			if (currentMode.type == IDisplayConnection.ConnectionType.Single) {
 				simpleFillTextures(iArr, 0, 0, len, x, y);
 			} else {
-				if (eye.getType() == Eye.Type.LEFT) {
-					simpleFillTextures(iArr, 0, 0, len >> 1, x, y >> 1);
-				} else if (eye.getType() == Eye.Type.RIGHT) {
-					simpleFillTextures(iArr, 3, len >> 1, len >> 1, x, y >> 1);
-				}
+				simpleFillTextures(iArr, 0, 0, 			len  / 4, x, y / 4);
+				simpleFillTextures(iArr, 3, len / 4, 	len  / 4, x, y / 4);
+				simpleFillTextures(iArr, 6, len / 2, len  / 4, x, y / 4);
+				
+//				if (eye.getType() == Eye.Type.LEFT) {
+//					simpleFillTextures(iArr, 0, 0, len >> 1, x, y >> 1);
+//				} else if (eye.getType() == Eye.Type.RIGHT) {
+//					simpleFillTextures(iArr, 3, len >> 1, len >> 1, x, y >> 1);
+//				}
 			}
 		}
 	}
@@ -756,6 +762,9 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 
 	Matrix rotationMatrix2 = new Matrix();
 	Matrix translatMatrix2 = new Matrix();
+	
+	Matrix rotationMatrix3 = new Matrix();
+	Matrix translatMatrix3 = new Matrix();
 
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {

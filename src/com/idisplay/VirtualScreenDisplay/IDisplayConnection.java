@@ -84,13 +84,13 @@ public class IDisplayConnection implements UnexpectedErrorListner,
 				break;
 			case 1:
 				this.type = ConnectionType.Duel;
-				height = 2048;
+				height = 1024*4;
 				width = 1024;
 				break;
 			case 2:
 			default:
 				this.type = ConnectionType.SideBySide;
-				height = 2048;
+				height = 1024*4;
 				width = 1024;
 				break;
 			}
