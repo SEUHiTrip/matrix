@@ -110,10 +110,10 @@ public class MiniMapRenderer implements IMiniMapRenderer, IMimiMapButtonListener
     }
 
     private void loadButtonTexture(boolean z) {
-        GLES20.glActiveTexture(33986);
-        GLES20.glBindTexture(3553, this.buffer[2]);
-        Bitmap decodeResource = BitmapFactory.decodeResource(this.mRes, z ? R.drawable.btn_leftarrow : R.drawable.btn_rightarrow);
-        GLES20.glTexImage2D(3553, 0, 6408, decodeResource.getWidth(), decodeResource.getHeight(), 0, 6408, 5121, Utils.loadTextureFromBitmap(decodeResource));
+//        GLES20.glActiveTexture(33986);
+//        GLES20.glBindTexture(3553, this.buffer[2]);
+//        Bitmap decodeResource = BitmapFactory.decodeResource(this.mRes, z ? R.drawable.btn_leftarrow : R.drawable.btn_rightarrow);
+//        GLES20.glTexImage2D(3553, 0, 6408, decodeResource.getWidth(), decodeResource.getHeight(), 0, 6408, 5121, Utils.loadTextureFromBitmap(decodeResource));
     }
 
     private void loadButtonVertices() {
