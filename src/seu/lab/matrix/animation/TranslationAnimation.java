@@ -11,11 +11,11 @@ import com.threed.jpct.SimpleVector;
 public class TranslationAnimation extends BaseVectorAnimation{
 
 	public boolean ignoreStop = false;
-
-	private Object3D[] object3ds;
-	private SimpleVector[] targets;
-	private SimpleVector translation;
-	private PickGroup group;
+	
+	protected Object3D[] object3ds;
+	protected SimpleVector[] targets;
+	protected SimpleVector translation;
+	protected PickGroup group;
 	
 	public TranslationAnimation(String tag, Object3D[] object3ds, SimpleVector translation, PickGroup group) {
 		super(tag, translation);

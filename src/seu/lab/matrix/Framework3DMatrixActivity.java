@@ -825,6 +825,15 @@ public abstract class Framework3DMatrixActivity extends
 			texture.removeAlpha();
 			tm.addTexture("p_" + c[i], texture);
 		}
+		
+		for (int i = 0; i < 8; i++) {
+			drawable = new BitmapDrawable(am.open("video/l_m" + c[i]
+					+ ".jpg"));
+			texture = new Texture(SceneHelper.RotateBitmap(BitmapHelper.rescale(
+					BitmapHelper.convert(drawable), 1024, 1024), 90f));
+			texture.removeAlpha();
+			tm.addTexture("l_m" + c[i], texture);
+		}
 	}
 
 	@Override

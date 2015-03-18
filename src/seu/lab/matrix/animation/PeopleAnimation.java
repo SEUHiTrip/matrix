@@ -2,6 +2,7 @@ package seu.lab.matrix.animation;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.Vector;
 
 import raft.jpct.bones.Animated3D;
@@ -12,6 +13,7 @@ import raft.jpct.bones.SkeletonDebugger;
 import raft.jpct.bones.SkeletonPose;
 
 import android.content.res.AssetManager;
+import android.util.Log;
 
 import com.jbrush.ae.EditorObject;
 import com.jbrush.ae.Scene;
@@ -24,34 +26,40 @@ import com.threed.jpct.Texture;
 import com.threed.jpct.TextureManager;
 import com.threed.jpct.World;
 
-public class PeopleAnimation implements Animatable{
+public class PeopleAnimation implements Animatable {
+
+	public boolean[] isShown = new boolean[]{true,true,true};
 
 	private Object3D ogro;
 	private Object3D lion;
 	private Object3D seymour;
+
+	public Object3D[] people;
 
 	private float lionInd = 0f;
 
 	private float ogroInd = 0f;
 
 	private long totalTime = 0;
-	
+
 	private int workspaceIdx = 0;
-	
+
 	private Vector<EditorObject> objects;
 
 	private AnimatedGroup seymourGroup;
 	private SkeletonPose currentPose;
 	private SkeletonDebugger skeletonDebugger;
 	private Object3D ballSphere;
-	
+
+	private Object3D dummy;
+
 	AssetManager am;
 	private boolean isOver = false;
-	
-	public void init(AssetManager am, World world, Object3D workspace, SimpleVector position){
-		objects = Scene.loadLevelAE("people.txt", objects, world,
-				am);
 
+	public void init(AssetManager am, World world, Object3D workspace,
+			Object3D dummy) {
+		objects = Scene.loadLevelAE("people.txt", objects, world, am);
+		this.dummy = dummy;
 		ogro = Scene.findObject("ogro", objects);
 		lion = Scene.findObject("lion", objects);
 		world.removeObject(Scene.findObject("floor", objects));
@@ -65,39 +73,114 @@ public class PeopleAnimation implements Animatable{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		lion.setScale(0.02f);
-		ogro.setScale(0.02f);
-		seymour.setScale(0.1f);
-		
-		lion.rotateX((float) (Math.PI/2));
-		ogro.rotateX((float) (Math.PI/2));
-		seymour.rotateX((float) (Math.PI/2));
-		lion.rotateZ((float) (-Math.PI/2));
-		ogro.rotateZ((float) (-Math.PI/2));
-		seymour.rotateZ((float) (-Math.PI/2));
 
-		lion.translate(position.calcSub(lion.getTransformedCenter()));
-		ogro.translate(position.calcSub(ogro.getTransformedCenter()));
-		seymour.translate(position.calcSub(seymour.getTransformedCenter()));
-		seymour.translate(0, 0, -0.5f);
-		
+		people = new Object3D[2 + 1 + seymourGroup.getSize()];
+		people[0] = lion;
+		people[1] = ogro;
+		people[2] = seymour;
+
+		for (int i = 0; i < seymourGroup.getSize(); i++) {
+			people[3 + i] = seymourGroup.get(i);
+		}
+
+		reset();
+
 		workspace.addChild(lion);
 		workspace.addChild(ogro);
 		workspace.addChild(seymour);
 
 	}
-	
-	public void reset(){
+
+	public void reset() {
+		SimpleVector position = dummy.getTransformedCenter();
+
+		setWorkspace(workspaceIdx);
+
 		lionInd = 0f;
 		ogroInd = 0f;
+
+		lion.setScale(0.02f);
+		ogro.setScale(0.02f);
+		seymour.setScale(0.1f);
+
+		lion.rotateX((float) (Math.PI / 2));
+		ogro.rotateX((float) (Math.PI / 2));
+		seymour.rotateX((float) (Math.PI / 2));
+		lion.rotateZ((float) (-Math.PI / 2));
+		ogro.rotateZ((float) (-Math.PI / 2));
+		seymour.rotateZ((float) (-Math.PI / 2));
+
+		lion.translate(position.calcSub(lion.getTransformedCenter()));
+		ogro.translate(position.calcSub(ogro.getTransformedCenter()));
+		seymour.translate(position.calcSub(seymour.getTransformedCenter()));
+		seymour.translate(0, 0, -0.5f);
 	}
-	
+
+	public void setPlayable() {
+		isOver = false;
+	}
+
+	public void show(final List<Animatable> mAnimatables) {
+		if (isShown[workspaceIdx])
+			return;
+
+		setPlayable();
+
+		people[workspaceIdx].translate(-5, 0, 0);
+		people[workspaceIdx].setVisibility(true);
+
+		Log.e("people", workspaceIdx + " setVisibility "+people[workspaceIdx].getVisibility());
+		
+		if(workspaceIdx == 2){
+			for (Animated3D o : seymourGroup) {
+				o.setVisibility(true);
+			}
+		} else {
+			
+		}
+		
+		mAnimatables.add(new TranslationAnimation("",
+				new Object3D[] { people[workspaceIdx] }, new SimpleVector(5, 0,
+						0), null){
+				@Override
+				public void onAnimateSuccess() {
+					isShown[workspaceIdx] = true;
+					super.onAnimateSuccess();
+				}
+			});
+
+	}
+
+	public void fadeout(final List<Animatable> mAnimatables) {
+		if (!isShown[workspaceIdx])
+			return;
+
+		stop();
+		mAnimatables.add(new TranslationAnimation("",
+				new Object3D[] { people[workspaceIdx] }, new SimpleVector(-5,
+						0, 0), null) {
+			@Override
+			public void onAnimateSuccess() {
+				object3ds[0].translate(5, 0, 0);
+				object3ds[0].setVisibility(false);
+				isShown[workspaceIdx] = false;
+				if(workspaceIdx == 2){
+					for (Animated3D o : seymourGroup) {
+						o.setVisibility(false);
+					}
+				} else {
+					
+				}
+				super.onAnimateSuccess();
+			}
+		});
+	}
+
 	public void setWorkspace(int idx) {
 		workspaceIdx = idx > -1 && idx < 3 ? idx : 0;
 		switch (workspaceIdx) {
 		case 0:
-			lion.setVisibility(true);
+			lion.setVisibility(isShown[workspaceIdx]);
 			ogro.setVisibility(false);
 			seymour.setVisibility(false);
 			ballSphere.setVisibility(false);
@@ -107,7 +190,7 @@ public class PeopleAnimation implements Animatable{
 			break;
 		case 1:
 			lion.setVisibility(false);
-			ogro.setVisibility(true);
+			ogro.setVisibility(isShown[workspaceIdx]);
 			seymour.setVisibility(false);
 			ballSphere.setVisibility(false);
 			for (Animated3D o : seymourGroup) {
@@ -117,17 +200,17 @@ public class PeopleAnimation implements Animatable{
 		case 2:
 			lion.setVisibility(false);
 			ogro.setVisibility(false);
-			seymour.setVisibility(true);
+			seymour.setVisibility(isShown[workspaceIdx]);
 			ballSphere.setVisibility(false);
 			for (Animated3D o : seymourGroup) {
-				o.setVisibility(true);
+				o.setVisibility(isShown[workspaceIdx]);
 			}
 			break;
 		default:
 			break;
 		}
 	}
-	
+
 	@Override
 	public boolean isOver() {
 		return isOver;
@@ -158,7 +241,7 @@ public class PeopleAnimation implements Animatable{
 
 			currentPose.updateTransforms();
 			seymourGroup.applySkeletonPose();
-			seymourGroup.applyAnimation();	
+			seymourGroup.applyAnimation();
 			break;
 		default:
 			isOver = true;
@@ -168,15 +251,17 @@ public class PeopleAnimation implements Animatable{
 
 	@Override
 	public void onAnimateSuccess() {
-		reset();
+//		lionInd = 0f;
+//		ogroInd = 0f;
 	}
 
 	@Override
 	public void stop() {
-		isOver  = true;
+		isOver = true;
 	}
-	
-	private void initSeymour(AssetManager am, World world) throws URISyntaxException, IOException {
+
+	private void initSeymour(AssetManager am, World world)
+			throws URISyntaxException, IOException {
 
 		seymourGroup = BonesIO.loadGroup(am.open("seymour.bone"));
 
@@ -185,7 +270,7 @@ public class PeopleAnimation implements Animatable{
 		seymour.clearTranslation();
 		seymour.translate(15, -2, 40);
 
-		if(!TextureManager.getInstance().containsTexture("seymour")){
+		if (!TextureManager.getInstance().containsTexture("seymour")) {
 			Texture texture = new Texture(am.open("seymour.png"));
 			TextureManager.getInstance().addTexture("seymour", texture);
 		}
@@ -205,14 +290,20 @@ public class PeopleAnimation implements Animatable{
 		ballSphere.setAdditionalColor(new RGBColor(100, 100, 100));
 		ballSphere.build();
 		world.addObject(ballSphere);
+		
+		totalTime += 25;
+		updateBallLocation();
 
+		currentPose.updateTransforms();
+		seymourGroup.applySkeletonPose();
+		seymourGroup.applyAnimation();
 	}
 
 	private void updateBallLocation() {
-		float seconds = totalTime / 1000f;	
+		float seconds = totalTime / 1000f;
 		// a circular path
 		SimpleVector ballPos = new SimpleVector(Math.sin(seconds) * 5,
-				-Math.cos(seconds) * 5 - 10 , -5 );
+				-Math.cos(seconds) * 5 - 10, -5);
 
 		// Neck
 		targetJoint(currentPose, 13, new SimpleVector(0, 0, -1), ballPos, 1.0f);
@@ -229,7 +320,6 @@ public class PeopleAnimation implements Animatable{
 		// Waist
 		targetJoint(currentPose, 5, new SimpleVector(0, -1, 0), ballPos, 0.1f);
 
-		
 		ballSphere.translate(ballPos.calcSub(ballSphere.getTranslation()));
 	}
 
@@ -275,6 +365,5 @@ public class PeopleAnimation implements Animatable{
 		// set that as the neck's transform
 		pose.getLocal(jointIndex).setTo(subGlobal);
 	}
-
 
 }
