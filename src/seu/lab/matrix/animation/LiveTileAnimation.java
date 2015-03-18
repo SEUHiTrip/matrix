@@ -50,7 +50,7 @@ public class LiveTileAnimation extends BaseValueAnimation{
 	
 	public void init(){
 		if(tile1 == null || tile2 == null)return;
-		frames *= 1;// (int )(Math.random() * 2 + 1);
+		frames *= (int )(Math.random() * 2 + 1);
 	}
 	
 	public void reset(){

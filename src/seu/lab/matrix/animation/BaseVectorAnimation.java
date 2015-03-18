@@ -4,14 +4,15 @@ import com.threed.jpct.SimpleVector;
 
 public abstract class BaseVectorAnimation extends BaseAnimation{
 
-	protected SimpleVector base;
-
+	double x,y,z;
+	
 	abstract void onChange(SimpleVector vector);
 		
 	public BaseVectorAnimation(String tag, SimpleVector base){
 		super(tag);
-		base.scalarMul((float) ((1 - factor) / factor));
-		this.base = base;
+		x = base.x * (1 - factor) / factor;
+		y = base.y * (1 - factor) / factor;
+		z = base.z * (1 - factor) / factor;
 	}
 
 	@Override
@@ -21,10 +22,10 @@ public abstract class BaseVectorAnimation extends BaseAnimation{
 		} else {
 			index++;
 		}
-		SimpleVector tmp = new SimpleVector(base);
-		tmp.scalarMul((float) (Math.pow(factor, index)));
+						
+		double d = Math.pow(factor, index);
 		
-		onChange(tmp);
+		onChange(new SimpleVector(x*d, y*d, z*d));
 	}
 
 }

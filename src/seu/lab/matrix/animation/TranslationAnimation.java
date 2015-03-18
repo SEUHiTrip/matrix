@@ -40,7 +40,7 @@ public class TranslationAnimation extends BaseVectorAnimation{
 
 	@Override
 	public void onAnimateSuccess() {
-		Log.e("Animatable", "onAnimateSuccess for "+tag);
+		Log.e("Animatable", "onAnimateSuccess for "+object3ds[0].getTranslation());
 		
 //		for (int i = 0; i < object3ds.length; i++) {
 //			object3ds[i].translate(targets[i].calcSub(object3ds[i]

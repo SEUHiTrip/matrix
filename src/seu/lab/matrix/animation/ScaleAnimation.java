@@ -15,6 +15,7 @@ public class ScaleAnimation extends BaseValueAnimation{
 		this.object3ds = object3ds;
 		this.scale = scale;
 		varing = object3ds[0].getScale();
+		frames = 60;
 	}
 
 	@Override

@@ -5,13 +5,9 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.Vector;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.opencv.core.Point;
-
 import seu.lab.dolphin.client.ContinuousGestureEvent;
 import seu.lab.dolphin.client.GestureEvent;
 import seu.lab.dolphin.client.IGestureListener;
@@ -24,9 +20,6 @@ import seu.lab.matrix.animation.ScaleAnimation;
 import seu.lab.matrix.animation.SeqAnimation;
 import seu.lab.matrix.animation.TranslationAnimation;
 import seu.lab.matrix.red.RemoteManager.OnRemoteChangeListener;
-
-import android.R.integer;
-import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -36,23 +29,14 @@ import android.opengl.GLES20;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.GestureDetector;
-import android.view.GestureDetector.OnGestureListener;
 import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.MotionEvent;
 
-import com.google.vrtoolkit.cardboard.CardboardView;
 import com.google.vrtoolkit.cardboard.Eye;
 import com.google.vrtoolkit.cardboard.HeadTransform;
-import com.google.vrtoolkit.cardboard.Viewport;
-import com.idisplay.VirtualScreenDisplay.IDisplayConnection;
-import com.idisplay.VirtualScreenDisplay.IDisplayConnection.ConnectionMode;
-import com.idisplay.VirtualScreenDisplay.IDisplayConnection.IDisplayConnectionCallback;
-import com.idisplay.util.ServerItem;
-import com.jbrush.ae.*;
 import com.threed.jpct.Camera;
 import com.threed.jpct.Config;
 import com.threed.jpct.FrameBuffer;
-import com.threed.jpct.GLSLShader;
 import com.threed.jpct.Light;
 import com.threed.jpct.Loader;
 import com.threed.jpct.Object3D;
@@ -119,13 +103,23 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 	private boolean isListShown = true;
 
+	private int mVideoPageIdx;
+	private int mPicPageIdx;
+	private int mCurrentPic;
+
 	private LiveTileAnimation[] mBoardTiles = new LiveTileAnimation[] {
 			new LiveTileAnimation("minecraft"), new LiveTileAnimation(""),
 			new LiveTileAnimation(""), new LiveTileAnimation(""), };
 
-	private LiveTileAnimation[] mListTiles = new LiveTileAnimation[] {
+	private LiveTileAnimation[] mPicListTiles = new LiveTileAnimation[] {
 			new LiveTileAnimation("", false, null),
 			new LiveTileAnimation("", false, null),
+			new LiveTileAnimation("", false, null),
+			new LiveTileAnimation("", false, null),
+			new LiveTileAnimation("", false, null),
+			new LiveTileAnimation("", false, null), };
+	
+	private LiveTileAnimation[] mVideoListTiles = new LiveTileAnimation[] {
 			new LiveTileAnimation("", false, null),
 			new LiveTileAnimation("", false, null),
 			new LiveTileAnimation("", false, null),
@@ -136,7 +130,9 @@ public class SceneActivity extends Framework3DMatrixActivity {
 	private Map<String, Object3D> clickableLists = new HashMap<String, Object3D>();
 
 	PickGroup[] mPickGroupBoards = new PickGroup[11];
-	PickGroup[] mPickGroupLists = new PickGroup[6 + 2];
+	PickGroup[] mPickGroupLists = new PickGroup[6 + 4 + 2];
+	
+	PickGroup[] mPickGroupIcons = new PickGroup[2];
 
 	GestureDetector mGestureDetector = null;
 
@@ -145,7 +141,7 @@ public class SceneActivity extends Framework3DMatrixActivity {
 	SimpleOnGestureListener mGestureListener = new SimpleOnGestureListener() {
 
 		int workspace = 0;
-		
+
 		public boolean onDoubleTap(MotionEvent e) {
 			isDoubleTapped = true;
 			return super.onDoubleTap(e);
@@ -156,8 +152,21 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		}
 
 		public void onLongPress(MotionEvent e) {
-			peopleAnimation.setWorkspace(workspace);
-			workspace = workspace + 1 > 3 ? 0 : workspace + 1;
+
+			if (e.getRawX() < 480) {
+				slidePic(false);
+			} else if (e.getRawX() > 1920 - 480) {
+				slidePic(true);
+			} else {
+				if (e.getRawY() < 540) {
+					scalePic(true);
+				} else {
+					scalePic(false);
+				}
+			}
+
+			// peopleAnimation.setWorkspace(workspace);
+			// workspace = workspace + 1 > 3 ? 0 : workspace + 1;
 		}
 
 		public boolean onScroll(MotionEvent e1, MotionEvent e2,
@@ -281,7 +290,7 @@ public class SceneActivity extends Framework3DMatrixActivity {
 	@Override
 	public void onSurfaceChanged(int w, int h) {
 		Config.maxAnimationSubSequences = 100;
-		
+
 		if (fb != null) {
 			fb.dispose();
 		}
@@ -305,7 +314,7 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		islands = new Object3D[4];
 		peopleAnimation = new PeopleAnimation();
 		mPicScrs = new Object3D[2];
-		
+
 		world.addObjects(mObjects);
 		world.setAmbientLight(120, 120, 120);
 
@@ -384,6 +393,7 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 			postInitBoard();
 			postInitList();
+			postInitScr();
 
 			for (int i = 0; i < mBoardTiles.length; i++) {
 				mAnimatables.add(mBoardTiles[i]);
@@ -405,12 +415,12 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 			mList = clickableLists.get("l_l2");
 
-			peopleAnimation.init(getAssets(), world, mCamViewspots[4],
-					mPeoplePositionDummy.getTransformedCenter());
-			
-//			mAnimatables.add(peopleAnimation);
-			
-//			startIDisplay(currentMode);
+			// peopleAnimation.init(getAssets(), world, mCamViewspots[4],
+			// mPeoplePositionDummy.getTransformedCenter());
+
+			// mAnimatables.add(peopleAnimation);
+
+			// startIDisplay(currentMode);
 
 		} else {
 
@@ -418,12 +428,11 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 			if (SceneHelper.isLookingAt(cam, ball1,
 					mSkype.getTransformedCenter()) > 0.75) {
-				// Log.e(TAG, "pick skype");
+				Log.e(TAG, "pick skype");
 
 				pickBoard();
 
-			} else if (SceneHelper.isLookingAt(cam, ball1,
-					screens[0].getTransformedCenter()) > 0.8) {
+			} else if (SceneHelper.isLookingAt(cam, ball1, forward) > 0.8) {
 				Log.e(TAG, "pick scr");
 
 				pickScr();
@@ -431,7 +440,6 @@ public class SceneActivity extends Framework3DMatrixActivity {
 			} else if (isListShown
 					&& SceneHelper.isLookingAt(cam, ball1,
 							mList.getTransformedCenter()) > 0.8) {
-				Log.e(TAG, "pick list");
 
 				pickList();
 			}
@@ -486,10 +494,8 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		ball1.translate(camDir);
 
 		ball1.setRotationPivot(originInballView);
-		ball1.rotateAxis(cam.getUpVector(),
-				(float) (0.5f * point.x));
-		ball1.rotateAxis(cam.getSideVector(),
-				(float) (0.5f * point.y));
+		ball1.rotateAxis(cam.getUpVector(), (float) (0.5f * point.x));
+		ball1.rotateAxis(cam.getSideVector(), (float) (0.5f * point.y));
 
 		ball2.clearTranslation();
 		ball2.clearRotation();
@@ -502,15 +508,32 @@ public class SceneActivity extends Framework3DMatrixActivity {
 	}
 
 	private void pickList() {
+
+		PickGroup group = null;
+		Object3D object3d = null;
+		SimpleVector trans = new SimpleVector();
+
+		for (int i = 0; i < mPickGroupLists.length; i++) {
+			group = mPickGroupLists[i];
+			if (SceneHelper.isLookingAt(cam, ball1,
+					group.group[0].getTransformedCenter()) > 0.995) {
+				activateTilesGroup(group);
+
+				if (i < 6 && isDoubleTapped) {
+					isDoubleTapped = false;
+					openPic(i + 6 * mPicPageIdx + 1);
+				}
+			} else {
+				deactivateTilesGroup(group);
+			}
+		}
+
 		if (!isDoubleTapped)
 			return;
 
 		isDoubleTapped = false;
 
-		PickGroup group = null;
-		Object3D object3d = null;
-		SimpleVector trans = new SimpleVector();
-		for (int i = 6; i < mPickGroupLists.length; i++) {
+		for (int i = 10; i < mPickGroupLists.length; i++) {
 			group = mPickGroupLists[i];
 			object3d = group.group[0];
 
@@ -519,111 +542,245 @@ public class SceneActivity extends Framework3DMatrixActivity {
 				if (object3d.getName().startsWith("x_l_next")
 						|| object3d.getName().startsWith("x_l_back")) {
 
-					for (int i1 = 0; i1 < mListTiles.length; i1++) {
-						mListTiles[i1].reset();
-						// mAnimatables.add(mListTiles[i1]);
+					if(true){
+						for (int i1 = 0; i1 < mVideoListTiles.length; i1++) {
+							mVideoListTiles[i1].reset();
+							// mAnimatables.add(mListTiles[i1]);
+						}
+
+						mAnimatables
+								.add(new SeqAnimation(mAnimatables, mVideoListTiles));
+
+						mVideoPageIdx = mVideoPageIdx + 1 % 2;
+					}else {
+						for (int i1 = 0; i1 < mPicListTiles.length; i1++) {
+							mPicListTiles[i1].reset();
+							// mAnimatables.add(mListTiles[i1]);
+						}
+
+						mAnimatables
+								.add(new SeqAnimation(mAnimatables, mPicListTiles));
+
+						mPicPageIdx = mPicPageIdx + 1 % 2;
 					}
-
-					mAnimatables
-							.add(new SeqAnimation(mAnimatables, mListTiles));
-
 				}
+			}
+		}
+
+	}
+
+	private void pickBoard() {
+		PickGroup group;
+		for (int i = 0; i < mPickGroupBoards.length; i++) {
+			group = mPickGroupBoards[i];
+			if (SceneHelper.isLookingAt(cam, ball1,
+					group.group[0].getTransformedCenter()) > 0.995) {
+				activateTilesGroup(group);
+			} else {
+				deactivateTilesGroup(group);
 			}
 		}
 	}
 
 	private void pickScr() {
-
-	}
-
-	private void pickBoard() {
-		PickGroup group = null;
-		SimpleVector trans = new SimpleVector();
-		for (int i = 0; i < mPickGroupBoards.length; i++) {
-			group = mPickGroupBoards[i];
-
+		PickGroup group;
+		for (int i = 0; i < mPickGroupIcons.length; i++) {
+			group = mPickGroupIcons[i];
 			if (SceneHelper.isLookingAt(cam, ball1,
 					group.group[0].getTransformedCenter()) > 0.995) {
+				activateTilesGroup(group);
 
-				Log.e(TAG, "trans:" + group.group[0].getTranslation());
-
-				if (group.state == 0) {
-					group.state = 1;
-
-					if (group.animation == null) {
-						Log.e(TAG, "trans 0 -> 1 with null");
-
-						trans = cam.getPosition()
-								.calcSub(group.group[0].getTransformedCenter())
-								.normalize();
-						group.animation = new TranslationAnimation("",
-								group.group, new SimpleVector(trans), group);
-						mAnimatables.add(group.animation);
-					} else {
-						Log.e(TAG, "trans 0 -> 1 with animation");
-
-						group.animation.stop();
-
-						trans = cam.getPosition()
-								.calcSub(group.group[0].getTransformedCenter())
-								.normalize();
-
-						SimpleVector hasTrns = new SimpleVector();
-						group.group[0].getTranslation(hasTrns);
-
-						group.animation = new TranslationAnimation("",
-								group.group, trans.calcSub(hasTrns), group);
-						mAnimatables.add(group.animation);
-					}
-
-				} else {
-
+				if (i == 0) {
+					closeCurrentApp();
 				}
+
 			} else {
-				if (group.state == 0) {
-
-				} else {
-					group.state = 0;
-
-					if (group.animation == null) {
-						Log.e(TAG, "trans 1 -> 0 with null");
-
-						SimpleVector trns = new SimpleVector();
-						group.group[0].getTranslation(trns);
-						trns.x = -trns.x;
-						trns.y = -trns.y;
-						trns.z = -trns.z;
-						group.animation = new TranslationAnimation("",
-								group.group, trns, group);
-						mAnimatables.add(group.animation);
-					} else {
-						Log.e(TAG, "trans 1 -> 0 with animation");
-
-						group.animation.stop();
-						SimpleVector trns = new SimpleVector();
-						group.group[0].getTranslation(trns);
-						trns.x = -trns.x;
-						trns.y = -trns.y;
-						trns.z = -trns.z;
-
-						group.animation = new TranslationAnimation("",
-								group.group, trns, group);
-						mAnimatables.add(group.animation);
-					}
-				}
+				deactivateTilesGroup(group);
 			}
 		}
 	}
 
-	private void initIslands(String name, Object3D object3d) {
-		if (name.startsWith("i_trea"))
-			islands[3] = object3d;
-		else if (name.startsWith("i_ship"))
-			islands[2] = object3d;
-		else if (name.startsWith("i_volcano"))
-			islands[1] = object3d;
-		else if (name.startsWith("i_green"))
-			islands[0] = object3d;
+	private void openPic(int i) {
+
+		mCurrentPic = i;
+
+		mPicScrs[0].setVisibility(false);
+		mPicScrs[1].setVisibility(false);
+		mPicScrs[1].clearTranslation();
+		mPicScrs[0].clearTranslation();
+
+		if (i < 10) {
+			mPicScrs[0].setTexture("p_" + i);
+		} else {
+			mPicScrs[0].setTexture("p_" + (char) ('a' + (i - 10)));
+		}
+
+		mPicScrs[0].translate(-3, 0, 0);
+
+		mAnimatables
+				.add(new TranslationAnimation("",
+						new Object3D[] { mPicScrs[0] }, new SimpleVector(3, 0,
+								0), null));
+
+		mAnimatables.add(new DisplayAnimation(new Object3D[] { mPicScrs[0] },
+				"", false));
+
+		if (mPicScrs[0].getScale() != 1f) {
+			mAnimatables.add(new ScaleAnimation(new Object3D[] { mPicScrs[0] },
+					"", 1f));
+		}
+
+	}
+
+	private void slidePic(boolean slideLeft) {
+
+		if (!(mPicScrs[0].getVisibility() || mPicScrs[1].getVisibility()))
+			return;
+
+		mCurrentPic += slideLeft ? -1 : 1;
+		mCurrentPic = mCurrentPic < 1 ? 12 : (mCurrentPic > 12 ? 1
+				: mCurrentPic);
+
+		Object3D pre = null, cur = null;
+		SimpleVector moveDir;
+		SimpleVector presetDir;
+
+		if (slideLeft) {
+			moveDir = new SimpleVector(0, -2, 0);
+			presetDir = new SimpleVector(0, 2, 0);
+		} else {
+			moveDir = new SimpleVector(0, 2, 0);
+			presetDir = new SimpleVector(0, -2, 0);
+		}
+
+		if (mPicScrs[0].getVisibility()) {
+			pre = mPicScrs[0];
+			cur = mPicScrs[1];
+		} else if (mPicScrs[1].getVisibility()) {
+			pre = mPicScrs[1];
+			cur = mPicScrs[0];
+		}
+
+		if (mCurrentPic < 10) {
+			cur.setTexture("p_" + mCurrentPic);
+		} else {
+			cur.setTexture("p_" + (char) ('a' + (mCurrentPic - 10)));
+		}
+		pre.clearTranslation();
+		cur.clearTranslation();
+		cur.setScale(1f);
+
+		cur.translate(presetDir);
+
+		mAnimatables.add(new TranslationAnimation("", new Object3D[] { pre },
+				moveDir, null));
+		mAnimatables.add(new TranslationAnimation("", new Object3D[] { cur },
+				moveDir, null));
+
+		mAnimatables
+				.add(new DisplayAnimation(new Object3D[] { pre }, "", true));
+		mAnimatables
+				.add(new DisplayAnimation(new Object3D[] { cur }, "", false));
+
+		mAnimatables.add(new ScaleAnimation(new Object3D[] { pre }, "", 1f));
+
+	}
+
+	private void scalePic(boolean up) {
+		if (!(mPicScrs[0].getVisibility() || mPicScrs[1].getVisibility()))
+			return;
+
+		Object3D cur = null;
+		if (mPicScrs[0].getVisibility()) {
+			cur = mPicScrs[0];
+		} else if (mPicScrs[1].getVisibility()) {
+			cur = mPicScrs[1];
+		}
+
+		float scale = cur.getScale() + (up ? 0.2f : -0.2f);
+
+		mAnimatables.add(new ScaleAnimation(new Object3D[] { cur }, "", scale));
+
+	}
+
+	private void openApp(int idx) {
+
+	}
+
+	private void closeCurrentApp() {
+		// TODO Auto-generated method stub
+
+	}
+
+	private void activateTilesGroup(PickGroup group) {
+		SimpleVector trans = new SimpleVector();
+
+		if (group.state == 0) {
+			group.state = 1;
+
+			if (group.animation == null) {
+				Log.e(TAG, "trans 0 -> 1 with null");
+
+				trans = cam.getPosition()
+						.calcSub(group.group[0].getTransformedCenter())
+						.normalize();
+				group.animation = new TranslationAnimation("", group.group,
+						new SimpleVector(trans), group);
+				mAnimatables.add(group.animation);
+			} else {
+				Log.e(TAG, "trans 0 -> 1 with animation");
+
+				group.animation.stop();
+
+				trans = cam.getPosition()
+						.calcSub(group.group[0].getTransformedCenter())
+						.normalize();
+
+				SimpleVector hasTrns = new SimpleVector();
+				group.group[0].getTranslation(hasTrns);
+
+				group.animation = new TranslationAnimation("", group.group,
+						trans.calcSub(hasTrns), group);
+				mAnimatables.add(group.animation);
+			}
+
+		} else {
+
+		}
+	}
+
+	private void deactivateTilesGroup(PickGroup group) {
+		if (group.state == 0) {
+
+		} else {
+			group.state = 0;
+
+			if (group.animation == null) {
+				Log.e(TAG, "trans 1 -> 0 with null");
+
+				SimpleVector trns = new SimpleVector();
+				group.group[0].getTranslation(trns);
+				trns.x = -trns.x;
+				trns.y = -trns.y;
+				trns.z = -trns.z;
+				group.animation = new TranslationAnimation("", group.group,
+						trns, group);
+				mAnimatables.add(group.animation);
+			} else {
+				Log.e(TAG, "trans 1 -> 0 with animation");
+
+				group.animation.stop();
+				SimpleVector trns = new SimpleVector();
+				group.group[0].getTranslation(trns);
+				trns.x = -trns.x;
+				trns.y = -trns.y;
+				trns.z = -trns.z;
+
+				group.animation = new TranslationAnimation("", group.group,
+						trns, group);
+				mAnimatables.add(group.animation);
+			}
+		}
 	}
 
 	private void saveObject(String name, Object3D object3d) {
@@ -661,19 +818,36 @@ public class SceneActivity extends Framework3DMatrixActivity {
 			return;
 		} else if (name.startsWith("x_p")) {
 			Log.e(TAG, "x_p");
-			object3d.setVisibility(false);
 			initPeople(name, object3d);
 			return;
+		} else if (name.startsWith("x_f_")) {
+			Log.e(TAG, "x_f");
+			object3d.setVisibility(false);
+			return;
 		}
+	}
+
+	private void initIslands(String name, Object3D object3d) {
+		if (name.startsWith("i_trea"))
+			islands[3] = object3d;
+		else if (name.startsWith("i_ship"))
+			islands[2] = object3d;
+		else if (name.startsWith("i_volcano"))
+			islands[1] = object3d;
+		else if (name.startsWith("i_green"))
+			islands[0] = object3d;
 	}
 
 	private void initPeople(String name, Object3D object3d) {
 		if (name.startsWith("x_p_people")) {
 			mPeoplePositionDummy = object3d;
+			object3d.setVisibility(false);
 		} else if (name.startsWith("x_p_s1lide")) {
 			mPicScrs[0] = object3d;
+			mPicScrs[0].setVisibility(false);
 		} else if (name.startsWith("x_p_s2lide")) {
 			mPicScrs[1] = object3d;
+			mPicScrs[1].setVisibility(false);
 		}
 	}
 
@@ -726,14 +900,33 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 		clickableBoards.put(tname, object3d);
 
-		if (tm.containsTexture(tname)) {
-			object3d.setTexture(tname);
-		} else {
-			object3d.setTexture("dummy");
+		printTexture(tname, object3d);
+	}
+
+	private void initIcons(String name, Object3D object3d) {
+		TextureManager tm = TextureManager.getInstance();
+		String tname = name.substring(2, name.indexOf("_Plane"));
+		object3d.clearAdditionalColor();
+
+		Log.e(TAG, "matching tname:" + tname);
+
+		clickableIcons.put(tname, object3d);
+
+		printTexture(tname, object3d);
+	}
+
+	private void initLists(String name, Object3D object3d) {
+
+		String tname = name.substring(2, name.indexOf("_Plane"));
+		Log.e(TAG, "matching tname:" + tname);
+
+		printTexture(tname, object3d);
+
+		if (tname.startsWith("l_l")) {
+			object3d.setVisibility(false);
 		}
-		object3d.calcTextureWrapSpherical();
-		object3d.strip();
-		object3d.build();
+
+		clickableLists.put(tname, object3d);
 	}
 
 	private void postInitBoard() {
@@ -794,100 +987,112 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		mPickGroupBoards[10].group[0] = tmp;
 	}
 
-	private void initIcons(String name, Object3D object3d) {
-		TextureManager tm = TextureManager.getInstance();
-		String tname = name.substring(2, name.indexOf("_Plane"));
-		object3d.clearAdditionalColor();
-
-		Log.e(TAG, "matching tname:" + tname);
-
-		clickableIcons.put(tname, object3d);
-
-		if (tm.containsTexture(tname)) {
-			object3d.setTexture(tname);
-		} else {
-			object3d.setTexture("dummy");
+	private void postInitScr() {
+		for (int i = 0; i < 2; i++) {
+			mPickGroupIcons[i] = new PickGroup(true);
 		}
-		object3d.calcTextureWrapSpherical();
-		object3d.strip();
-		object3d.build();
-	}
+		Object3D tmp;
+		tmp = clickableIcons.get("i_close");
+		mPickGroupIcons[0].group[0] = tmp;
 
-	private void initLists(String name, Object3D object3d) {
-		TextureManager tm = TextureManager.getInstance();
-
-		String tname = name.substring(2, name.indexOf("_Plane"));
-		Log.e(TAG, "matching tname:" + tname);
-
-		if (tm.containsTexture(tname)) {
-			object3d.setTexture(tname);
-		} else {
-			object3d.setTexture("dummy");
-		}
-		object3d.calcTextureWrapSpherical();
-		object3d.strip();
-		object3d.build();
-
-		clickableLists.put(tname, object3d);
+		tmp = clickableIcons.get("i_fullscreen");
+		mPickGroupIcons[1].group[0] = tmp;
 	}
 
 	private void postInitList() {
 
-		for (int i = 0; i < 6; i++) {
+		for (int i = 0; i < 10; i++) {
 			mPickGroupLists[i] = new PickGroup(false);
 		}
-		for (int i = 6; i < mPickGroupLists.length; i++) {
+		for (int i = 10; i < mPickGroupLists.length; i++) {
 			mPickGroupLists[i] = new PickGroup(true);
 		}
 
-		for (int i = 0; i < mListTiles.length; i++) {
-			mListTiles[i].setFrames(40);
+		for (int i = 0; i < mPicListTiles.length; i++) {
+			mPicListTiles[i].setFrames(40);
+		}
+		
+		for (int i = 0; i < mVideoListTiles.length; i++) {
+			mVideoListTiles[i].setFrames(40);
 		}
 
 		Object3D tmp;
 		tmp = clickableLists.get("l_l1");
-		mListTiles[0].setTile1(tmp, new SimpleVector(1.729, 1, 0));
+		mPicListTiles[0].setTile1(tmp, new SimpleVector(1.729, 1, 0));
 		mPickGroupLists[0].group[0] = tmp;
 		tmp = clickableLists.get("l_l2");
-		mListTiles[1].setTile1(tmp, new SimpleVector(1.729, 1, 0));
+		mPicListTiles[1].setTile1(tmp, new SimpleVector(1.729, 1, 0));
 		mPickGroupLists[1].group[0] = tmp;
 		tmp = clickableLists.get("l_l3");
-		mListTiles[2].setTile1(tmp, new SimpleVector(1.729, 1, 0));
+		mPicListTiles[2].setTile1(tmp, new SimpleVector(1.729, 1, 0));
 		mPickGroupLists[2].group[0] = tmp;
 		tmp = clickableLists.get("l_l4");
-		mListTiles[3].setTile1(tmp, new SimpleVector(3.732, 1, 0));
+		mPicListTiles[3].setTile1(tmp, new SimpleVector(3.732, 1, 0));
 		mPickGroupLists[3].group[0] = tmp;
 		tmp = clickableLists.get("l_l5");
-		mListTiles[4].setTile1(tmp, new SimpleVector(3.732, 1, 0));
+		mPicListTiles[4].setTile1(tmp, new SimpleVector(3.732, 1, 0));
 		mPickGroupLists[4].group[0] = tmp;
 		tmp = clickableLists.get("l_l6");
-		mListTiles[5].setTile1(tmp, new SimpleVector(3.732, 1, 0));
+		mPicListTiles[5].setTile1(tmp, new SimpleVector(3.732, 1, 0));
 		mPickGroupLists[5].group[0] = tmp;
 		tmp = clickableLists.get("l_l7");
-		mListTiles[0].setTile2(tmp, new SimpleVector(1.729, 1, 0));
+		mPicListTiles[0].setTile2(tmp, new SimpleVector(1.729, 1, 0));
 		mPickGroupLists[0].group[1] = tmp;
 		tmp = clickableLists.get("l_l8");
-		mListTiles[1].setTile2(tmp, new SimpleVector(1.729, 1, 0));
+		mPicListTiles[1].setTile2(tmp, new SimpleVector(1.729, 1, 0));
 		mPickGroupLists[1].group[1] = tmp;
 		tmp = clickableLists.get("l_l9");
-		mListTiles[2].setTile2(tmp, new SimpleVector(1.729, 1, 0));
+		mPicListTiles[2].setTile2(tmp, new SimpleVector(1.729, 1, 0));
 		mPickGroupLists[2].group[1] = tmp;
 		tmp = clickableLists.get("l_la");
-		mListTiles[3].setTile2(tmp, new SimpleVector(3.732, 1, 0));
+		mPicListTiles[3].setTile2(tmp, new SimpleVector(3.732, 1, 0));
 		mPickGroupLists[3].group[1] = tmp;
 		tmp = clickableLists.get("l_lb");
-		mListTiles[4].setTile2(tmp, new SimpleVector(3.732, 1, 0));
+		mPicListTiles[4].setTile2(tmp, new SimpleVector(3.732, 1, 0));
 		mPickGroupLists[4].group[1] = tmp;
 		tmp = clickableLists.get("l_lc");
-		mListTiles[5].setTile2(tmp, new SimpleVector(3.732, 1, 0));
+		mPicListTiles[5].setTile2(tmp, new SimpleVector(3.732, 1, 0));
 		mPickGroupLists[5].group[1] = tmp;
 
+		for (int i = 0; i < 8; i++) {
+			tmp = clickableLists.get("l_m"+(i+1));
+			
+			SimpleVector simpleVector;
+			
+			if(i % 2 == 0){
+				simpleVector = new SimpleVector(3.732, 1, 0);
+			}else {
+				simpleVector = new SimpleVector(0, 0, 1);
+			}
+			
+			if(i / 4 == 0){
+				mVideoListTiles[i%4].setTile1(tmp, simpleVector);
+			}else {
+				mVideoListTiles[i%4].setTile2(tmp, simpleVector);
+			}
+			
+			mPickGroupLists[6+i%4].group[(i/4)] = tmp;
+		}
+		
 		tmp = clickableLists.get("l_next");
-		mPickGroupLists[6].group[0] = tmp;
+		mPickGroupLists[10].group[0] = tmp;
 
 		tmp = clickableLists.get("l_back");
-		mPickGroupLists[7].group[0] = tmp;
+		mPickGroupLists[11].group[0] = tmp;
 
+	}
+
+	private void printTexture(String tname, Object3D object3d) {
+		TextureManager tm = TextureManager.getInstance();
+
+		if (tm.containsTexture(tname)) {
+			object3d.setTexture(tname);
+		} else {
+			object3d.setTexture("dummy");
+		}
+		object3d.calcTextureWrapSpherical();
+		object3d.strip();
+		object3d.build();
 	}
 
 	@Override
@@ -981,7 +1186,7 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 	@Override
 	public void onIDisplayConnected() {
-		
+
 		mHandler.post(new Runnable() {
 
 			@Override
@@ -989,7 +1194,7 @@ public class SceneActivity extends Framework3DMatrixActivity {
 				mOverlayView.show3DToast("onIDisplayConnected");
 			}
 		});
-		
+
 		super.onIDisplayConnected();
 	}
 

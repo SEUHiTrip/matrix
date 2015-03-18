@@ -54,6 +54,7 @@ public class PeopleAnimation implements Animatable{
 
 		ogro = Scene.findObject("ogro", objects);
 		lion = Scene.findObject("lion", objects);
+		world.removeObject(Scene.findObject("floor", objects));
 
 		try {
 			initSeymour(am, world);
