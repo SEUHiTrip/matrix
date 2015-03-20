@@ -2,32 +2,17 @@ package seu.lab.matrix;
 
 import java.io.IOException;
 
-import android.R.integer;
-import android.content.res.AssetManager;
 import android.opengl.GLES20;
-import android.os.Bundle;
 import android.util.Log;
-import android.view.GestureDetector;
-import android.view.GestureDetector.OnGestureListener;
 import android.view.MotionEvent;
-import android.widget.Toast;
 
-import com.google.vrtoolkit.cardboard.CardboardView;
 import com.google.vrtoolkit.cardboard.Eye;
 import com.google.vrtoolkit.cardboard.HeadTransform;
-import com.idisplay.VirtualScreenDisplay.IDisplayConnection;
-import com.idisplay.VirtualScreenDisplay.IDisplayConnection.ConnectionMode;
-import com.idisplay.VirtualScreenDisplay.IDisplayConnection.IDisplayConnectionCallback;
-import com.idisplay.util.ServerItem;
-import com.jbrush.ae.*;
 import com.threed.jpct.Camera;
 import com.threed.jpct.FrameBuffer;
-import com.threed.jpct.GLSLShader;
 import com.threed.jpct.Light;
 import com.threed.jpct.Loader;
 import com.threed.jpct.Object3D;
-import com.threed.jpct.Primitives;
-import com.threed.jpct.RGBColor;
 import com.threed.jpct.SimpleVector;
 import com.threed.jpct.World;
 import com.threed.jpct.util.MemoryHelper;
