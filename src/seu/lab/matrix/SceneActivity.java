@@ -269,11 +269,11 @@ public class SceneActivity extends Framework3DMatrixActivity{
 			SimpleVector target=center_screen_origin;
 			SimpleVector distance=new SimpleVector(target.x-center_screen.x, target.y-center_screen.y, target.z-center_screen.z);
 			screen.translate(distance);
-			Toast.makeText(getApplicationContext(), "Treasure",
-				     Toast.LENGTH_SHORT).show();
-			flyAroundTreasure();
+			
 		}
 		
+		
+		fly(70,30,0.3f);
 //		Log.e("pos", "green"+center_island_green);
 //		Log.e("pos", "ship"+center_island_ship);
 //		Log.e("pos", "volcano"+center_island_volcano);
@@ -284,8 +284,53 @@ public class SceneActivity extends Framework3DMatrixActivity{
 		return false;
 	}
 	
-	void flyAroundTreasure(){
+	void fly(int radius,int height,float speed){
 		SimpleVector originPosition=cam.getPosition();
-		cam.setPosition(originPosition.x,originPosition.y,originPosition.z+0);
+		cam.setPosition(originPosition.x+radius,originPosition.y,originPosition.z+height);
+
+		camMoveThread cMoveThread=new camMoveThread(cam.getPosition(),speed);
+		cMoveThread.start();
+	}
+	
+	class camMoveThread extends Thread{
+		SimpleVector origin=null;
+		float speed=0;
+		
+		public camMoveThread(SimpleVector o,float s) {
+			// TODO Auto-generated constructor stub
+			origin=o;
+			speed=s;
+		}
+		
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+			SimpleVector center=treasure.getTransformedCenter();
+			double r=Math.sqrt((origin.x-center.x)*(origin.x-center.x)+(origin.y-center.y)*(origin.y-center.y));
+			double circumference=2*3.14*r;
+			double count=0;
+			while(true){
+				SimpleVector camPosition=cam.getPosition();
+				double x=(camPosition.y-center.y)/Math.sqrt((camPosition.x-center.x)*(camPosition.x-center.x)+(camPosition.y-center.y)*(camPosition.y-center.y));
+				double y=-(camPosition.x-center.x)*x/(camPosition.y-center.y);
+				cam.moveCamera(new SimpleVector(x, y, 0), speed);
+				count+=speed;
+				if(count>circumference)
+					break;
+				try {
+					sleep(20);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+			}
+			
+			cam.setPosition(mCamViewspots[0].getTransformedCenter());
+			SimpleVector center_screen=screen.getTransformedCenter();
+			SimpleVector target=center_screen_origin;
+			SimpleVector distance=new SimpleVector(target.x-center_screen.x, target.y-center_screen.y, target.z-center_screen.z);
+			screen.translate(distance);
+		}
 	}
 }
