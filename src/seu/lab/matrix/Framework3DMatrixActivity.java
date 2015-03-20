@@ -767,6 +767,11 @@ public abstract class Framework3DMatrixActivity extends
 				BitmapHelper.convert(getResources().getDrawable(
 						R.drawable.i_next)), 64, 64));
 		tm.addTexture("l_next", l_next);
+		
+		Texture l_opt = new Texture(BitmapHelper.rescale(
+				BitmapHelper.convert(getResources().getDrawable(
+						R.drawable.i_fullscreen)), 64, 64));
+		tm.addTexture("l_opt", l_opt);
 	}
 
 	protected void loadSkyboxTexture(TextureManager tm) {
@@ -884,7 +889,7 @@ public abstract class Framework3DMatrixActivity extends
 		}
 	}
 
-	public void fillTexturesWithEye(int[] iArr, Eye eye) {
+	public void fillTexturesWithEye(int[] iArr, Eye eye, boolean[] shown) {
 		if (mArrayImageContainer != null) {
 			int x = mArrayImageContainer.getStrideX();
 			int y = mArrayImageContainer.getStrideY();
@@ -895,10 +900,12 @@ public abstract class Framework3DMatrixActivity extends
 			if (currentMode.type == IDisplayConnection.ConnectionType.Single) {
 				simpleFillTextures(iArr, 0, 0, len, x, y);
 			} else {
-				simpleFillTextures(iArr, 0, 0, len / 4, x, y / 4);
-				simpleFillTextures(iArr, 3, len / 4, len / 4, x, y / 4);
-				simpleFillTextures(iArr, 6, len / 2, len / 4, x, y / 4);
-
+				if(shown[0])
+					simpleFillTextures(iArr, 0, 0, len / 4, x, y / 4);
+				if(shown[1])
+					simpleFillTextures(iArr, 3, len / 4, len / 4, x, y / 4);
+				if(shown[2])
+					simpleFillTextures(iArr, 6, len / 2, len / 4, x, y / 4);
 				// if (eye.getType() == Eye.Type.LEFT) {
 				// simpleFillTextures(iArr, 0, 0, len >> 1, x, y >> 1);
 				// } else if (eye.getType() == Eye.Type.RIGHT) {

@@ -113,12 +113,12 @@ public class CopyOfColorBlobDetectionActivity extends Activity implements
 			}
 
 			@Override
-			public void onPress() {
+			public void onPress(Point p) {
 				Log.i("Remote", "onPress!");		
 			}
 
 			@Override
-			public void onRaise() {
+			public void onRaise(Point p) {
 				Log.i("Remote", "onRaise!");		
 			}
 			

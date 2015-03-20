@@ -14,14 +14,20 @@ public class RemoteManager {
 
 		public void onClick();
 
-		public void onPress();
+		public void onPress(Point p);
 
-		public void onRaise();
+		public void onRaise(Point p);
 	}
 
 	private static OnRemoteChangeListener mListener;
 	private boolean onPress = false;
 	private boolean inPress = false;
+
+	private boolean click = false;
+	private boolean press = false;
+	private boolean raise = false;
+
+	
 	private long startMillis;
 	private long durMillis;
 
@@ -61,7 +67,7 @@ public class RemoteManager {
 				} else {
 					durMillis = System.currentTimeMillis() - startMillis;
 					if (durMillis >= 500 && !inPress) {
-						mListener.onPress();
+						press = true;
 						inPress = true;
 					}
 				}
@@ -70,9 +76,9 @@ public class RemoteManager {
 			} else {
 				if (onPress) {
 					if (durMillis < 500) {
-						mListener.onClick();
+						click = true;
 					} else {
-						mListener.onRaise();
+						raise = true;
 						inPress = false;
 					}
 					onPress = false;
@@ -82,9 +88,14 @@ public class RemoteManager {
 			}
 			// Log.i("Remote", "X:" + point.x + "/tY:" + point.y);
 
-			mListener.onMove(new Point((point.x - 50) / 300 - 1,
-					point.y / 240 - 1));
-
+			Point p = new Point((point.x - 50) / 300 - 1,
+					point.y / 240 - 1);
+			
+			mListener.onMove(p);
+			if(press)mListener.onPress(p);
+			if(raise)mListener.onRaise(p);
+			if(click)mListener.onClick();
+			
 		}
 	}
 

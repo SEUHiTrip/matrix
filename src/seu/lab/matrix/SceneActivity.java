@@ -11,6 +11,7 @@ import org.opencv.core.Point;
 import seu.lab.dolphin.client.ContinuousGestureEvent;
 import seu.lab.dolphin.client.GestureEvent;
 import seu.lab.dolphin.client.IGestureListener;
+import seu.lab.dolphin.core.FFT;
 import seu.lab.matrix.animation.Animatable;
 import seu.lab.matrix.animation.DisplayAnimation;
 import seu.lab.matrix.animation.LiveTileAnimation;
@@ -21,6 +22,7 @@ import seu.lab.matrix.animation.SeqAnimation;
 import seu.lab.matrix.animation.TranslationAnimation;
 import seu.lab.matrix.red.RemoteManager.OnRemoteChangeListener;
 import android.R.integer;
+import android.R.string;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -45,6 +47,7 @@ import com.threed.jpct.Object3D;
 import com.threed.jpct.Primitives;
 import com.threed.jpct.RGBColor;
 import com.threed.jpct.SimpleVector;
+import com.threed.jpct.Texture;
 import com.threed.jpct.TextureManager;
 import com.threed.jpct.World;
 import com.threed.jpct.util.MemoryHelper;
@@ -61,23 +64,111 @@ public class SceneActivity extends Framework3DMatrixActivity {
 	final static int WORKSPACE_COUNT = 3;
 
 	enum App {
-		NULL(0), MINECRAFT(1), CAR(2), VIDEO(3), PIC(4), SKYPE(5), IE(6), FILE(7), WORD(8), EXCEL(9), PPT(10), CAM(11);
-		
+		NULL(0), MINECRAFT(1), CAR(2), VIDEO(3), PIC(4), SKYPE(5), IE(6), FILE(
+				7), WORD(8), EXCEL(9), PPT(10), CAM(11), FILE_OPEN(12);
+
 		private int aa;
-		
-	    private static Map<Integer, App> map = new HashMap<Integer, App>();
 
-	    static {
-	        for (App legEnum : App.values()) {
-	            map.put(legEnum.aa, legEnum);
-	        }
-	    }
+		private static Map<Integer, App> map = new HashMap<Integer, App>();
 
-	    private App(final int a) { aa = a; }
+		static {
+			for (App legEnum : App.values()) {
+				map.put(legEnum.aa, legEnum);
+			}
+		}
 
-	    public static App valueOf(int a) {
-	        return map.get(a);
-	    }
+		private App(final int a) {
+			aa = a;
+		}
+
+		public static App valueOf(int a) {
+			return map.get(a);
+		}
+	}
+
+	final static int SINGLE_TAP = 0;
+	final static int DOUBLE_TAP = 1;
+	final static int TOGGLE_FULLSCREEN = 2;
+	final static int LONG_PRESS = 3;
+	final static int LEFT = 4;
+	final static int RIGHT = 5;
+	final static int UP = 6;
+	final static int DOWN = 7;
+
+	class AppLaunchThead extends Thread {
+		App app;
+
+		AppLaunchThead(App app) {
+			this.app = app;
+		}
+
+		@Override
+		public void run() {
+			try {
+				sleep(2000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+
+			Log.e(TAG, "thread run");
+
+			hideList(0, 13);
+
+			switch (app) {
+			case PIC:
+				drawText("l_opt",new String[]{"hello pic","line2"});
+				
+				showList(0, 6);
+				showList(10, 13);
+
+				peopleAnimation.fadeout(mAnimatables);
+				openPic(1);
+
+				break;
+			case VIDEO:
+				drawText("l_opt",new String[]{"hello video","line2"});
+				
+				showList(6, 13);
+
+				peopleAnimation.fadeout(mAnimatables);
+				screens[mWsIdx].translate(-5, 0, 0);
+
+				mAnimatables.add(new TranslationAnimation("",
+						new Object3D[] { screens[mWsIdx] }, new SimpleVector(5,
+								0, 0), null));
+				mAnimatables.add(new DisplayAnimation(
+						new Object3D[] { screens[mWsIdx] }, "", false));
+
+				break;
+			case FILE:
+				peopleAnimation.fadeout(mAnimatables);
+
+				for (int i = 0; i < desksfiles.length; i++) {
+					desksfiles[i].clearTranslation();
+					desksfiles[i].translate(-5, 0, 0);
+					desksfiles[i].setVisibility(true);
+				}
+
+				mAnimatables.add(new TranslationAnimation("", desksfiles,
+						new SimpleVector(5, 0, 0), null));
+
+				break;
+			default:
+				peopleAnimation.fadeout(mAnimatables);
+
+				screens[mWsIdx].translate(-5, 0, 0);
+
+				mAnimatables.add(new TranslationAnimation("",
+						new Object3D[] { screens[mWsIdx] }, new SimpleVector(5,
+								0, 0), null));
+				mAnimatables.add(new DisplayAnimation(
+						new Object3D[] { screens[mWsIdx] }, "", false));
+
+				break;
+			}
+			ws.mState = 2;
+			ws.mCurrentApp = app;
+		}
 	}
 
 	protected SimpleVector forward = new SimpleVector(-1, 0, 0);
@@ -101,14 +192,15 @@ public class SceneActivity extends Framework3DMatrixActivity {
 	protected Light spot = null;
 	protected Object3D[] screens = null;
 	protected Object3D[] islands = null;
+	protected Object3D[] desksfiles = null;
+	protected Object3D[] desks = null;
+	protected Object3D[] files = null;
 	protected Object3D notice = null;
 
 	protected PeopleAnimation peopleAnimation;
 
 	protected RGBColor back = new RGBColor(50, 50, 100);
 	protected RGBColor wire = new RGBColor(100, 100, 100);
-
-	protected Bitmap fontBitmap;
 
 	protected int[] buffer;
 	protected boolean canCamRotate = true;
@@ -153,41 +245,46 @@ public class SceneActivity extends Framework3DMatrixActivity {
 	private Map<String, Object3D> clickableBoards = new HashMap<String, Object3D>();
 	private Map<String, Object3D> clickableIcons = new HashMap<String, Object3D>();
 	private Map<String, Object3D> clickableLists = new HashMap<String, Object3D>();
+	private Map<String, Object3D> clickableFiles = new HashMap<String, Object3D>();
+	private Map<String, Object3D> clickableDesks = new HashMap<String, Object3D>();
 
 	PickGroup[] mPickGroupBoards = new PickGroup[11];
-	PickGroup[] mPickGroupLists = new PickGroup[6 + 4 + 2];
-
+	PickGroup[] mPickGroupLists = new PickGroup[6 + 4 + 2 + 1];
 	PickGroup[] mPickGroupIcons = new PickGroup[2];
+	PickGroup[] mPickGroupFiles = new PickGroup[3];
+	PickGroup[] mPickGroupDesks = new PickGroup[4];
 
 	GestureDetector mGestureDetector = null;
 
-	boolean isDoubleTapped = false;
+	boolean[] actionFired = new boolean[8];
 
 	SimpleOnGestureListener mGestureListener = new SimpleOnGestureListener() {
 
 		public boolean onDoubleTap(MotionEvent e) {
-			isDoubleTapped = true;
+			actionFired[DOUBLE_TAP] = true;
 			return super.onDoubleTap(e);
 		}
 
 		public boolean onSingleTapConfirmed(MotionEvent e) {
+			actionFired[SINGLE_TAP] = true;
 			return super.onSingleTapConfirmed(e);
 		}
 
 		public void onLongPress(MotionEvent e) {
+			if (e.getRawX() < 480) {
+				actionFired[RIGHT] = true;
+			} else if (e.getRawX() > 1920 - 480) {
+				actionFired[LEFT] = true;
+			} else {
+				if (e.getRawY() < 540) {
+					actionFired[UP] = true;
+				} else {
+					actionFired[DOWN] = true;
+				}
+			}
 
 			if (ws.mCurrentApp == App.PIC) {
-				if (e.getRawX() < 480) {
-					slidePic(false);
-				} else if (e.getRawX() > 1920 - 480) {
-					slidePic(true);
-				} else {
-					if (e.getRawY() < 540) {
-						scalePic(true);
-					} else {
-						scalePic(false);
-					}
-				}
+
 			} else {
 				int workspace = mWsIdx + 1 > 2 ? 0 : mWsIdx + 1;
 				switchWorkspace(workspace);
@@ -196,9 +293,6 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 		public boolean onScroll(MotionEvent e1, MotionEvent e2,
 				float distanceX, float distanceY) {
-
-			Log.d(TAG, "x: " + distanceX + ", y: " + distanceY);
-
 			double x = point.x + -distanceX * 0.003;
 			double y = point.y + -distanceY * 0.003;
 
@@ -213,9 +307,30 @@ public class SceneActivity extends Framework3DMatrixActivity {
 			return false;
 		}
 
+		public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
+				float velocityY) {
+
+			Log.e(TAG, "vx: " + velocityX + " vy:" + velocityY);
+
+			if (velocityX < -2000) {
+				actionFired[LEFT] = true;
+			} else if (velocityX > 2000) {
+				actionFired[RIGHT] = true;
+			} else if (velocityY < -2000) {
+				actionFired[DOWN] = true;
+			} else if (velocityY > 2000) {
+				actionFired[UP] = true;
+			}
+
+			return true;
+		}
+
 	};
 
 	OnRemoteChangeListener remoteChangeListener = new OnRemoteChangeListener() {
+
+		Point dragStartPoint;
+
 		@Override
 		public void onMove(Point p) {
 			Log.e(TAG, "remote : onMove x:" + p.x + " y: " + p.y);
@@ -225,7 +340,7 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		@Override
 		public void onClick() {
 			Log.e(TAG, "remote : onClick");
-			isDoubleTapped = true;
+			actionFired[DOUBLE_TAP] = true;
 			if (test) {
 				test = false;
 				ball1.setAdditionalColor(new RGBColor(0, 100, 0));
@@ -236,16 +351,30 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		}
 
 		@Override
-		public void onPress() {
+		public void onPress(Point p) {
 			Log.e(TAG, "remote : onPress");
-
+			dragStartPoint = p;
 			ball1.setAdditionalColor(new RGBColor(0, 100, 0));
 
 		}
 
 		@Override
-		public void onRaise() {
+		public void onRaise(Point p) {
 			Log.e(TAG, "remote : onRaise");
+
+			// remote drag
+			double x = p.x - dragStartPoint.x;
+			double y = p.x - dragStartPoint.y;
+
+			if (x < -100) {
+				actionFired[LEFT] = true;
+			} else if (x > 100) {
+				actionFired[RIGHT] = true;
+			} else if (y < -100) {
+				actionFired[DOWN] = true;
+			} else if (y > 100) {
+				actionFired[UP] = true;
+			}
 
 			ball1.setAdditionalColor(new RGBColor(0, 0, 100));
 
@@ -336,6 +465,9 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 		screens = new Object3D[3];
 		islands = new Object3D[4];
+		desksfiles = new Object3D[3+4];
+		desks = new Object3D[4];
+		files = new Object3D[3];
 		workspaces = new Workspace[3];
 		for (int i = 0; i < workspaces.length; i++) {
 			workspaces[i] = new Workspace();
@@ -352,7 +484,7 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		sun.setIntensity(250, 250, 250);
 
 		spot = new Light(world);
-		spot.setIntensity(10, 10, 10);
+		spot.setIntensity(0, 0, 0);
 
 		ball1 = Primitives.getSphere(0.05f);
 		ball1.translate(0, 0, -2);
@@ -409,7 +541,7 @@ public class SceneActivity extends Framework3DMatrixActivity {
 			mFrameCounter++;
 
 			sceneInit();
-			
+
 		} else {
 
 			sceneLoop();
@@ -481,6 +613,7 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		postInitBoard();
 		postInitList();
 		postInitScr();
+		postInitFile();
 
 		for (int i = 0; i < mBoardTiles.length; i++) {
 			mAnimatables.add(mBoardTiles[i]);
@@ -505,10 +638,8 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		peopleAnimation.init(getAssets(), world, mCamViewspots[4],
 				mPeoplePositionDummy);
 
-		// mAnimatables.add(peopleAnimation);
+//		startIDisplay(currentMode);
 
-		// startIDisplay(currentMode);
-		
 		switchWorkspace(0);
 
 		peopleAnimation.show(mAnimatables);
@@ -532,6 +663,9 @@ public class SceneActivity extends Framework3DMatrixActivity {
 			pickList();
 		}
 
+		// deal with input actions
+		fireAction();
+
 		// animation driver
 		for (int i = 0; i < mAnimatables.size();) {
 			Animatable a = mAnimatables.get(i);
@@ -544,47 +678,98 @@ public class SceneActivity extends Framework3DMatrixActivity {
 				i++;
 			}
 		}
+
+		boolean shown[] = new boolean[] { screens[0].getVisibility(),
+				screens[1].getVisibility(), screens[2].getVisibility() };
+
+		fillTexturesWithEye(buffer, null, shown);
+
+		if (shown[0]) {
+			screenShaders[0].setUniform("videoFrame", 4);
+			screenShaders[0].setUniform("videoFrame2", 5);
+			screenShaders[0].setUniform("videoFrame3", 6);
+		}
+		if (shown[1]) {
+			screenShaders[1].setUniform("videoFrame", 7);
+			screenShaders[1].setUniform("videoFrame2", 8);
+			screenShaders[1].setUniform("videoFrame3", 9);
+		}
+		if (shown[2]) {
+			screenShaders[2].setUniform("videoFrame", 10);
+			screenShaders[2].setUniform("videoFrame2", 11);
+			screenShaders[2].setUniform("videoFrame3", 12);
+		}
+	}
+
+	private void fireAction() {
+		for (int i = 0; i < actionFired.length; i++) {
+			if (!actionFired[i])
+				continue;
+
+			// consume action
+			actionFired[i] = false;
+			switch (i) {
+			case LEFT:
+				if (ws.mCurrentApp == App.PIC)
+					slidePic(true);
+				break;
+			case RIGHT:
+				if (ws.mCurrentApp == App.PIC)
+					slidePic(false);
+				break;
+			case UP:
+				if (ws.mCurrentApp == App.PIC)
+					scalePic(true);
+				break;
+			case DOWN:
+				if (ws.mCurrentApp == App.PIC)
+					scalePic(false);
+				break;
+			default:
+				break;
+			}
+		}
 	}
 
 	private void switchWorkspace(int idx) {
-		
+		ws.animal.setVisibility(false);
+
 		ws.isScrShown = screens[mWsIdx].getVisibility();
-		
-		screens[mWsIdx].setVisibility(false);		
+
+		screens[mWsIdx].setVisibility(false);
 		picScrs[0].setVisibility(false);
 		picScrs[1].setVisibility(false);
-		
-		hideList(0, 12);
+
+		hideList(0, 13);
 
 		// closed =================
 		ws = workspaces[idx];
 
+		workspaces[idx].animal.setVisibility(true);
 		// restore scr visibility
 
 		screens[idx].setVisibility(ws.isScrShown);
 
-		// TODO restore animation
-
 		// restore pic && mov index
-		if(ws.mPicPageIdx != workspaces[mWsIdx].mPicPageIdx){
+		if (ws.mPicPageIdx != workspaces[mWsIdx].mPicPageIdx) {
 			flipPicList();
 		}
-		
-		if(ws.mVideoPageIdx != workspaces[mWsIdx].mVideoPageIdx){
+
+		if (ws.mVideoPageIdx != workspaces[mWsIdx].mVideoPageIdx) {
 			flipVideoList();
 		}
-		
+
 		mWsIdx = idx;
 		peopleAnimation.setWorkspace(mWsIdx);
-				
+
 		// restore app settings
 		switch (ws.mCurrentApp) {
-		case PIC :
+		case PIC:
 			showList(0, 6);
-			showList(10, 12);
+			showList(10, 13);
 			break;
-		case VIDEO :
-			showList(6, 12);
+		case VIDEO:
+			showList(6, 13);
 			break;
 		default:
 			break;
@@ -599,7 +784,7 @@ public class SceneActivity extends Framework3DMatrixActivity {
 				group[j].setVisibility(true);
 			}
 		}
-		
+
 	}
 
 	private void hideList(int from, int to) {
@@ -626,8 +811,8 @@ public class SceneActivity extends Framework3DMatrixActivity {
 						group.group[0].getTransformedCenter()) > 0.995) {
 					activateTilesGroup(group);
 
-					if (isDoubleTapped) {
-						isDoubleTapped = false;
+					if (actionFired[DOUBLE_TAP]) {
+						actionFired[DOUBLE_TAP] = false;
 						openPic(i + PIC_COUNT_PER_PAGE * ws.mPicPageIdx + 1);
 					}
 
@@ -643,9 +828,10 @@ public class SceneActivity extends Framework3DMatrixActivity {
 						group.group[0].getTransformedCenter()) > 0.995) {
 					activateTilesGroup(group);
 
-					if (isDoubleTapped) {
-						isDoubleTapped = false;
-						openVideo(i + VIDEO_COUNT_PER_PAGE * ws.mVideoPageIdx + 1);
+					if (actionFired[DOUBLE_TAP]) {
+						actionFired[DOUBLE_TAP] = false;
+						openVideo(i + VIDEO_COUNT_PER_PAGE * ws.mVideoPageIdx
+								+ 1);
 					}
 				} else {
 					deactivateTilesGroup(group);
@@ -656,10 +842,10 @@ public class SceneActivity extends Framework3DMatrixActivity {
 			break;
 		}
 
-		if (!isDoubleTapped)
+		if (!actionFired[DOUBLE_TAP])
 			return;
 
-		isDoubleTapped = false;
+		actionFired[DOUBLE_TAP] = false;
 
 		for (int i = 10; i < mPickGroupLists.length; i++) {
 			group = mPickGroupLists[i];
@@ -675,7 +861,7 @@ public class SceneActivity extends Framework3DMatrixActivity {
 					} else if (ws.mCurrentApp == App.PIC) {
 						flipPicList();
 					}
-					
+
 				}
 			}
 		}
@@ -683,29 +869,27 @@ public class SceneActivity extends Framework3DMatrixActivity {
 	}
 
 	private void flipPicList() {
-		
+
 		for (int i1 = 0; i1 < mPicListTiles.length; i1++) {
 			mPicListTiles[i1].reset();
 			// mAnimatables.add(mListTiles[i1]);
 		}
 
-		mAnimatables.add(new SeqAnimation(mAnimatables,
-				mPicListTiles));
+		mAnimatables.add(new SeqAnimation(mAnimatables, mPicListTiles));
 
 		ws.mPicPageIdx = ws.mPicPageIdx + 1 % 2;
 	}
 
 	private void flipVideoList() {
-		
+
 		for (int i1 = 0; i1 < mVideoListTiles.length; i1++) {
 			mVideoListTiles[i1].reset();
 			// mAnimatables.add(mListTiles[i1]);
 		}
 
-		mAnimatables.add(new SeqAnimation(mAnimatables,
-				mVideoListTiles));
+		mAnimatables.add(new SeqAnimation(mAnimatables, mVideoListTiles));
 
-		ws.mVideoPageIdx = ws.mVideoPageIdx + 1 % 2;		
+		ws.mVideoPageIdx = ws.mVideoPageIdx + 1 % 2;
 	}
 
 	private void pickBoard() {
@@ -716,8 +900,8 @@ public class SceneActivity extends Framework3DMatrixActivity {
 					group.group[0].getTransformedCenter()) > 0.995) {
 				activateTilesGroup(group);
 
-				if (isDoubleTapped) {
-					isDoubleTapped = false;
+				if (actionFired[DOUBLE_TAP]) {
+					actionFired[DOUBLE_TAP] = false;
 
 					openApp(i);
 				}
@@ -736,8 +920,8 @@ public class SceneActivity extends Framework3DMatrixActivity {
 					group.group[0].getTransformedCenter()) > 0.995) {
 				activateTilesGroup(group);
 
-				if (i == 0 && isDoubleTapped) {
-					isDoubleTapped = false;
+				if (i == 0 && actionFired[DOUBLE_TAP]) {
+					actionFired[DOUBLE_TAP] = false;
 
 					closeCurrentApp(null);
 				}
@@ -875,90 +1059,9 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 			ws.mState = 1;
 
-			// TODO open app
+			App app = App.valueOf(idx + 1);
 
-			App app = App.valueOf(idx+1);
-			
-			switch (app) {
-			case PIC:
-				new Thread() {
-					public void run() {
-						try {
-							sleep(2000);
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
-
-						Log.e(TAG, "thread run");
-
-						hideList(0, 12);
-						showList(0, 6);
-						showList(10, 12);
-						
-						peopleAnimation.fadeout(mAnimatables);
-						openPic(1);
-
-						ws.mState = 2;
-					}
-				}.start();
-				break;
-
-			case VIDEO:
-				new Thread() {
-					public void run() {
-						try {
-							sleep(2000);
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
-
-						Log.e(TAG, "thread run");
-
-						hideList(0, 12);
-						showList(6, 12);
-						
-						peopleAnimation.fadeout(mAnimatables);
-						screens[mWsIdx].translate(-5, 0, 0);
-
-						mAnimatables.add(new TranslationAnimation("",
-								new Object3D[] { screens[mWsIdx] },
-								new SimpleVector(5, 0, 0), null));
-						mAnimatables.add(new DisplayAnimation(
-								new Object3D[] { screens[mWsIdx] }, "", false));
-						
-						ws.mState = 2;
-					}
-				}.start();
-
-				break;
-			default:
-				new Thread() {
-					public void run() {
-						try {
-							sleep(2000);
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
-
-						Log.e(TAG, "thread run");
-
-						peopleAnimation.fadeout(mAnimatables);
-
-						screens[mWsIdx].translate(-5, 0, 0);
-
-						mAnimatables.add(new TranslationAnimation("",
-								new Object3D[] { screens[mWsIdx] },
-								new SimpleVector(5, 0, 0), null));
-						mAnimatables.add(new DisplayAnimation(
-								new Object3D[] { screens[mWsIdx] }, "", false));
-
-						ws.mState = 2;
-					}
-				}.start();
-				break;
-			}
-			
-			ws.mCurrentApp = app;
+			new AppLaunchThead(app).start();
 		}
 	}
 
@@ -966,29 +1069,38 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		if (ws.mState != 0) {
 			// close the pic scr or idisplay scr
 
-			Object3D cur;
+			Object3D[] cur = new Object3D[1];
 
-			if (ws.mCurrentApp == App.PIC) {
-				cur = picScrs[0].getVisibility() ? picScrs[0] : null;
-				cur = picScrs[1].getVisibility() ? picScrs[1] : cur;
-			} else {
-				cur = screens[mWsIdx].getVisibility() ? screens[mWsIdx] : null;
+			switch (ws.mCurrentApp) {
+			case PIC:
+				cur[0] = picScrs[0].getVisibility() ? picScrs[0] : null;
+				cur[0] = picScrs[1].getVisibility() ? picScrs[1] : cur[0];
+				break;
+			case FILE:
+				cur = desks[0].getVisibility() ? desks : cur;
+				break;
+			default:
+				cur[0] = screens[mWsIdx].getVisibility() ? screens[mWsIdx]
+						: null;
+				break;
 			}
 
-			if (cur != null) {
+			if (cur[0] != null) {
 
-				hideList(0, 12);
-				
+				hideList(0, 13);
+
 				peopleAnimation.show(mAnimatables);
 
-				mAnimatables.add(new TranslationAnimation("",
-						new Object3D[] { cur }, new SimpleVector(-40, 0, 0),
-						null) {
+				mAnimatables.add(new TranslationAnimation("", cur,
+						new SimpleVector(-40, 0, 0), null) {
 					@Override
 					public void onAnimateSuccess() {
 						// object3ds[0].setVisibility(false);
-						object3ds[0].clearTranslation();
-
+						for (int i = 0; i < object3ds.length; i++) {
+							object3ds[i].setVisibility(false);
+							object3ds[0].clearTranslation();
+						}
+						
 						ws.mState = 0;
 						ws.mCurrentApp = App.NULL;
 
@@ -999,8 +1111,8 @@ public class SceneActivity extends Framework3DMatrixActivity {
 					}
 				});
 
-				mAnimatables.add(new DisplayAnimation(new Object3D[] { cur },
-						"", true));
+				if(cur.length == 1)
+					mAnimatables.add(new DisplayAnimation(cur, "", true));
 
 				return;
 			}
@@ -1009,7 +1121,7 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 		ws.mState = 0;
 		ws.mCurrentApp = App.NULL;
-		
+
 		if (runnable != null)
 			runnable.run();
 	}
@@ -1102,6 +1214,10 @@ public class SceneActivity extends Framework3DMatrixActivity {
 			Log.e(TAG, "i_");
 			initIslands(name, object3d);
 			return;
+		} else if (name.startsWith("x_a")) {
+			Log.e(TAG, "x_a");
+			initAnimal(name, object3d);
+			return;
 		} else if (name.startsWith("x_b")) {
 			Log.e(TAG, "x_b");
 			initBoard(name, object3d);
@@ -1124,8 +1240,41 @@ public class SceneActivity extends Framework3DMatrixActivity {
 			return;
 		} else if (name.startsWith("x_f_")) {
 			Log.e(TAG, "x_f");
-			object3d.setVisibility(false);
+
+			initFile(name, object3d);
+
 			return;
+		}
+	}
+
+	private void initAnimal(String name, Object3D object3d) {
+		object3d.setVisibility(false);
+		if (name.startsWith("x_a_dog"))
+			workspaces[2].animal = object3d;
+		else if (name.startsWith("x_a_raptor"))
+			workspaces[1].animal = object3d;
+		else if (name.startsWith("x_a_giraffe"))
+			workspaces[0].animal = object3d;
+	}
+
+	private void initFile(String name, Object3D object3d) {
+		object3d.setVisibility(false);
+//		object3d.setAdditionalColor(new RGBColor(100, 100, 100));
+		
+		int end = -1;
+		end = end == -1 ? name.indexOf("_Plane") : end;
+		end = end == -1 ? name.indexOf("_Cube") : end;
+		end = end == -1 ? name.indexOf("_Cylinder") : end;
+		end = end == -1 ? name.indexOf("_OBJ") : end;
+
+		String tname = name.substring(2, (end == -1 ? name.length() : end));
+
+		Log.e(TAG, "nice: "+tname);
+		
+		if (tname.startsWith("f_b")) {
+			clickableFiles.put(tname, object3d);
+		} else {
+			clickableDesks.put(tname, object3d);
 		}
 	}
 
@@ -1224,9 +1373,7 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 		printTexture(tname, object3d);
 
-		// if (tname.startsWith("l_l") || tname.startsWith("l_m")) {
 		object3d.setVisibility(false);
-		// }
 
 		clickableLists.put(tname, object3d);
 	}
@@ -1234,10 +1381,10 @@ public class SceneActivity extends Framework3DMatrixActivity {
 	private void postInitBoard() {
 
 		for (int i = 0; i < 4; i++) {
-			mPickGroupBoards[i] = new PickGroup(false);
+			mPickGroupBoards[i] = new PickGroup(2);
 		}
 		for (int i = 4; i < mPickGroupBoards.length; i++) {
-			mPickGroupBoards[i] = new PickGroup(true);
+			mPickGroupBoards[i] = new PickGroup(1);
 		}
 
 		Object3D tmp;
@@ -1289,9 +1436,50 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		mPickGroupBoards[10].group[0] = tmp;
 	}
 
+	private void postInitFile() {
+		for (int i = 0; i < mPickGroupFiles.length; i++) {
+			mPickGroupFiles[i] = new PickGroup(1);
+		}
+		for (int i = 0; i < mPickGroupDesks.length; i++) {
+			mPickGroupDesks[i] = new PickGroup(1);
+		}
+
+		Object3D tmp;
+		tmp = clickableDesks.get("f_desk");
+		mPickGroupDesks[0].group[0] = tmp;
+
+		tmp = clickableDesks.get("f_trash");
+		mPickGroupDesks[1].group[0] = tmp;
+
+		tmp = clickableDesks.get("f_flower1");
+		mPickGroupDesks[2].group[0] = tmp;
+
+		tmp = clickableDesks.get("f_flower2");
+		mPickGroupDesks[3].group[0] = tmp;
+
+		tmp = clickableFiles.get("f_book1");
+		mPickGroupFiles[0].group[0] = tmp;
+
+		tmp = clickableFiles.get("f_book2");
+		mPickGroupFiles[1].group[0] = tmp;
+
+		tmp = clickableFiles.get("f_book3");
+		mPickGroupFiles[2].group[0] = tmp;
+
+		desks = clickableDesks.values().toArray(desks);
+		files = clickableFiles.values().toArray(files);
+		for (int i = 0; i < desks.length; i++) {
+			desksfiles[i] = desks[i];
+		}
+		for (int i = 0; i < files.length; i++) {
+			desksfiles[i+4] = files[i];
+		}
+		
+	}
+
 	private void postInitScr() {
 		for (int i = 0; i < 2; i++) {
-			mPickGroupIcons[i] = new PickGroup(true);
+			mPickGroupIcons[i] = new PickGroup(1);
 		}
 		Object3D tmp;
 		tmp = clickableIcons.get("i_close");
@@ -1304,10 +1492,10 @@ public class SceneActivity extends Framework3DMatrixActivity {
 	private void postInitList() {
 
 		for (int i = 0; i < 10; i++) {
-			mPickGroupLists[i] = new PickGroup(false);
+			mPickGroupLists[i] = new PickGroup(2);
 		}
 		for (int i = 10; i < mPickGroupLists.length; i++) {
-			mPickGroupLists[i] = new PickGroup(true);
+			mPickGroupLists[i] = new PickGroup(1);
 		}
 
 		for (int i = 0; i < mPicListTiles.length; i++) {
@@ -1381,7 +1569,9 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 		tmp = clickableLists.get("l_back");
 		mPickGroupLists[11].group[0] = tmp;
-
+		
+		tmp = clickableLists.get("l_opt");
+		mPickGroupLists[12].group[0] = tmp;
 	}
 
 	private void printTexture(String tname, Object3D object3d) {
@@ -1405,19 +1595,6 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 	@Override
 	public void onDrawEye(Eye eye) {
-		fillTexturesWithEye(buffer, eye);
-
-		screenShaders[0].setUniform("videoFrame", 4);
-		screenShaders[0].setUniform("videoFrame2", 5);
-		screenShaders[0].setUniform("videoFrame3", 6);
-
-		screenShaders[1].setUniform("videoFrame", 7);
-		screenShaders[1].setUniform("videoFrame2", 8);
-		screenShaders[1].setUniform("videoFrame3", 9);
-
-		screenShaders[2].setUniform("videoFrame", 10);
-		screenShaders[2].setUniform("videoFrame2", 11);
-		screenShaders[2].setUniform("videoFrame3", 12);
 
 		fb.clear(back);
 		world.renderScene(fb);
@@ -1460,23 +1637,33 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		return false;
 	}
 
-	public void initFontBitmap() {
-		String font = "words to test";
-		fontBitmap = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888);
-		Canvas canvas = new Canvas(fontBitmap);
+	public void drawText(String tex, String[] msg) {
+		Bitmap bitmap = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888);
+		Canvas canvas = new Canvas(bitmap);
 
 		canvas.drawColor(Color.TRANSPARENT);
 		Paint p = new Paint();
 
 		String fontType = "consolas";
-		Typeface typeface = Typeface.create(fontType, Typeface.BOLD);
+		Typeface typeface = Typeface.create(fontType, Typeface.NORMAL);
 
 		p.setAntiAlias(true);
 
-		p.setColor(Color.RED);
+		p.setColor(Color.WHITE);
 		p.setTypeface(typeface);
 		p.setTextSize(28);
-		canvas.drawText(font, 0, 100, p);
+		for (int i = 0; i < msg.length; i++) {
+			canvas.drawText(msg[i], 0, 100*i, p);
+		}
+		
+		TextureManager tm = TextureManager.getInstance();
+		Texture texture = new Texture(bitmap);
+		if(tm.containsTexture(tex)){
+			tm.replaceTexture(tex, texture);
+		}else {
+			tm.addTexture(tex, texture);
+		}
+		bitmap.recycle();
 	}
 
 	@Override

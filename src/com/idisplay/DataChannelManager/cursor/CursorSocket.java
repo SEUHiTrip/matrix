@@ -10,7 +10,7 @@ import java.util.zip.Inflater;
 
 import seu.lab.matrix.AbstractScreenMatrixActivity;
 import seu.lab.matrix.MainActivity;
-import seu.lab.matrix.ScreenMatrixActivity;
+import seu.lab.matrix.test.ScreenMatrixActivity;
 
 public abstract class CursorSocket {
     private static final byte COORDINATES = (byte) 1;

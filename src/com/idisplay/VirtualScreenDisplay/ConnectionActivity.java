@@ -37,7 +37,7 @@ import seu.lab.matrix.Framework3DMatrixActivity;
 import seu.lab.matrix.IdisplayCardboardScreenView;
 import seu.lab.matrix.MainActivity;
 import seu.lab.matrix.R;
-import seu.lab.matrix.ScreenMatrixActivity;
+import seu.lab.matrix.test.ScreenMatrixActivity;
 
 public class ConnectionActivity extends Activity implements
 		IDisplayConnectionCallback {

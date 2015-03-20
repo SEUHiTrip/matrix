@@ -20,7 +20,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.spi.ErrorCode;
 
 import seu.lab.matrix.AbstractScreenMatrixActivity;
-import seu.lab.matrix.ScreenMatrixActivity;
+import seu.lab.matrix.test.ScreenMatrixActivity;
 
 public class SocketChannelManager {
     private static ServerSocket USBCommandsSocket;

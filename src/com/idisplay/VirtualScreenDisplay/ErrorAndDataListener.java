@@ -6,7 +6,7 @@ import org.apache.log4j.spi.ErrorCode;
 
 import seu.lab.matrix.AbstractScreenMatrixActivity;
 import seu.lab.matrix.MainActivity;
-import seu.lab.matrix.ScreenMatrixActivity;
+import seu.lab.matrix.test.ScreenMatrixActivity;
 
 class ErrorAndDataListener implements UnexpectedErrorListner, DataChannelConnectionListener {
     String className;

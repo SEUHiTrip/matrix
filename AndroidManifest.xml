@@ -82,12 +82,12 @@
             android:label="@string/app_name"
             android:screenOrientation="landscape" />
         <activity
-            android:name=".ScreenMatrixActivity"
+            android:name="seu.lab.matrix.test.ScreenMatrixActivity"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
             android:label="@string/app_name"
             android:screenOrientation="landscape" />
         <activity
-            android:name=".Screen3DMatrixActivity"
+            android:name="seu.lab.matrix.test.Screen3DMatrixActivity"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
             android:label="@string/app_name"
             android:screenOrientation="landscape" />
@@ -145,7 +145,7 @@
             android:label="@string/app_name"
             android:screenOrientation="landscape" />
 		<activity
-            android:name="seu.lab.matrix.PeopleTestActivity"
+       		android:name="seu.lab.matrix.test.PeopleTestActivity"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
             android:label="@string/app_name"
             android:screenOrientation="landscape" />

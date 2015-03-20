@@ -1,4 +1,4 @@
-package seu.lab.matrix;
+package seu.lab.matrix.test;
 
 import java.nio.FloatBuffer;
 import java.util.Timer;
@@ -7,6 +7,9 @@ import java.util.concurrent.CountDownLatch;
 import javax.jmdns.impl.constants.DNSConstants;
 
 import org.apache.log4j.spi.ErrorCode;
+
+import seu.lab.matrix.AbstractScreenMatrixActivity;
+import seu.lab.matrix.IdisplayCardboardScreenView;
 
 import android.app.Activity;
 import android.content.Intent;

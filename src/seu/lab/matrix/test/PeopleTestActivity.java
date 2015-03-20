@@ -1,4 +1,4 @@
-package seu.lab.matrix;
+package seu.lab.matrix.test;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -9,6 +9,9 @@ import raft.jpct.bones.BonesIO;
 import raft.jpct.bones.Quaternion;
 import raft.jpct.bones.SkeletonDebugger;
 import raft.jpct.bones.SkeletonPose;
+import seu.lab.matrix.BaseTestActivity;
+import seu.lab.matrix.R;
+import seu.lab.matrix.R.drawable;
 import android.content.res.AssetManager;
 import com.google.vrtoolkit.cardboard.Eye;
 import com.google.vrtoolkit.cardboard.HeadTransform;

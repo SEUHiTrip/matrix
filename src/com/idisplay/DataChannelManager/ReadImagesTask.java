@@ -17,7 +17,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import seu.lab.matrix.AbstractScreenMatrixActivity;
 import seu.lab.matrix.MainActivity;
-import seu.lab.matrix.ScreenMatrixActivity;
+import seu.lab.matrix.test.ScreenMatrixActivity;
 
 public class ReadImagesTask extends Thread {
     static final int MAX_QUEUE_SIZE = 30;

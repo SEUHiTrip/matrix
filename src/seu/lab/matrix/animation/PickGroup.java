@@ -10,11 +10,8 @@ public class PickGroup {
 	
 	public Animatable animation;
 	
-	public PickGroup(boolean single){
-		if (single) {
-			group = new Object3D[1];
-		}else {
-			group = new Object3D[2];
-		}
+	public PickGroup(int count){
+		group = new Object3D[count];
 	}
+
 }

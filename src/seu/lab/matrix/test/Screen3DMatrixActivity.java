@@ -1,4 +1,4 @@
-package seu.lab.matrix;
+package seu.lab.matrix.test;
 
 import com.google.vrtoolkit.cardboard.CardboardView;
 import com.google.vrtoolkit.cardboard.Eye;
@@ -25,6 +25,12 @@ import android.os.Vibrator;
 import android.util.Log;
 import javax.microedition.khronos.egl.EGLConfig;
 
+import seu.lab.matrix.AbstractScreenMatrixActivity;
+import seu.lab.matrix.CardboardOverlayView;
+import seu.lab.matrix.R;
+import seu.lab.matrix.R.id;
+import seu.lab.matrix.R.layout;
+import seu.lab.matrix.R.raw;
 import seu.lab.matrix.obj.Floor;
 import seu.lab.matrix.obj.ScreenCube;
 import seu.lab.matrix.obj.WorldLayoutData;

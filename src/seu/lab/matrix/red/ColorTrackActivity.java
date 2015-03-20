@@ -300,7 +300,7 @@ public class ColorTrackActivity extends CardboardActivity implements
 	}
 
 	@Override
-	public void onPress() {
+	public void onPress(Point p) {
 		Log.e(TAG, "remote : onPress");
 		
 		ball1.setAdditionalColor(new RGBColor(0, 100, 0));
@@ -308,7 +308,7 @@ public class ColorTrackActivity extends CardboardActivity implements
 	}
 
 	@Override
-	public void onRaise() {
+	public void onRaise(Point p) {
 		Log.e(TAG, "remote : onRaise");
 		
 		ball1.setAdditionalColor(new RGBColor(0, 0, 100));

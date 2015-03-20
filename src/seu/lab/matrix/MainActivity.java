@@ -8,6 +8,7 @@ import seu.lab.matrix.bullet.BulletTestActivity;
 import seu.lab.matrix.red.ColorBlobDetectionActivity;
 import seu.lab.matrix.red.ColorTrackActivity;
 import seu.lab.matrix.test.MatrixActivity;
+import seu.lab.matrix.test.PeopleTestActivity;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.Response.ErrorListener;
