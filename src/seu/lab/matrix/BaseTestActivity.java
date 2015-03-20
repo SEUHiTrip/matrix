@@ -91,7 +91,7 @@ public class BaseTestActivity extends CardboardActivity implements
 
 		cam.lookAt(cube.getTransformedCenter());
 		cam.rotateY(mAngles[1]);
-		cam.rotateZ(0 - mAngles[2]);
+		cam.rotateZ(- mAngles[2]);
 		cam.rotateX(mAngles[0]);
 	
 		fb.clear(back);

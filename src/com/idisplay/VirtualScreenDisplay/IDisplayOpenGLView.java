@@ -264,15 +264,15 @@ public class IDisplayOpenGLView extends GLSurfaceView implements Renderer, Obser
 		this.mBackgroundProgram = Programs.loadProgram(vertexShaderCode,
 				fragmentBackgroundShaderCode);
 
-        GLES20.glActiveTexture(33985);
-        GLES20.glBindTexture(3553, this.buffer[1]);
-        Bitmap decodeResource = BitmapFactory.decodeResource(getResources(), R.drawable.battery);
-        GLES20.glTexImage2D(3553, 0, 6408, decodeResource.getWidth(), decodeResource.getHeight(), 0, 6408, 5121, Utils.loadTextureFromBitmap(decodeResource));
-        this.isCursorDirty = true;
-        GLES20.glActiveTexture(33987);
-        GLES20.glBindTexture(3553, this.buffer[3]);
-        decodeResource = BitmapFactory.decodeResource(getResources(), R.drawable.cloth_texture);
-        GLES20.glTexImage2D(3553, 0, 6408, decodeResource.getWidth(), decodeResource.getHeight(), 0, 6408, 5121, Utils.loadTextureFromBitmap(decodeResource));
+//        GLES20.glActiveTexture(33985);
+//        GLES20.glBindTexture(3553, this.buffer[1]);
+//        Bitmap decodeResource = BitmapFactory.decodeResource(getResources(), R.drawable.battery);
+//        GLES20.glTexImage2D(3553, 0, 6408, decodeResource.getWidth(), decodeResource.getHeight(), 0, 6408, 5121, Utils.loadTextureFromBitmap(decodeResource));
+//        this.isCursorDirty = true;
+//        GLES20.glActiveTexture(33987);
+//        GLES20.glBindTexture(3553, this.buffer[3]);
+//        decodeResource = BitmapFactory.decodeResource(getResources(), R.drawable.cloth_texture);
+//        GLES20.glTexImage2D(3553, 0, 6408, decodeResource.getWidth(), decodeResource.getHeight(), 0, 6408, 5121, Utils.loadTextureFromBitmap(decodeResource));
     }
 
     private void updateScreenVerticles(float f, float f2, float f3) {

@@ -64,7 +64,6 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 	protected Light spot = null;
 	protected Object3D[] screens = null;
 	protected Object3D[] islands = null;
-	protected Object3D treasure = null;
 	protected Object3D notice = null;
 	protected GLSLShader[] screenShaders = null;
 
@@ -446,12 +445,12 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 
 			world.addObjects(islands[2]);
 
-			treasure = Object3D.mergeAll(Loader.load3DS(getResources()
+			islands[3] = Object3D.mergeAll(Loader.load3DS(getResources()
 					.openRawResource(R.raw.treasure), 0.5f));
-			treasure.translate(5, 1, 0);
-			treasure.rotateY(3.14f / 2);
-			treasure.rotateZ(3.14f / 2);
-			world.addObjects(treasure);
+			islands[3].translate(5, 1, 0);
+			islands[3].rotateY(3.14f / 2);
+			islands[3].rotateZ(3.14f / 2);
+			world.addObjects(islands[3]);
 
 			if (currentMode.type == IDisplayConnection.ConnectionType.Single) {
 				screens[1].setVisibility(false);
@@ -500,6 +499,9 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 		TextureManager tm = TextureManager.getInstance();
 
 		if (!tm.containsTexture("dummy")) {
+			
+			Log.e(TAG, "addTexture dummy");
+			
 			Texture texture = new Texture(BitmapHelper.rescale(
 					BitmapHelper.convert(getResources().getDrawable(
 							R.drawable.icon)), 512, 512));
@@ -507,51 +509,11 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 
 			Texture fontTexture = new Texture(fontBitmap);
 			tm.addTexture("font", fontTexture);
+
+			loadSkyboxTexture(tm);
 			
-			Texture star_back = new Texture(BitmapHelper.rescale(
-					BitmapHelper.convert(getResources().getDrawable(
-							R.drawable.star_back)), 512, 512));
-			tm.addTexture("star_back", star_back);
-
-			Texture star_bottom = new Texture(BitmapHelper.rescale(
-					BitmapHelper.convert(getResources().getDrawable(
-							R.drawable.star_bottom)), 512, 512));
-			tm.addTexture("star_bottom", star_bottom);
-
-			Texture star_forward = new Texture(BitmapHelper.rescale(
-					BitmapHelper.convert(getResources().getDrawable(
-							R.drawable.star_forward)), 512, 512));
-			tm.addTexture("star_forward", star_forward);
-
-			Texture star_left = new Texture(BitmapHelper.rescale(
-					BitmapHelper.convert(getResources().getDrawable(
-							R.drawable.star_left)), 512, 512));
-			tm.addTexture("star_left", star_left);
-
-			Texture star_right = new Texture(BitmapHelper.rescale(
-					BitmapHelper.convert(getResources().getDrawable(
-							R.drawable.star_right)), 512, 512));
-			tm.addTexture("star_right", star_right);
-
-			Texture star_top = new Texture(BitmapHelper.rescale(
-					BitmapHelper.convert(getResources().getDrawable(
-							R.drawable.star_top)), 512, 512));
-			tm.addTexture("star_top", star_top);
+			loadBoardTexture(tm);
 		}
-
-		// TextureManager tm = TextureManager.getInstance();
-
-		// face = new Texture(res.openRawResource(R.raw.face));
-		// video1 = new Texture(1024, 1024, new RGBColor(100, 0, 0));
-		// video2 = new Texture(1024, 1024, new RGBColor(0, 100, 0));
-		// video3 = new Texture(1024, 1024, new RGBColor(0, 0, 100));
-		//
-		// tm.addTexture("videoFrame",video1);
-		// tm.addTexture("videoFrame2",video2);
-		// tm.addTexture("videoFrame3",video3);
-		//
-		// Log.d(TAG,
-		// "texid "+tm.getTextureID("videoFrame")+" "+tm.getTextureID("videoFrame2")+" "+tm.getTextureID("videoFrame3"));
 
 		screenShaders = new GLSLShader[3];
 
@@ -568,7 +530,111 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 				Loader.loadTextFile(res
 						.openRawResource(R.raw.fragmentshader_offset)));
 	}
+	
+	void loadBoardTexture(TextureManager tm){
+		Texture b_c2ar = new Texture(BitmapHelper.rescale(
+				BitmapHelper.convert(getResources().getDrawable(
+						R.drawable.b_c2ar)), 512, 512));
+		tm.addTexture("b_c2ar", b_c2ar);
 
+		Texture b_car = new Texture(BitmapHelper.rescale(
+				BitmapHelper.convert(getResources().getDrawable(
+						R.drawable.b_car)), 512, 512));
+		tm.addTexture("b_car", b_car);
+
+		Texture b_excel = new Texture(BitmapHelper.rescale(
+				BitmapHelper.convert(getResources().getDrawable(
+						R.drawable.b_excel)), 256, 256));
+		tm.addTexture("b_excel", b_excel);
+
+		Texture b_file = new Texture(BitmapHelper.rescale(
+				BitmapHelper.convert(getResources().getDrawable(
+						R.drawable.b_file)), 512, 512));
+		tm.addTexture("b_file", b_file);
+
+		Texture b_ie = new Texture(BitmapHelper.rescale(
+				BitmapHelper.convert(getResources().getDrawable(
+						R.drawable.b_ie)), 512, 512));
+		tm.addTexture("b_ie", b_ie);
+
+		Texture b_m2inecraft = new Texture(BitmapHelper.rescale(
+				BitmapHelper.convert(getResources().getDrawable(
+						R.drawable.b_m2inecraft)), 512, 512));
+		tm.addTexture("b_m2inecraft", b_m2inecraft);
+		
+		Texture b_v2ideo = new Texture(BitmapHelper.rescale(
+				BitmapHelper.convert(getResources().getDrawable(
+						R.drawable.b_v2ideo)), 512, 512));
+		tm.addTexture("b_v2ideo", b_v2ideo);
+		
+		Texture b_minecraft = new Texture(BitmapHelper.rescale(
+				BitmapHelper.convert(getResources().getDrawable(
+						R.drawable.b_minecraft)), 512, 512));
+		tm.addTexture("b_minecraft", b_minecraft);
+		
+		Texture b_p2ic = new Texture(BitmapHelper.rescale(
+				BitmapHelper.convert(getResources().getDrawable(
+						R.drawable.b_p2ic)), 512, 512));
+		tm.addTexture("b_p2ic", b_p2ic);
+		
+		Texture b_pic = new Texture(BitmapHelper.rescale(
+				BitmapHelper.convert(getResources().getDrawable(
+						R.drawable.b_pic)), 512, 512));
+		tm.addTexture("b_pic", b_pic);
+		
+		Texture b_ppt = new Texture(BitmapHelper.rescale(
+				BitmapHelper.convert(getResources().getDrawable(
+						R.drawable.b_ppt)), 256, 256));
+		tm.addTexture("b_ppt", b_ppt);
+		
+		Texture b_skype = new Texture(BitmapHelper.rescale(
+				BitmapHelper.convert(getResources().getDrawable(
+						R.drawable.b_skype)), 512, 512));
+		tm.addTexture("b_skype", b_skype);
+		
+		Texture b_video = new Texture(BitmapHelper.rescale(
+				BitmapHelper.convert(getResources().getDrawable(
+						R.drawable.b_video)), 512, 512));
+		tm.addTexture("b_video", b_video);
+		
+		Texture b_word = new Texture(BitmapHelper.rescale(
+				BitmapHelper.convert(getResources().getDrawable(
+						R.drawable.b_word)), 256, 256));
+		tm.addTexture("b_word", b_word);
+	}
+
+	void loadSkyboxTexture(TextureManager tm) {
+		Texture star_back = new Texture(BitmapHelper.rescale(
+				BitmapHelper.convert(getResources().getDrawable(
+						R.drawable.star_back)), 512, 512));
+		tm.addTexture("star_back", star_back);
+
+		Texture star_bottom = new Texture(BitmapHelper.rescale(
+				BitmapHelper.convert(getResources().getDrawable(
+						R.drawable.star_bottom)), 512, 512));
+		tm.addTexture("star_bottom", star_bottom);
+
+		Texture star_forward = new Texture(BitmapHelper.rescale(
+				BitmapHelper.convert(getResources().getDrawable(
+						R.drawable.star_forward)), 512, 512));
+		tm.addTexture("star_forward", star_forward);
+
+		Texture star_left = new Texture(BitmapHelper.rescale(
+				BitmapHelper.convert(getResources().getDrawable(
+						R.drawable.star_left)), 512, 512));
+		tm.addTexture("star_left", star_left);
+
+		Texture star_right = new Texture(BitmapHelper.rescale(
+				BitmapHelper.convert(getResources().getDrawable(
+						R.drawable.star_right)), 512, 512));
+		tm.addTexture("star_right", star_right);
+
+		Texture star_top = new Texture(BitmapHelper.rescale(
+				BitmapHelper.convert(getResources().getDrawable(
+						R.drawable.star_top)), 512, 512));
+		tm.addTexture("star_top", star_top);
+	}
+	
 	@Override
 	public void onInstanceCursorImgChange(ImageContainer imageContainer) {
 
@@ -660,22 +726,21 @@ public class Framework3DMatrixActivity extends AbstractScreenMatrixActivity
 	}
 	
 	public void initFontBitmap(){  
-        String font = "闇�娓叉煋鐨勬枃瀛楁祴璇曪紒";
+        String font = "words to test";
         fontBitmap = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888);  
         Canvas canvas = new Canvas(fontBitmap);  
-        //鑳屾櫙棰滆壊  
+
         canvas.drawColor(Color.TRANSPARENT);  
         Paint p = new Paint();  
-        //瀛椾綋璁剧疆  
-        String fontType = "瀹嬩綋";  
+
+        String fontType = "consolas";  
         Typeface typeface = Typeface.create(fontType, Typeface.BOLD);  
-        //娑堥櫎閿娇  
+
         p.setAntiAlias(true);  
-        //瀛椾綋涓虹孩鑹� 
+
         p.setColor(Color.RED);  
         p.setTypeface(typeface);  
         p.setTextSize(28);  
-        //缁樺埗瀛椾綋  
         canvas.drawText(font, 0, 100, p);  
     }
 
