@@ -11,8 +11,9 @@ import org.opencv.core.Point;
 import seu.lab.dolphin.client.ContinuousGestureEvent;
 import seu.lab.dolphin.client.GestureEvent;
 import seu.lab.dolphin.client.IGestureListener;
-import seu.lab.dolphin.core.FFT;
 import seu.lab.matrix.animation.Animatable;
+import seu.lab.matrix.animation.CamAnimation;
+import seu.lab.matrix.animation.CamTranslationAnimation;
 import seu.lab.matrix.animation.DisplayAnimation;
 import seu.lab.matrix.animation.LiveTileAnimation;
 import seu.lab.matrix.animation.PeopleAnimation;
@@ -21,8 +22,6 @@ import seu.lab.matrix.animation.ScaleAnimation;
 import seu.lab.matrix.animation.SeqAnimation;
 import seu.lab.matrix.animation.TranslationAnimation;
 import seu.lab.matrix.red.RemoteManager.OnRemoteChangeListener;
-import android.R.integer;
-import android.R.string;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -35,7 +34,6 @@ import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.MotionEvent;
 
-import com.arwave.skywriter.objects.Rectangle;
 import com.google.vrtoolkit.cardboard.Eye;
 import com.google.vrtoolkit.cardboard.HeadTransform;
 import com.threed.jpct.Camera;
@@ -175,7 +173,7 @@ public class SceneActivity extends Framework3DMatrixActivity {
 	protected SimpleVector up = new SimpleVector(0, -1, 0);
 
 	protected Object3D[] mCamViewspots = null;
-	protected int mCamViewIndex = 0;
+	protected int mCamViewIndex = 3;
 
 	protected Object3D[] mObjects = null;
 
@@ -260,7 +258,7 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 	SimpleOnGestureListener mGestureListener = new SimpleOnGestureListener() {
 
-		public boolean onDoubleTap(MotionEvent e) {
+		public boolean onDoubleTap(MotionEvent e) {			
 			actionFired[DOUBLE_TAP] = true;
 			return super.onDoubleTap(e);
 		}
@@ -554,15 +552,13 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		// }else {
 		// cam.setOrientation(forward, up);
 		// }
-		cam.setOrientation(forward, up);
 
 		if (canCamRotate) {
+			cam.setOrientation(forward, up);
 			cam.rotateZ(3.1415926f / 2);
-
 			cam.rotateY(mAngles[1]);
 			cam.rotateZ(-mAngles[2]);
 			cam.rotateX(mAngles[0]);
-
 		}
 
 		SimpleVector camDir = new SimpleVector();
@@ -663,6 +659,7 @@ public class SceneActivity extends Framework3DMatrixActivity {
 			pickList();
 		}
 
+
 		// deal with input actions
 		fireAction();
 
@@ -724,6 +721,13 @@ public class SceneActivity extends Framework3DMatrixActivity {
 			case DOWN:
 				if (ws.mCurrentApp == App.PIC)
 					scalePic(false);
+				break;
+				
+			case DOUBLE_TAP:
+				if (mCamViewIndex == 3 && SceneHelper.isLookingAt(cam, ball1,
+						ws.animal.getTransformedCenter()) > 0.995) {
+					flyWorkspace();
+				}
 				break;
 			default:
 				break;
@@ -865,7 +869,6 @@ public class SceneActivity extends Framework3DMatrixActivity {
 				}
 			}
 		}
-
 	}
 
 	private void flipPicList() {
@@ -1666,6 +1669,37 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		bitmap.recycle();
 	}
 
+	private void flyWorkspace() {
+		canCamRotate = false;
+		SimpleVector ori = new SimpleVector();
+		cam.getPosition(ori);
+		
+		mAnimatables.add(new CamTranslationAnimation("", new SimpleVector(0, 10, 0), cam, cam.getPosition(), (float) -Math.PI/2){
+			public void onAnimateSuccess() {
+				super.onAnimateSuccess();
+				
+				mAnimatables.add(new CamAnimation(cam,ori,ori, 0, 2.2){
+					public void onAnimateSuccess() {
+						//super.onAnimateSuccess();
+						
+						mAnimatables.add(new CamTranslationAnimation("", ori.calcSub(camera.getPosition()), camera, ori, (float) Math.PI/2){
+						
+								public void onAnimateSuccess() {
+									super.onAnimateSuccess();
+									
+									canCamRotate = true;
+									
+								}
+						});
+
+					}
+				});
+			}
+		});
+	}
+	
+	
+	
 	@Override
 	public void onCardboardTrigger() {
 		mOverlayView.show3DToast("onCardboardTrigger");
