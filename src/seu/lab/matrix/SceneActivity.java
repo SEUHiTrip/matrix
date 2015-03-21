@@ -21,6 +21,7 @@ import seu.lab.matrix.animation.PickGroup;
 import seu.lab.matrix.animation.ScaleAnimation;
 import seu.lab.matrix.animation.SeqAnimation;
 import seu.lab.matrix.animation.TranslationAnimation;
+import seu.lab.matrix.animation.WeatherAnimation;
 import seu.lab.matrix.red.RemoteManager.OnRemoteChangeListener;
 import android.R.integer;
 import android.graphics.Bitmap;
@@ -43,6 +44,7 @@ import com.threed.jpct.Config;
 import com.threed.jpct.FrameBuffer;
 import com.threed.jpct.Light;
 import com.threed.jpct.Loader;
+import com.threed.jpct.Matrix;
 import com.threed.jpct.Object3D;
 import com.threed.jpct.Primitives;
 import com.threed.jpct.RGBColor;
@@ -224,7 +226,6 @@ public class SceneActivity extends Framework3DMatrixActivity {
 	protected boolean canCamRotate = true;
 
 	private Object3D ball1 = null;
-	private Object3D ball2 = null;
 
 	List<Animatable> mAnimatables = new LinkedList<Animatable>();
 
@@ -241,6 +242,10 @@ public class SceneActivity extends Framework3DMatrixActivity {
 	private Workspace ws;
 
 	private int mWsIdx = 0;
+
+	private long lastBallUpdate = 0;
+
+	private boolean isAnimationOn = true;
 
 	private LiveTileAnimation[] mBoardTiles = new LiveTileAnimation[] {
 			new LiveTileAnimation("minecraft"), new LiveTileAnimation(""),
@@ -304,13 +309,16 @@ public class SceneActivity extends Framework3DMatrixActivity {
 			if (ws.mCurrentApp == App.PIC) {
 
 			} else {
-				int ii = mCamViewIndex + 1 > 3 ? 0 : mCamViewIndex + 1;
-				switchIsland(ii);
+//				int ii = mCamViewIndex + 1 > 3 ? 0 : mCamViewIndex + 1;
+//				switchIsland(ii);
+				actionFired[TOGGLE_FULLSCREEN] = true;
 			}
 		}
 
 		public boolean onScroll(MotionEvent e1, MotionEvent e2,
 				float distanceX, float distanceY) {
+			lastBallUpdate = System.currentTimeMillis();
+
 			double x = point.x + -distanceX * 0.003;
 			double y = point.y + -distanceY * 0.003;
 
@@ -353,6 +361,7 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		public void onMove(Point p) {
 			Log.e(TAG, "remote : onMove x:" + p.x + " y: " + p.y);
 			point = p;
+			lastBallUpdate = System.currentTimeMillis();
 		}
 
 		@Override
@@ -521,14 +530,6 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		ball1.build();
 		world.addObject(ball1);
 
-		ball2 = Primitives.getSphere(0.05f);
-		ball2.translate(0, 0, -2);
-		ball2.calcTextureWrapSpherical();
-		ball2.setAdditionalColor(new RGBColor(0, 100, 0));
-		ball2.strip();
-		ball2.build();
-		world.addObject(ball2);
-
 		MemoryHelper.compact();
 
 		if (buffer == null) {
@@ -563,6 +564,7 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		} else {
 
 			sceneLoop();
+
 		}
 
 		headTransform.getEulerAngles(mAngles, 0);
@@ -595,6 +597,8 @@ public class SceneActivity extends Framework3DMatrixActivity {
 				saveSceneObject(name, mSceneObjects[i]);
 			}
 			cam.setPosition(mCamViewspots[TREASURE].getTransformedCenter());
+			mAnimatables.add(new WeatherAnimation(weathers[3], weathers[1],
+					mAnimatables));
 		}
 
 		if (NEED_WORKSPACE) {
@@ -646,15 +650,17 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		fireAction();
 
 		// animation driver
-		for (int i = 0; i < mAnimatables.size();) {
-			Animatable a = mAnimatables.get(i);
-			if (a.isOver()) {
-				a.onAnimateSuccess();
-				mAnimatables.remove(i);
+		if (isAnimationOn) {
+			for (int i = 0; i < mAnimatables.size();) {
+				Animatable a = mAnimatables.get(i);
+				if (a.isOver()) {
+					a.onAnimateSuccess();
+					mAnimatables.remove(i);
 
-			} else {
-				a.animate();
-				i++;
+				} else {
+					a.animate();
+					i++;
+				}
 			}
 		}
 
@@ -702,17 +708,17 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		ball1.translate(camDir);
 
 		ball1.setRotationPivot(originInballView);
-		ball1.rotateAxis(cam.getUpVector(), (float) (0.5f * point.x));
-		ball1.rotateAxis(cam.getSideVector(), (float) (0.5f * point.y));
 
-		ball2.clearTranslation();
-		ball2.clearRotation();
+		if (System.currentTimeMillis() - lastBallUpdate > 5000) {
+			ball1.setTransparency(0);
+			ball1.rotateAxis(cam.getUpVector(), 0f);
+			ball1.rotateAxis(cam.getSideVector(), 0f);
+		} else {
+			ball1.setTransparency(100);
+			ball1.rotateAxis(cam.getUpVector(), (float) (0.5f * point.x));
+			ball1.rotateAxis(cam.getSideVector(), (float) (0.5f * point.y));
+		}
 
-		ball2.translate(cam.getPosition());
-		ball2.translate(camDir);
-		ball2.setRotationPivot(originInballView);
-		ball2.rotateAxis(cam.getUpVector(), 0.5f);
-		ball2.rotateAxis(cam.getSideVector(), -0.5f);
 	}
 
 	private void fireAction() {
@@ -733,6 +739,7 @@ public class SceneActivity extends Framework3DMatrixActivity {
 			} else if ((ws.mCurrentApp == App.PIC || ws.mCurrentApp == App.VIDEO)
 					&& SceneHelper.isLookingAt(cam, ball1,
 							mList.getTransformedCenter()) > 0.8) {
+
 				pickList();
 			}
 		}
@@ -761,44 +768,56 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 			case DOUBLE_TAP:
 
-				for (int i1 = 0; i1 < 4; i1++) {
-					if (i1 == mCamViewIndex)
-						continue;
-					if (SceneHelper.isLookingAt(cam,
-							islands[i1].getTransformedCenter()) > 0.99) {
-						switchIsland(i1);
+				if(NEED_SCENE){
+					for (int i1 = 0; i1 < 4; i1++) {
+						if (i1 == mCamViewIndex)
+							continue;
+						if (SceneHelper.isLookingAt(cam,
+								islands[i1].getTransformedCenter()) > 0.99) {
+							switchIsland(i1);
+							actionFired[DOUBLE_TAP] = false;
+							break;
+						}
+					}
+				}
+
+				if (actionFired[DOUBLE_TAP]) {
+					switch (mCamViewIndex) {
+					case GREEN:
+					case SHIP:
+					case VOLCANO:
+					case WORKSPACE:
+
+						if (SceneHelper.isLookingAt(cam, ball1,
+								ws.animal.getTransformedCenter()) > 0.995) {
+							flyWorkspace();
+							return;
+						}
+						break;
+					case TREASURE:
+
+						if (SceneHelper.isLookingAt(cam,
+								entrances[HORSE].getTransformedCenter()) > 0.95) {
+							flyIsland();
+						} else if (SceneHelper.isLookingAt(cam,
+								entrances[DRONE].getTransformedCenter()) > 0.95) {
+							flyDrone();
+						} else if (SceneHelper.isLookingAt(cam, backward) > 0.95) {
+							NEO = NEO ? false : true;
+							show3DToast("NEO");
+						}
+
+						break;
+					default:
 						break;
 					}
 				}
 
-				switch (mCamViewIndex) {
-				case GREEN:
-				case SHIP:
-				case VOLCANO:
-				case WORKSPACE:
+				break;
 
-					if (SceneHelper.isLookingAt(cam, ball1,
-							ws.animal.getTransformedCenter()) > 0.995) {
-						flyWorkspace();
-					}
-					break;
-				case TREASURE:
+			case TOGGLE_FULLSCREEN:
 
-					if (SceneHelper.isLookingAt(cam,
-							entrances[HORSE].getTransformedCenter()) > 0.95) {
-						flyIsland();
-					} else if (SceneHelper.isLookingAt(cam,
-							entrances[DRONE].getTransformedCenter()) > 0.95) {
-						flyDrone();
-					} else if (SceneHelper.isLookingAt(cam, backward) > 0.95) {
-						NEO = NEO ? false : true;
-						show3DToast("NEO");
-					}
-
-					break;
-				default:
-					break;
-				}
+				toggleFullscreen();
 
 				break;
 			default:
@@ -810,33 +829,106 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		}
 	}
 
-	private void switchIsland(int idx) {
+	private void toggleFullscreen() {
+		Log.e(TAG, "toggleFullscreen "+mCamViewIndex+" "+ws.isScrShown);
+		
+		if (mCamViewIndex != 3 && screens[mWsIdx].getVisibility()) {
+			canCamRotate = canCamRotate ? false : true;
+			Log.e(TAG, "ready to toggleFullscreen");
+
+			if(!canCamRotate){
+				cam.setOrientation(forward, up);
+				cam.rotateZ(3.1415926f / 2);
+
+				mAnimatables.add(new TranslationAnimation("",
+						new Object3D[] { screens[mWsIdx] }, new SimpleVector(0.8, 0,
+								0), null));
+			}else {
+				mAnimatables.add(new TranslationAnimation("",
+						new Object3D[] { screens[mWsIdx] }, new SimpleVector(-0.8, 0,
+								0), null){
+					@Override
+					public void onAnimateSuccess() {
+						screens[mWsIdx].clearTranslation();
+						super.onAnimateSuccess();
+					}
+				});
+			}
+			
+		} else if (mCamViewIndex == 3) {
+			canCamRotate = canCamRotate ? false : true;
+
+			if(!canCamRotate){
+				for (int i = 0; i < workspaces.length; i++) {
+					if(workspaces[i].isScrShown){
+						// TODO gjw switch screen
+						
+					}
+				}
+			}else {
+				for (int i = 0; i < workspaces.length; i++) {
+					if(workspaces[i].isScrShown){
+						screens[i].setVisibility(true);
+						screens[i].translate(new SimpleVector(5,1.8*(i-1),2.5).calcSub(screens[i].getTransformedCenter()));
+					}
+				}
+			}
+		}
+	}
+
+	private void switchIsland(final int idx) {
 		if (idx == WORKSPACE)
 			return;
 
-		mCamViewIndex = idx;
+		mAnimatables
+				.add(new CamTranslationAnimation("", mCamViewspots[idx]
+						.getTransformedCenter().calcSub(cam.getPosition()),
+						cam, mCamViewspots[idx].getTransformedCenter(),
+						(float) -Math.PI / 2) {
+					@Override
+					public void onAnimateSuccess() {
+						mCamViewIndex = idx;
+						super.onAnimateSuccess();
+					}
+				});
 
-		mAnimatables.add(new CamTranslationAnimation("",
-				mCamViewspots[mCamViewIndex].getTransformedCenter().calcSub(
-						cam.getPosition()), cam, mCamViewspots[mCamViewIndex]
-						.getTransformedCenter(), (float) -Math.PI / 2));
+		spot.setPosition(mCamViewspots[idx].getTransformedCenter());
 
-		spot.setPosition(mCamViewspots[mCamViewIndex].getTransformedCenter());
+		if (idx == TREASURE) {
+			switchWorkspace(0);
 
-		if (mCamViewIndex == TREASURE) {
 			// hide the workspace
 			mCamViewspots[WORKSPACE].translate(-1000, -1000, -1000);
+			
+			for (int i = 0; i < workspaces.length; i++) {
+				if(workspaces[i].isScrShown){
+					screens[i].setVisibility(true);
+					screens[i].translate(new SimpleVector(5,1.8*(i-1),2.5).calcSub(screens[i].getTransformedCenter()));
+				}
+			}
+			
 		} else if (NEED_WORKSPACE) {
-			mCamViewspots[WORKSPACE].translate(mCamViewspots[mCamViewIndex]
+			
+			for (int i = 0; i < screens.length; i++) {
+				if(workspaces[i].isScrShown){
+					screens[i].setVisibility(false);
+					screens[i].clearTranslation();
+				}
+			}
+			
+			mCamViewspots[WORKSPACE].translate(mCamViewspots[idx]
 					.getTransformedCenter().calcSub(
 							mCamViewspots[WORKSPACE].getTransformedCenter()));
-
 			switchWorkspace(idx);
 		}
-
 	}
 
 	private void switchWorkspace(int idx) {
+		
+		for (int i = 0; i < workspaces.length; i++) {
+			Log.e(TAG, "isScrShown"+i+":"+workspaces[i].isScrShown);
+		}
+		
 		ws.animal.setVisibility(false);
 
 		ws.isScrShown = screens[mWsIdx].getVisibility();
@@ -1024,10 +1116,16 @@ public class SceneActivity extends Framework3DMatrixActivity {
 					group.group[0].getTransformedCenter()) > 0.995) {
 				activateTilesGroup(group);
 
-				if (i == 0 && actionFired[DOUBLE_TAP]) {
-					actionFired[DOUBLE_TAP] = false;
+				if (actionFired[DOUBLE_TAP]) {
+					if (i == 0) {
+						actionFired[DOUBLE_TAP] = false;
 
-					closeCurrentApp(null);
+						closeCurrentApp(null);
+					} else if (i == 1) {
+						actionFired[DOUBLE_TAP] = false;
+
+						actionFired[TOGGLE_FULLSCREEN] = true;
+					}
 				}
 
 			} else {
@@ -1038,6 +1136,9 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 	private void openVideo(int i) {
 
+		// TODO gjw draw video desc
+
+		
 	}
 
 	private void openPic(int i) {
@@ -1070,6 +1171,7 @@ public class SceneActivity extends Framework3DMatrixActivity {
 					"", 1f));
 		}
 
+		// TODO gjw draw pic desc
 	}
 
 	private void slidePic(boolean slideLeft) {
@@ -1123,6 +1225,8 @@ public class SceneActivity extends Framework3DMatrixActivity {
 				.add(new DisplayAnimation(new Object3D[] { cur }, "", false));
 
 		mAnimatables.add(new ScaleAnimation(new Object3D[] { pre }, "", 1f));
+
+		// TODO gjw draw pic desc
 
 	}
 
@@ -1368,17 +1472,19 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 	private void initWeather(String name, Object3D object3d) {
 		if (name.startsWith("w_forecast")) {
-
+			weathers[0] = object3d;
+			return;
 		} else if (name.startsWith("w_location")) {
-
+			weathers[1] = object3d;
 			return;
 		} else if (name.startsWith("w_sun")) {
 			SimpleVector sv = new SimpleVector(object3d.getTransformedCenter());
 			sv.y -= 10;
 			sun.setPosition(sv);
+			weathers[2] = object3d;
 			return;
 		} else if (name.startsWith("w_temp")) {
-
+			weathers[3] = object3d;
 			return;
 		}
 
@@ -1784,8 +1890,7 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		cam.getPosition(ori);
 
 		final Animatable a3 = new CamTranslationAnimation("", ori.calcSub(cam
-				.getPosition()), cam, forward,
-				(float) Math.PI / 2) {
+				.getPosition()), cam, forward, (float) Math.PI / 2) {
 
 			public void onAnimateSuccess() {
 				super.onAnimateSuccess();
@@ -1822,7 +1927,7 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		cam.getPosition(ori);
 
 		SimpleVector volcano = islands[VOLCANO].getTransformedCenter();
-		
+
 		final Animatable a5 = new CamTranslationAnimation("",
 				mCamViewspots[TREASURE].getTransformedCenter().calcSub(
 						cam.getPosition()), cam,
@@ -1833,7 +1938,7 @@ public class SceneActivity extends Framework3DMatrixActivity {
 				super.onAnimateSuccess();
 			}
 		};
-		
+
 		final Animatable a4 = new CamAnimation(cam, volcano, volcano,
 				3 * Math.PI / 4, Math.PI / 4, 50, 10, false) {
 			@Override
@@ -1841,7 +1946,7 @@ public class SceneActivity extends Framework3DMatrixActivity {
 				mAnimatables.add(a5);
 			}
 		};
-		
+
 		final Animatable a3 = new CamTranslationAnimation("", islands[VOLCANO]
 				.getTransformedCenter()
 				.calcAdd(
@@ -1879,7 +1984,6 @@ public class SceneActivity extends Framework3DMatrixActivity {
 	}
 
 	private void flyDrone() {
-		// TODO Auto-generated method stub
 		show3DToast("flyDrone");
 	}
 

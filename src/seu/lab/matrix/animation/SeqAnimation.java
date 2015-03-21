@@ -41,4 +41,10 @@ public class SeqAnimation implements Animatable{
 
 	}
 
+	@Override
+	public void reset() {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

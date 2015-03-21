@@ -76,4 +76,10 @@ public class CamAnimation implements Animatable {
 	public void stop() {
 		stopped = true;
 	}
+	
+	@Override
+	public void reset() {
+		// TODO Auto-generated method stub
+		
+	}
 }

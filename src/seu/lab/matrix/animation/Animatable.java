@@ -5,4 +5,5 @@ public interface Animatable {
 	void animate();
 	void onAnimateSuccess();
 	void stop();
+	void reset();
 }

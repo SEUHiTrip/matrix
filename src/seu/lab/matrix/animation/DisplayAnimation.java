@@ -27,7 +27,7 @@ public class DisplayAnimation extends BaseValueAnimation{
 			if(toHide){
 				o.setTransparency(100);
 			}else {
-				o.setTransparency(0);
+				o.setTransparency(50);
 			}
 		}
 	}
@@ -43,6 +43,7 @@ public class DisplayAnimation extends BaseValueAnimation{
 				o.setVisibility(false);
 			}else {
 				o.setTransparency(100);
+				o.setVisibility(true);
 			}
 		}
 	}

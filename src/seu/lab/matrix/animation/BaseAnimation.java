@@ -25,4 +25,10 @@ public abstract class BaseAnimation implements Animatable {
 		index = 0;
 	}
 
+	@Override
+	public void reset() {
+		stopped = false;
+		index = 0;
+	}
+	
 }
