@@ -82,6 +82,8 @@ public class PeopleAnimation implements Animatable {
 		for (int i = 0; i < seymourGroup.getSize(); i++) {
 			people[3 + i] = seymourGroup.get(i);
 		}
+		
+		setWorkspace(workspaceIdx);
 
 		reset();
 
@@ -94,15 +96,13 @@ public class PeopleAnimation implements Animatable {
 	public void reset() {
 		SimpleVector position = dummy.getTransformedCenter();
 
-		setWorkspace(workspaceIdx);
-
 		lionInd = 0f;
 		ogroInd = 0f;
-
+		
 		lion.setScale(0.02f);
 		ogro.setScale(0.02f);
 		seymour.setScale(0.1f);
-
+		
 		lion.rotateX((float) (Math.PI / 2));
 		ogro.rotateX((float) (Math.PI / 2));
 		seymour.rotateX((float) (Math.PI / 2));
@@ -110,6 +110,14 @@ public class PeopleAnimation implements Animatable {
 		ogro.rotateZ((float) (-Math.PI / 2));
 		seymour.rotateZ((float) (-Math.PI / 2));
 
+		lion.translate(position.calcSub(lion.getTransformedCenter()));
+		ogro.translate(position.calcSub(ogro.getTransformedCenter()));
+		seymour.translate(position.calcSub(seymour.getTransformedCenter()));
+		seymour.translate(0, 0, -0.5f);
+	}
+	
+	void resetPos(){
+		SimpleVector position = dummy.getTransformedCenter();
 		lion.translate(position.calcSub(lion.getTransformedCenter()));
 		ogro.translate(position.calcSub(ogro.getTransformedCenter()));
 		seymour.translate(position.calcSub(seymour.getTransformedCenter()));
@@ -178,6 +186,7 @@ public class PeopleAnimation implements Animatable {
 
 	public void setWorkspace(int idx) {
 		workspaceIdx = idx > -1 && idx < 3 ? idx : 0;
+		resetPos();
 		switch (workspaceIdx) {
 		case 0:
 			lion.setVisibility(isShown[workspaceIdx]);

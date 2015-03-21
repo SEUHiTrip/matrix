@@ -27,6 +27,7 @@ import android.media.AudioManager;
 import android.opengl.GLES20;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import com.google.vrtoolkit.cardboard.CardboardView;
 import com.google.vrtoolkit.cardboard.Eye;
@@ -252,12 +253,18 @@ public abstract class Framework3DMatrixActivity extends
 		setCardboardView(cardboardView);
 
 		mOverlayView = (CardboardOverlayView) findViewById(R.id.overlay);
-		mOverlayView.show3DToast("Test start");
+		mOverlayView.show3DToast("Project Matrix\nInitializing");
 
 		remoteListener = getRemoteListener();
 		gestureListener = getDolphinGestureListener();
 
-		mHandler = new Handler(getMainLooper());
+		mHandler = new Handler(getMainLooper()){
+			@Override
+			public void handleMessage(Message msg) {
+				mOverlayView.show3DToast(msg.obj.toString());
+				super.handleMessage(msg);
+			}
+		};
 
 		mOpenCvCameraView = new SimpleCameraBridge(getApplicationContext(), -1,
 				remoteListener);
@@ -377,6 +384,12 @@ public abstract class Framework3DMatrixActivity extends
 
 	abstract IGestureListener getDolphinGestureListener();
 
+	protected void show3DToast(String m) {
+		Message message = new Message();
+		message.obj = m;
+		mHandler.sendMessage(message);
+	}
+	
 	// @Override
 	// public void onDrawEye(Eye eye) {
 	//
