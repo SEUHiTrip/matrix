@@ -68,7 +68,25 @@ public class SceneActivity extends Framework3DMatrixActivity {
 	final static boolean NEED_WORKSPACE = true;
 	final static boolean NEED_SCENE = true;
 
-	enum App {
+	final static int SINGLE_TAP = 0;
+	final static int DOUBLE_TAP = 1;
+	final static int TOGGLE_FULLSCREEN = 2;
+	final static int LONG_PRESS = 3;
+	final static int LEFT = 4;
+	final static int RIGHT = 5;
+	final static int UP = 6;
+	final static int DOWN = 7;
+
+	final static int GREEN = 0;
+	final static int VOLCANO = 1;
+	final static int SHIP = 2;
+	final static int TREASURE = 3;
+	final static int WORKSPACE = 4;
+
+	final static int HORSE = 0;
+	final static int DRONE = 1;
+
+	public enum App {
 		NULL(0), MINECRAFT(1), CAR(2), VIDEO(3), PIC(4), SKYPE(5), IE(6), FILE(
 				7), WORD(8), EXCEL(9), PPT(10), CAM(11), FILE_OPEN(12);
 
@@ -91,26 +109,6 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		}
 	}
 
-	final static int SINGLE_TAP = 0;
-	final static int DOUBLE_TAP = 1;
-	final static int TOGGLE_FULLSCREEN = 2;
-	final static int LONG_PRESS = 3;
-	final static int LEFT = 4;
-	final static int RIGHT = 5;
-	final static int UP = 6;
-	final static int DOWN = 7;
-
-	final static int GREEN = 0;
-	final static int VOLCANO = 1;
-	final static int SHIP = 2;
-	final static int TREASURE = 3;
-	final static int WORKSPACE = 4;
-
-	final static int HORSE = 0;
-	final static int DRONE = 1;
-
-	private boolean NEO = false;
-
 	class AppLaunchThead extends Thread {
 		App app;
 
@@ -128,71 +126,114 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 			Log.e(TAG, "thread run");
 
-			hideList(0, 13);
+			toggleList(false, 0, 13);
+			peopleAnimation.fadeout(mAnimatables);
 
 			switch (app) {
 			case PIC:
-				drawText("l_opt", new String[] { "hello pic", "line2" });
-
-				showList(0, 6);
-				showList(10, 13);
-
-				peopleAnimation.fadeout(mAnimatables);
-				openPic(1);
-
+				pic();
 				break;
 			case VIDEO:
-				drawText("l_opt", new String[] { "hello video", "line2" });
-
-				showList(6, 13);
-
-				peopleAnimation.fadeout(mAnimatables);
-				screens[mWsIdx].translate(-5, 0, 0);
-
-				mAnimatables.add(new TranslationAnimation("",
-						new Object3D[] { screens[mWsIdx] }, new SimpleVector(5,
-								0, 0), null));
-				mAnimatables.add(new DisplayAnimation(
-						new Object3D[] { screens[mWsIdx] }, "", false));
-
+				video();
 				break;
 			case FILE:
-				peopleAnimation.fadeout(mAnimatables);
-
-				for (int i = 0; i < desksfiles.length; i++) {
-					desksfiles[i].clearTranslation();
-					desksfiles[i].translate(-5, 0, 0);
-					desksfiles[i].setVisibility(true);
-				}
-
-				mAnimatables.add(new TranslationAnimation("", desksfiles,
-						new SimpleVector(5, 0, 0), null));
-
+				file();
+				break;
+			case FILE_OPEN:
+				fileopen();
 				break;
 			default:
-				peopleAnimation.fadeout(mAnimatables);
-
-				screens[mWsIdx].translate(-5, 0, 0);
-
-				mAnimatables.add(new TranslationAnimation("",
-						new Object3D[] { screens[mWsIdx] }, new SimpleVector(5,
-								0, 0), null));
-				mAnimatables.add(new DisplayAnimation(
-						new Object3D[] { screens[mWsIdx] }, "", false));
-
+				callScr();
 				break;
 			}
 			ws.mState = 2;
 			ws.mCurrentApp = app;
+			
+			Log.e(TAG, "ws : "+ws.id);
+		}
+
+		void fileopen() {
+			callScr();
+		}
+
+		void abandon() {
+			peopleAnimation.stop();
+		}
+
+		void startFrom(Object3D[] object3ds, int distance) {
+			for (int i = 0; i < object3ds.length; i++) {
+				object3ds[i].clearTranslation();
+				object3ds[i].translate(-distance, 0, 0);
+				object3ds[i].setVisibility(true);
+			}
+		}
+
+		void file() {
+
+			startFrom(desks, 5);
+			startFrom(files1, 5);
+			startFrom(files2, 5);
+
+			for (int i = 0; i < 9; i++) {
+				SimpleVector target = new SimpleVector();
+				cam.getPosition(target);
+				target.add(new SimpleVector(-3 - 5, 0.8 * (i / 3 - 1),
+						0.5 + 0.8 * (i % 3 - 1)));
+				files1[i].translate(target.calcSub(files1[i]
+						.getTransformedCenter()));
+			}
+			
+			for (int i = 0; i < 9; i++) {
+				SimpleVector target = new SimpleVector();
+				cam.getPosition(target);
+				target.add(new SimpleVector(-3 - 5, 0.8 * (i / 3 - 1),
+						4.5 + 0.8 * (i % 3 - 1)));
+				files2[i].translate(target.calcSub(files2[i]
+						.getTransformedCenter()));
+			}
+
+			mAnimatables.add(new TranslationAnimation("", SceneHelper.to1DArr(new Object3D[][] {
+					desks,files1,files2
+			}), new SimpleVector(5, 0, 0), null));
+
+		}
+
+		void callScr() {
+			screens[mWsIdx].translate(-5, 0, 0);
+
+			mAnimatables.add(new TranslationAnimation("",
+					new Object3D[] { screens[mWsIdx] }, new SimpleVector(5, 0,
+							0), null));
+			mAnimatables.add(new DisplayAnimation(
+					new Object3D[] { screens[mWsIdx] }, "", false));
+		}
+
+		void pic() {
+			drawText("l_opt", new String[] { "hello pic", "line2" });
+
+			toggleList(true, 0, 6);
+			toggleList(true, 10, 13);
+
+			openPic(1);
+		}
+
+		void video() {
+			drawText("l_opt", new String[] { "hello video", "line2" });
+
+			toggleList(true, 6, 13);
+
+			callScr();
 		}
 	}
+
+	private boolean NEO = false;
 
 	protected SimpleVector forward = new SimpleVector(-1, 0, 0);
 	protected SimpleVector backward = new SimpleVector(1, 0, 0);
 	protected SimpleVector up = new SimpleVector(0, -1, 0);
 
 	protected Object3D[] mCamViewspots = null;
-	protected int mCamViewIndex = 4;
+	protected int mCamViewIndex = NEED_SCENE ? TREASURE : WORKSPACE;
 
 	protected Object3D[] mWorkspaceObjects = null;
 	protected Object3D[] mSceneObjects = null;
@@ -202,7 +243,6 @@ public class SceneActivity extends Framework3DMatrixActivity {
 	private int mFrameCounter = 0;
 
 	private Camera cam;
-
 	protected FrameBuffer fb = null;
 	protected SkyBox sky;
 	protected World world = null;
@@ -212,13 +252,16 @@ public class SceneActivity extends Framework3DMatrixActivity {
 	protected Object3D[] weathers = null;
 	protected Object3D[] entrances = null;
 	protected Object3D[] islands = null;
-	protected Object3D[] desksfiles = null;
 	protected Object3D[] desks = null;
 	protected Object3D[] files = null;
+	protected Object3D[] files1 = null;
+	protected Object3D[] files2 = null;
+
 	private boolean[] scrShown = new boolean[3];
 
 	protected PeopleAnimation peopleAnimation;
-
+	
+	protected RGBColor black = new RGBColor(50, 50, 100);
 	protected RGBColor back = new RGBColor(50, 50, 100);
 	protected RGBColor wire = new RGBColor(100, 100, 100);
 
@@ -275,7 +318,10 @@ public class SceneActivity extends Framework3DMatrixActivity {
 	PickGroup[] mPickGroupLists = new PickGroup[6 + 4 + 2 + 1];
 	PickGroup[] mPickGroupIcons = new PickGroup[2];
 	PickGroup[] mPickGroupFiles = new PickGroup[3];
-	PickGroup[] mPickGroupDesks = new PickGroup[4];
+	PickGroup[] mPickGroupFiles1 = new PickGroup[9];
+	PickGroup[] mPickGroupFiles2 = new PickGroup[9];
+
+	PickGroup[] mPickGroupDesks = new PickGroup[5];
 
 	GestureDetector mGestureDetector = null;
 
@@ -309,8 +355,8 @@ public class SceneActivity extends Framework3DMatrixActivity {
 			if (ws.mCurrentApp == App.PIC) {
 
 			} else {
-//				int ii = mCamViewIndex + 1 > 3 ? 0 : mCamViewIndex + 1;
-//				switchIsland(ii);
+				// int ii = mCamViewIndex + 1 > 3 ? 0 : mCamViewIndex + 1;
+				// switchIsland(ii);
 				actionFired[TOGGLE_FULLSCREEN] = true;
 			}
 		}
@@ -471,20 +517,26 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		fb = new FrameBuffer(w, h);
 		world = new World();
 
-		show3DToast("loading obj");
-
 		try {
-			if (NEED_WORKSPACE)
+			if (NEED_WORKSPACE) {
+				show3DToast("loading\nworkspace");
+
 				mWorkspaceObjects = Loader.loadOBJ(
 						getAssets().open("workspace.obj"),
 						getAssets().open("workspace.mtl"), 1);
-			if (NEED_SCENE)
+			}
+
+			if (NEED_SCENE) {
+				show3DToast("loading\nmatrix scene");
 				mSceneObjects = Loader.loadOBJ(getAssets().open("matnew.obj"),
 						getAssets().open("matnew.mtl"), 1);
+			}
 
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+
+		show3DToast("creating\nyour world");
 
 		cam = world.getCamera();
 
@@ -499,12 +551,9 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 		if (NEED_WORKSPACE) {
 			screens = new Object3D[3];
-			desksfiles = new Object3D[3 + 4];
-			desks = new Object3D[4];
-			files = new Object3D[3];
 			workspaces = new Workspace[3];
 			for (int i = 0; i < workspaces.length; i++) {
-				workspaces[i] = new Workspace();
+				workspaces[i] = new Workspace(i);
 			}
 			ws = workspaces[mWsIdx];
 
@@ -514,6 +563,12 @@ public class SceneActivity extends Framework3DMatrixActivity {
 			world.addObjects(mWorkspaceObjects);
 		}
 
+		if (NEED_SKYBOX) {
+			sky = new SkyBox("star_left", "star_forward", "star_left",
+					"star_right", "star_back", "star_bottom", 10000f);
+			sky.setCenter(new SimpleVector());
+		}
+
 		world.setAmbientLight(150, 150, 150);
 
 		sun = new Light(world);
@@ -521,6 +576,7 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 		spot = new Light(world);
 		spot.setIntensity(50, 50, 50);
+		spot.setPosition(new SimpleVector(0, 0, 5));
 
 		ball1 = Primitives.getSphere(0.05f);
 		ball1.translate(0, 0, -2);
@@ -568,12 +624,6 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		}
 
 		headTransform.getEulerAngles(mAngles, 0);
-
-		// if(mCamViewspots != null){
-		// cam.setOrientation(forward, up);
-		// }else {
-		// cam.setOrientation(forward, up);
-		// }
 
 		if (canCamRotate) {
 			cam.setOrientation(forward, up);
@@ -725,7 +775,7 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 		// consume first
 		// pick obj
-		if (NEED_WORKSPACE && mCamViewIndex != TREASURE) {
+		if (NEED_WORKSPACE && ws != null) {
 			if (SceneHelper.isLookingAt(cam, ball1,
 					mSkype.getTransformedCenter()) > 0.75) {
 
@@ -768,7 +818,7 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 			case DOUBLE_TAP:
 
-				if(NEED_SCENE){
+				if (NEED_SCENE) {
 					for (int i1 = 0; i1 < 4; i1++) {
 						if (i1 == mCamViewIndex)
 							continue;
@@ -802,7 +852,8 @@ public class SceneActivity extends Framework3DMatrixActivity {
 						} else if (SceneHelper.isLookingAt(cam,
 								entrances[DRONE].getTransformedCenter()) > 0.95) {
 							flyDrone();
-						} else if (SceneHelper.isLookingAt(cam, backward) > 0.95) {
+						} else if (SceneHelper.isLookingAt(cam,
+								islands[TREASURE].getTransformedCenter()) > 0.95) {
 							NEO = NEO ? false : true;
 							show3DToast("NEO");
 						}
@@ -830,23 +881,23 @@ public class SceneActivity extends Framework3DMatrixActivity {
 	}
 
 	private void toggleFullscreen() {
-		Log.e(TAG, "toggleFullscreen "+mCamViewIndex+" "+ws.isScrShown);
-		
+		Log.e(TAG, "toggleFullscreen " + mCamViewIndex + " " + ws.isScrShown);
+
 		if (mCamViewIndex != 3 && screens[mWsIdx].getVisibility()) {
 			canCamRotate = canCamRotate ? false : true;
 			Log.e(TAG, "ready to toggleFullscreen");
 
-			if(!canCamRotate){
+			if (!canCamRotate) {
 				cam.setOrientation(forward, up);
 				cam.rotateZ(3.1415926f / 2);
 
 				mAnimatables.add(new TranslationAnimation("",
-						new Object3D[] { screens[mWsIdx] }, new SimpleVector(0.8, 0,
-								0), null));
-			}else {
+						new Object3D[] { screens[mWsIdx] }, new SimpleVector(
+								0.8, 0, 0), null));
+			} else {
 				mAnimatables.add(new TranslationAnimation("",
-						new Object3D[] { screens[mWsIdx] }, new SimpleVector(-0.8, 0,
-								0), null){
+						new Object3D[] { screens[mWsIdx] }, new SimpleVector(
+								-0.8, 0, 0), null) {
 					@Override
 					public void onAnimateSuccess() {
 						screens[mWsIdx].clearTranslation();
@@ -854,22 +905,25 @@ public class SceneActivity extends Framework3DMatrixActivity {
 					}
 				});
 			}
-			
+
 		} else if (mCamViewIndex == 3) {
 			canCamRotate = canCamRotate ? false : true;
 
-			if(!canCamRotate){
+			if (!canCamRotate) {
 				for (int i = 0; i < workspaces.length; i++) {
-					if(workspaces[i].isScrShown){
+					if (workspaces[i].isScrShown) {
 						// TODO gjw switch screen
-						
+
 					}
 				}
-			}else {
+			} else {
 				for (int i = 0; i < workspaces.length; i++) {
-					if(workspaces[i].isScrShown){
+					if (workspaces[i].isScrShown) {
 						screens[i].setVisibility(true);
-						screens[i].translate(new SimpleVector(5,1.8*(i-1),2.5).calcSub(screens[i].getTransformedCenter()));
+						screens[i]
+								.translate(new SimpleVector(5, 1.8 * (i - 1),
+										2.5).calcSub(screens[i]
+										.getTransformedCenter()));
 					}
 				}
 			}
@@ -892,43 +946,44 @@ public class SceneActivity extends Framework3DMatrixActivity {
 					}
 				});
 
-		spot.setPosition(mCamViewspots[idx].getTransformedCenter());
+		spot.setPosition(mCamViewspots[idx].getTransformedCenter().calcAdd(
+				new SimpleVector(0, 0, 5)));
 
 		if (idx == TREASURE) {
-			switchWorkspace(0);
+			exitWorkspace();
 
 			// hide the workspace
 			mCamViewspots[WORKSPACE].translate(-1000, -1000, -1000);
-			
+
 			for (int i = 0; i < workspaces.length; i++) {
-				if(workspaces[i].isScrShown){
+				if (workspaces[i].isScrShown) {
 					screens[i].setVisibility(true);
-					screens[i].translate(new SimpleVector(5,1.8*(i-1),2.5).calcSub(screens[i].getTransformedCenter()));
+					screens[i]
+							.translate(new SimpleVector(5, 1.8 * (i - 1), 2.5)
+									.calcSub(screens[i].getTransformedCenter()));
 				}
 			}
-			
+
 		} else if (NEED_WORKSPACE) {
-			
-			for (int i = 0; i < screens.length; i++) {
-				if(workspaces[i].isScrShown){
-					screens[i].setVisibility(false);
-					screens[i].clearTranslation();
-				}
-			}
-			
+
 			mCamViewspots[WORKSPACE].translate(mCamViewspots[idx]
 					.getTransformedCenter().calcSub(
 							mCamViewspots[WORKSPACE].getTransformedCenter()));
 			switchWorkspace(idx);
 		}
 	}
-
-	private void switchWorkspace(int idx) {
-		
-		for (int i = 0; i < workspaces.length; i++) {
-			Log.e(TAG, "isScrShown"+i+":"+workspaces[i].isScrShown);
+	
+	private void enterWorkspace(){
+		for (int i = 0; i < screens.length; i++) {
+			if (workspaces[i].isScrShown) {
+				screens[i].setVisibility(false);
+				screens[i].clearTranslation();
+			}
 		}
-		
+	}
+	
+	private void exitWorkspace() {
+
 		ws.animal.setVisibility(false);
 
 		ws.isScrShown = screens[mWsIdx].getVisibility();
@@ -936,9 +991,25 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		screens[mWsIdx].setVisibility(false);
 		picScrs[0].setVisibility(false);
 		picScrs[1].setVisibility(false);
+		
+		toggleList(false, 0, 13);
+		toggleDesk(false);
 
-		hideList(0, 13);
+		ws = null;
+		
+		for (int i = 0; i < workspaces.length; i++) {
+			Log.e(TAG, "isScrShown" + i + ":" + workspaces[i].isScrShown);
+		}
+	}
 
+	private void switchWorkspace(int idx) {
+		
+		if(ws != null){
+			exitWorkspace();
+		}else {
+			enterWorkspace();
+		}
+		
 		// closed =================
 		ws = workspaces[idx];
 
@@ -962,36 +1033,44 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		// restore app settings
 		switch (ws.mCurrentApp) {
 		case PIC:
-			showList(0, 6);
-			showList(10, 13);
+			toggleList(true, 0, 6);
+			toggleList(true, 10, 13);
 			break;
 		case VIDEO:
-			showList(6, 13);
+			toggleList(true, 6, 13);
+			break;
+		case FILE:
+			toggleDesk(true);
 			break;
 		default:
 			break;
 		}
 	}
 
-	private void showList(int from, int to) {
-		Object3D[] group;
-		for (int i = from; i < to; i++) {
-			group = mPickGroupLists[i].group;
-			for (int j = 0; j < group.length; j++) {
-				group[j].setVisibility(true);
-			}
+	private void toggleDesk(boolean on) {
+		for (int i = 0; i < desks.length; i++) {
+			desks[i].setVisibility(on);
 		}
-
+		for (int i = 0; i < files.length; i++) {
+			files[i].setVisibility(on);
+		}
+		for (int i = 0; i < files1.length; i++) {
+			files1[i].setVisibility(on);
+		}
+		for (int i = 0; i < files2.length; i++) {
+			files2[i].setVisibility(on);
+		}
 	}
-
-	private void hideList(int from, int to) {
+	
+	private void toggleList(boolean on, int from, int to) {
 		Object3D[] group;
 		for (int i = from; i < to; i++) {
 			group = mPickGroupLists[i].group;
 			for (int j = 0; j < group.length; j++) {
-				group[j].setVisibility(false);
+				group[j].setVisibility(on);
 			}
 		}
+
 	}
 
 	private void pickList() {
@@ -1138,7 +1217,6 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 		// TODO gjw draw video desc
 
-		
 	}
 
 	private void openPic(int i) {
@@ -1285,7 +1363,9 @@ public class SceneActivity extends Framework3DMatrixActivity {
 				cur[0] = picScrs[1].getVisibility() ? picScrs[1] : cur[0];
 				break;
 			case FILE:
-				cur = desks[0].getVisibility() ? desks : cur;
+				cur = desks[0].getVisibility() ? SceneHelper.to1DArr(new Object3D[][]{
+						desks,files1,files2
+				}) : cur;
 				break;
 			default:
 				cur[0] = screens[mWsIdx].getVisibility() ? screens[mWsIdx]
@@ -1295,7 +1375,7 @@ public class SceneActivity extends Framework3DMatrixActivity {
 
 			if (cur[0] != null) {
 
-				hideList(0, 13);
+				toggleList(false, 0, 13);
 
 				peopleAnimation.show(mAnimatables);
 
@@ -1303,7 +1383,6 @@ public class SceneActivity extends Framework3DMatrixActivity {
 						new SimpleVector(-40, 0, 0), null) {
 					@Override
 					public void onAnimateSuccess() {
-						// object3ds[0].setVisibility(false);
 						for (int i = 0; i < object3ds.length; i++) {
 							object3ds[i].setVisibility(false);
 							object3ds[0].clearTranslation();
@@ -1515,7 +1594,12 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		Log.e(TAG, "nice: " + tname);
 
 		if (tname.startsWith("f_b")) {
+			object3d.getMesh().setLocked(true);
+			// printTexture(tname, object3d);
 			clickableFiles.put(tname, object3d);
+		} else if (tname.startsWith("f_i_")) {
+			printTexture(tname, object3d);
+			clickableDesks.put(tname, object3d);
 		} else {
 			clickableDesks.put(tname, object3d);
 		}
@@ -1623,7 +1707,6 @@ public class SceneActivity extends Framework3DMatrixActivity {
 	}
 
 	private void postInitBoard() {
-
 		for (int i = 0; i < 4; i++) {
 			mPickGroupBoards[i] = new PickGroup(2);
 		}
@@ -1687,36 +1770,56 @@ public class SceneActivity extends Framework3DMatrixActivity {
 		for (int i = 0; i < mPickGroupDesks.length; i++) {
 			mPickGroupDesks[i] = new PickGroup(1);
 		}
-
+		for (int i = 0; i < mPickGroupFiles1.length; i++) {
+			mPickGroupFiles1[i] = new PickGroup(1);
+		}
+		for (int i = 0; i < mPickGroupFiles2.length; i++) {
+			mPickGroupFiles2[i] = new PickGroup(1);
+		}
 		Object3D tmp;
-		tmp = clickableDesks.get("f_desk");
+		tmp = clickableDesks.get("f_trash");
 		mPickGroupDesks[0].group[0] = tmp;
 
-		tmp = clickableDesks.get("f_trash");
+		tmp = clickableDesks.get("f_i_open");
 		mPickGroupDesks[1].group[0] = tmp;
 
-		tmp = clickableDesks.get("f_flower1");
+		tmp = clickableDesks.get("f_i_copy");
 		mPickGroupDesks[2].group[0] = tmp;
 
-		tmp = clickableDesks.get("f_flower2");
+		tmp = clickableDesks.get("f_i_cut");
 		mPickGroupDesks[3].group[0] = tmp;
 
-		tmp = clickableFiles.get("f_book1");
+		tmp = clickableDesks.get("f_i_delete");
+		mPickGroupDesks[4].group[0] = tmp;
+
+		tmp = clickableFiles.get("f_book_b");
 		mPickGroupFiles[0].group[0] = tmp;
 
-		tmp = clickableFiles.get("f_book2");
+		tmp = clickableFiles.get("f_book_s");
 		mPickGroupFiles[1].group[0] = tmp;
 
-		tmp = clickableFiles.get("f_book3");
+		tmp = clickableFiles.get("f_b_folder");
 		mPickGroupFiles[2].group[0] = tmp;
 
+		desks = new Object3D[clickableDesks.size()];
+		files = new Object3D[clickableFiles.size()];
+		
+		files1 = new Object3D[mPickGroupFiles1.length];
+		files2 = new Object3D[mPickGroupFiles2.length];
+		
 		desks = clickableDesks.values().toArray(desks);
 		files = clickableFiles.values().toArray(files);
-		for (int i = 0; i < desks.length; i++) {
-			desksfiles[i] = desks[i];
-		}
-		for (int i = 0; i < files.length; i++) {
-			desksfiles[i + 4] = files[i];
+
+		for (int i = 0; i < 9; i++) {
+			files1[i] = mPickGroupFiles[1].group[0].cloneObject();
+			files1[i].setTexture("dummy");
+			mPickGroupFiles1[i].group[0] = files1[i];
+			world.addObject(files1[i]);
+			
+			files2[i] = mPickGroupFiles[1].group[0].cloneObject();
+			files2[i].setTexture("dummy");
+			mPickGroupFiles2[i].group[0] = files2[i];
+			world.addObject(files2[i]);
 		}
 
 	}
@@ -1841,7 +1944,11 @@ public class SceneActivity extends Framework3DMatrixActivity {
 	public void onDrawEye(Eye eye) {
 
 		fb.clear(back);
-		world.renderScene(fb);
+		if (NEED_SKYBOX) {
+			sky.render(world, fb);
+		} else {
+			world.renderScene(fb);
+		}
 		if (NEO) {
 			world.drawWireframe(fb, wire, 2, false);
 		} else {

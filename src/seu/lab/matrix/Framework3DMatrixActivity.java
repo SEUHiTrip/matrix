@@ -56,6 +56,7 @@ public abstract class Framework3DMatrixActivity extends
 
 	protected static Activity master = null;
 	protected static final String TAG = "Framework3DMatrixActivity";
+	final static boolean NEED_SKYBOX = false;
 
 	protected ServerItem usbServerItem;
 	protected IDisplayConnection iDisplayConnection;
@@ -656,7 +657,8 @@ public abstract class Framework3DMatrixActivity extends
 							R.drawable.icon)), 512, 512));
 			tm.addTexture("dummy", texture);
 
-			// loadSkyboxTexture(tm);
+			if(NEED_SKYBOX)
+				loadSkyboxTexture(tm);
 
 			loadBoardTexture(tm);
 			try {

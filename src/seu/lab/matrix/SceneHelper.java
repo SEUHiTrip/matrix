@@ -1,5 +1,8 @@
 package seu.lab.matrix;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 
@@ -44,5 +47,17 @@ public class SceneHelper {
 		matrix.postRotate(angle);
 		return Bitmap.createBitmap(source, 0, 0, source.getWidth(),
 				source.getHeight(), matrix, true);
+	}
+	
+	public static Object3D[] to1DArr(Object3D[][] ori) {
+		List<Object3D> list = new LinkedList<Object3D>();
+		for (int i = 0; i < ori.length; i++) {
+			for (int j = 0; j < ori[i].length; j++) {
+				list.add(ori[i][j]);
+			}
+		}
+		Object3D[] arr = new Object3D[list.size()];
+		arr = list.toArray(arr);
+		return arr;
 	}
 }
