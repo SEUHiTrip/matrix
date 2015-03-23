@@ -26,7 +26,7 @@ public class LauncherApp extends AbstractApp{
 
 	private Map<String, Object3D> clickableBoards = new HashMap<String, Object3D>();
 	
-	PickGroup[] mPickGroupBoards = new PickGroup[11];
+	PickGroup[] mPickGroupBoards = new PickGroup[11+1];
 
 	private LiveTileAnimation[] mBoardTiles = new LiveTileAnimation[] {
 			new LiveTileAnimation("minecraft"), new LiveTileAnimation(""),
@@ -142,6 +142,11 @@ public class LauncherApp extends AbstractApp{
 
 	public void initBoard(String name, Object3D object3d) {
 
+		if(name.startsWith("x_drone")){
+			clickableBoards.put("x_drone", object3d);
+			return;
+		}
+		
 		TextureManager tm = TextureManager.getInstance();
 		String tname = name.substring(2, name.indexOf("_Plane"));
 		object3d.clearAdditionalColor();
@@ -208,6 +213,9 @@ public class LauncherApp extends AbstractApp{
 		mPickGroupBoards[9].group[0] = tmp;
 		tmp = clickableBoards.get("b_null");
 		mPickGroupBoards[10].group[0] = tmp;
+		
+		tmp = clickableBoards.get("x_drone");
+		mPickGroupBoards[11].group[0] = tmp;
 	}
 
 	@Override

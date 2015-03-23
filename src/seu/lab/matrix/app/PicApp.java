@@ -76,6 +76,7 @@ public class PicApp extends AbstractApp{
 	@Override
 	public void onHide() {
 		toggleList(false, 0, 6+3);
+		scene.onHideObj(picScrs, true, null);
 	}
 
 	@Override
@@ -139,6 +140,8 @@ public class PicApp extends AbstractApp{
 	
 	private void openPic(int i) {
 
+		Log.e(TAG, "openPic: "+i);
+		
 		mCurrentPic = i;
 
 		picScrs[0].setVisibility(false);
@@ -332,7 +335,7 @@ public class PicApp extends AbstractApp{
 
 		mAnimatables.add(new SeqAnimation(mAnimatables, mPicListTiles));
 
-		mPicPageIdx = mPicPageIdx + 1 % 2;
+		mPicPageIdx = (mPicPageIdx + 1) % 2;
 	}
 	
 	private void toggleList(boolean on, int from, int to) {
@@ -371,7 +374,7 @@ public class PicApp extends AbstractApp{
 
 	@Override
 	public void onClose(Runnable runnable) {
-		onHide();
+		toggleList(false, 0, 6+3);
 		scene.onHideObj(picScrs, true, runnable);
 		scene.onAppClosed();
 	}

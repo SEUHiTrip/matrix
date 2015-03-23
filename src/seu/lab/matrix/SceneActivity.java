@@ -27,6 +27,7 @@ import seu.lab.matrix.app.AbstractApp;
 import seu.lab.matrix.app.AppType;
 import seu.lab.matrix.app.CamApp;
 import seu.lab.matrix.app.CarApp;
+import seu.lab.matrix.app.DroneApp;
 import seu.lab.matrix.app.ExcelApp;
 import seu.lab.matrix.app.FileApp;
 import seu.lab.matrix.app.FileOpenApp;
@@ -83,7 +84,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 	final static int WORKSPACE_COUNT = 3;
 
 	final static boolean NEED_WORKSPACE = true;
-	final static boolean NEED_SCENE = false;
+	final static boolean NEED_SCENE = true;
 
 	final static int SINGLE_TAP = 0;
 	final static int DOUBLE_TAP = 1;
@@ -103,7 +104,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 	final static int HORSE = 0;
 	final static int DRONE = 1;
 
-	AbstractApp[] apps = new AbstractApp[11 + 1 + 1 + 1];
+	AbstractApp[] apps = new AbstractApp[11 + 1 + 1 + 1 + 1];
 
 	class AppLaunchThead extends Thread {
 		AppType appType;
@@ -162,6 +163,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 	protected SkyBox sky;
 	protected World world = null;
 	protected Light sun = null;
+	protected Light sun2 = null;
 	protected Light spot = null;
 	protected Object3D[] screens = null;
 	protected Object3D[] weathers = null;
@@ -332,14 +334,14 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 			if (!event.isConclusion)
 				return;
 
-			if(event.type == Gestures.PUSH_PULL_PUSH.ordinal()){
+			if (event.type == Gestures.PUSH_PULL_PUSH.ordinal()) {
 				actionFired[DOUBLE_TAP] = true;
-			}else if (event.type == Gestures.SWIPE_LEFT_P.ordinal()) {
+			} else if (event.type == Gestures.SWIPE_LEFT_P.ordinal()) {
 				actionFired[LEFT] = true;
-			}else if (event.type == Gestures.SWIPE_RIGHT_P.ordinal()) {
+			} else if (event.type == Gestures.SWIPE_RIGHT_P.ordinal()) {
 				actionFired[RIGHT] = true;
 			}
-			
+
 			show3DToast(event.result);
 		}
 
@@ -421,10 +423,14 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 		cam.setPosition(0, 0, 0);
 
-		world.setAmbientLight(150, 150, 150);
+		world.setAmbientLight(120, 120, 120);
 
 		sun = new Light(world);
 		sun.setIntensity(250, 250, 250);
+
+		sun2 = new Light(world);
+		sun2.setIntensity(250, 250, 250);
+		sun2.setPosition(new SimpleVector(0, -50, 10));
 
 		spot = new Light(world);
 		spot.setIntensity(50, 50, 50);
@@ -437,7 +443,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 		ball1.strip();
 		ball1.build();
 		world.addObject(ball1);
-		
+
 		if (NEED_SCENE) {
 			islands = new Object3D[4];
 			weathers = new Object3D[4];
@@ -447,7 +453,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 		if (NEED_WORKSPACE) {
 			screens = new Object3D[3];
-			workspaces = new Workspace[3];
+			workspaces = new Workspace[4];
 
 			peopleAnimation = new PeopleAnimation();
 
@@ -479,13 +485,16 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 					this, cam, ball1);
 			apps[AppType.LAUNCHER.ordinal()] = new LauncherApp(mAnimatables,
 					this, cam, ball1);
+			apps[AppType.DRONE.ordinal()] = new DroneApp(mAnimatables, this,
+					cam, ball1);
 
 			for (int i = 0; i < workspaces.length; i++) {
 				workspaces[i] = new Workspace(i);
 				workspaces[i].mCurrentApp = apps[AppType.NULL.ordinal()];
 			}
+			mWsIdx = TREASURE;
 			ws = workspaces[mWsIdx];
-			
+
 			world.addObjects(mWorkspaceObjects);
 		}
 
@@ -596,13 +605,13 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 	private void sceneLoop() {
 
-		if(!isCamFlying){
+		if (!isCamFlying) {
 			pickAction();
 
 			// deal with input actions
 			fireAction();
 		}
-		
+
 		// animation driver
 		if (isAnimationOn) {
 			for (int i = 0; i < mAnimatables.size();) {
@@ -677,7 +686,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 	private void pickAction() {
 		// pick obj
-		if (NEED_WORKSPACE && ws != null) {
+		if (NEED_WORKSPACE && mWsIdx != TREASURE) {
 
 			if (SceneHelper.isLookingDir(cam, ball1, launcherDir) > 0.75) {
 
@@ -739,11 +748,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 								entrances[HORSE].getTransformedCenter()) > 0.95) {
 							flyIsland();
 							actionFired[DOUBLE_TAP] = false;
-						} else if (SceneHelper.isLookingAt(cam,
-								entrances[DRONE].getTransformedCenter()) > 0.95) {
-							flyDrone();
-							actionFired[DOUBLE_TAP] = false;
-						} else if (SceneHelper.isLookingAt(cam,
+						}else if (SceneHelper.isLookingAt(cam,
 								islands[TREASURE].getTransformedCenter()) > 0.95) {
 							NEO = NEO ? false : true;
 							show3DToast("NEO");
@@ -760,7 +765,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 				if (actionFired[DOUBLE_TAP]) {
 					Log.e(TAG, "ws.mCurrentApp.onDoubleTap");
-					
+
 					if (SceneHelper.isLookingDir(cam, ball1, launcherDir) > 0.75) {
 
 						apps[AppType.LAUNCHER.ordinal()].onDoubleTap();
@@ -775,7 +780,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 						ws.mCurrentApp.onDoubleTap();
 					}
-					
+
 				}
 
 				break;
@@ -870,7 +875,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 			exitWorkspace();
 
 			// hide the workspace
-			mCamViewspots[WORKSPACE].translate(0,0, -1000);
+			mCamViewspots[WORKSPACE].translate(0, 0, -1000);
 
 			for (int i = 0; i < workspaces.length; i++) {
 				if (workspaces[i].isScrShown) {
@@ -915,8 +920,9 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 		// toggleList(false, 0, 13);
 		// toggleDesk(false);
 
-		ws = null;
-
+		ws = workspaces[TREASURE];
+		mWsIdx = TREASURE;
+		
 		for (int i = 0; i < workspaces.length; i++) {
 			Log.e(TAG, "isScrShown" + i + ":" + workspaces[i].isScrShown);
 		}
@@ -924,7 +930,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 	private void switchWorkspace(int idx) {
 
-		if (ws != null) {
+		if (mWsIdx != TREASURE) {
 			exitWorkspace();
 		} else {
 			enterWorkspace();
@@ -996,8 +1002,8 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 	}
 
 	public void openApp(final int idx) {
-		Log.e(TAG, ws.mState+" ==> going to open "+AppType.valueOf(idx + 1));
-		
+		Log.e(TAG, ws.mState + " ==> going to open " + AppType.valueOf(idx + 1));
+
 		// prevent from opening app while waiting
 		if (ws.mState == 1)
 			return;
@@ -1075,7 +1081,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 		} else {
 			onAppClosed();
-			if(runnable != null)
+			if (runnable != null)
 				runnable.run();
 		}
 	}
@@ -1127,6 +1133,9 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 			object3d.setVisibility(false);
 			mCamViewspots[4] = object3d;
 			return;
+		} else if (name.startsWith("x_drone")) {
+			apps[AppType.LAUNCHER.ordinal()].initObj(name, object3d);
+			return;
 		}
 	}
 
@@ -1151,9 +1160,6 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 	private void initEntrance(String name, Object3D object3d) {
 		if (name.startsWith("e_horse")) {
 			entrances[0] = object3d;
-			return;
-		} else if (name.startsWith("e_drone")) {
-			entrances[1] = object3d;
 			return;
 		}
 	}
@@ -1309,7 +1315,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 			public void onAnimateSuccess() {
 				super.onAnimateSuccess();
-				
+
 				isCamFlying = false;
 				canCamRotate = true;
 			}
@@ -1402,14 +1408,12 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 	private void flyDrone() {
 		show3DToast("flyDrone");
-		
-		
+
 	}
-	
+
 	private void exitDrone() {
 		show3DToast("exitDrone");
-		
-		
+
 	}
 
 	@Override
@@ -1451,7 +1455,8 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 	@Override
 	public void onCallScreen() {
-		if(screens[mWsIdx].getVisibility())return;
+		if (screens[mWsIdx].getVisibility())
+			return;
 
 		screens[mWsIdx].translate(-5, 0, 0);
 
@@ -1464,12 +1469,13 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 	@Override
 	public void onHideScreen(final Runnable runnable) {
-		if(!screens[mWsIdx].getVisibility())return;
-		
+		if (!screens[mWsIdx].getVisibility())
+			return;
+
 		Log.e(TAG, "onHideScreen");
-		
-		Object3D[] cur = new Object3D[]{screens[mWsIdx]};
-		
+
+		Object3D[] cur = new Object3D[] { screens[mWsIdx] };
+
 		mAnimatables.add(new TranslationAnimation("", cur, new SimpleVector(
 				-40, 0, 0), null) {
 			@Override
@@ -1479,7 +1485,8 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 					object3ds[0].clearTranslation();
 				}
 
-				if(runnable != null)runnable.run();
+				if (runnable != null)
+					runnable.run();
 				// TODO scene.
 
 				super.onAnimateSuccess();
@@ -1488,11 +1495,11 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 		mAnimatables.add(new DisplayAnimation(cur, "", true));
 	}
-	
+
 	@Override
-	public void onHideObj(Object3D[] cur, boolean displayAnimation, final Runnable runnable) {
-		if(!cur[0].getVisibility())return;
-				
+	public void onHideObj(Object3D[] cur, boolean displayAnimation,
+			final Runnable runnable) {
+
 		mAnimatables.add(new TranslationAnimation("", cur, new SimpleVector(
 				-40, 0, 0), null) {
 			@Override
@@ -1502,16 +1509,16 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 					object3ds[0].clearTranslation();
 				}
 
-				if(runnable != null)runnable.run();
+				if (runnable != null)
+					runnable.run();
 				// TODO scene.
 
 				super.onAnimateSuccess();
 			}
 		});
-		if(displayAnimation)
+		if (displayAnimation)
 			mAnimatables.add(new DisplayAnimation(cur, "", true));
 	}
-
 
 	@Override
 	public void onAppFail() {

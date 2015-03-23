@@ -254,6 +254,6 @@ public class VideoApp extends SimpleScreenApp{
 
 		mAnimatables.add(new SeqAnimation(mAnimatables, mVideoListTiles));
 
-		mVideoPageIdx = mVideoPageIdx + 1 % 2;
+		mVideoPageIdx = (mVideoPageIdx) + 1 % 2;
 	}
 }
