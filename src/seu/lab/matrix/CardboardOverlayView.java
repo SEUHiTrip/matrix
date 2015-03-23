@@ -76,6 +76,11 @@ public class CardboardOverlayView extends LinearLayout {
         startAnimation(mTextFadeAnimation);
     }
 
+    public void show3DToastOnlyRight(String message) {
+    	mRightView.setText(message);
+    	mRightView.setTextViewAlpha(1f);
+    }
+    
     private abstract class EndAnimationListener implements Animation.AnimationListener {
         @Override public void onAnimationRepeat(Animation animation) {}
         @Override public void onAnimationStart(Animation animation) {}

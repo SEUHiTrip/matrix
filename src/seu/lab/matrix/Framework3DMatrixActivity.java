@@ -262,7 +262,11 @@ public abstract class Framework3DMatrixActivity extends
 		mHandler = new Handler(getMainLooper()){
 			@Override
 			public void handleMessage(Message msg) {
-				mOverlayView.show3DToast(msg.obj.toString());
+				if(msg.what == 0)
+					mOverlayView.show3DToast(msg.obj.toString());
+				else if (msg.what == 1) {
+					mOverlayView.show3DToastOnlyRight(msg.obj.toString());
+				}
 				super.handleMessage(msg);
 			}
 		};
@@ -388,6 +392,14 @@ public abstract class Framework3DMatrixActivity extends
 	protected void show3DToast(String m) {
 		Message message = new Message();
 		message.obj = m;
+		message.what = 0;
+		mHandler.sendMessage(message);
+	}
+	
+	protected void show3DToastOnlyRight(String m) {
+		Message message = new Message();
+		message.obj = m;
+		message.what = 1;
 		mHandler.sendMessage(message);
 	}
 	
@@ -776,17 +788,17 @@ public abstract class Framework3DMatrixActivity extends
 				BitmapHelper.convert(getResources().getDrawable(
 						R.drawable.i_back)), 64, 64));
 		
-		tm.addTexture("l_back", l_back);
+		tm.addTexture("w_back", l_back);
 		
 		Texture l_next = new Texture(BitmapHelper.rescale(
 				BitmapHelper.convert(getResources().getDrawable(
 						R.drawable.i_next)), 64, 64));
-		tm.addTexture("l_next", l_next);
+		tm.addTexture("w_next", l_next);
 		
 		Texture l_opt = new Texture(BitmapHelper.rescale(
 				BitmapHelper.convert(getResources().getDrawable(
 						R.drawable.i_fullscreen)), 64, 64));
-		tm.addTexture("l_opt", l_opt);
+		tm.addTexture("w_opt", l_opt);
 	}
 
 	protected void loadSkyboxTexture(TextureManager tm) {

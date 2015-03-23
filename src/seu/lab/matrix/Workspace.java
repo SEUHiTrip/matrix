@@ -1,8 +1,9 @@
 package seu.lab.matrix;
 
-import com.threed.jpct.Object3D;
+import seu.lab.matrix.app.AbstractApp;
+import seu.lab.matrix.app.AppType;
 
-import seu.lab.matrix.SceneActivity.App;
+import com.threed.jpct.Object3D;
 
 public class Workspace {
 	
@@ -13,16 +14,14 @@ public class Workspace {
 	}
 	
 	public boolean isScrShown = false;
-	public boolean isPicScrShown = false;
 	public boolean isWaiting = false;
 	public boolean isPeopleShown = false;
 	
 	public Object3D animal = null;
 	
-	public int mVideoPageIdx;
-	public int mPicPageIdx;
-	public int mFilePageIdx;
-	public int mCurrentPic;
-	public App mCurrentApp = App.NULL;
+	public AppType mCurrentAppType = AppType.NULL;
+	
+	public AbstractApp mCurrentApp;
+	
 	public int mState = 0;	
 }
