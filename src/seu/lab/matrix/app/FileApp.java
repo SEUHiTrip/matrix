@@ -44,12 +44,16 @@ public class FileApp extends AbstractApp{
 	private Map<String, Object3D> clickableFiles = new HashMap<String, Object3D>();
 	private Map<String, Object3D> clickableDesks = new HashMap<String, Object3D>();
 
+	SimpleVector getFilePos(int i, int x){
+		return new SimpleVector(-3 - x, 0.8 * (i / 3 - 1),
+				0.5 + 0.8 * (i % 3 - 1));
+	}
+	
 	void resetFilePosition(Object3D[] files, int x){
 		for (int i = 0; i < 9; i++) {
 			SimpleVector target = new SimpleVector();
 			cam.getPosition(target);
-			target.add(new SimpleVector(-3 - x, 0.8 * (i / 3 - 1),
-					0.5 + 0.8 * (i % 3 - 1)));
+			target.add(getFilePos(i, x));
 			files[i].translate(target.calcSub(files[i]
 					.getTransformedCenter()));
 			Log.e(TAG, "files[i]:"+files[i].getTransformedCenter());
@@ -62,11 +66,11 @@ public class FileApp extends AbstractApp{
 		startFrom(desks, 5);
 		startFrom(files1, 5);
 		resetFilePosition(files1, 5);
-		startFrom(files2, 5);
-		resetFilePosition(files2, 5);
+		//startFrom(files2, 5);
+		//resetFilePosition(files2, 5);
 
 		mAnimatables.add(new TranslationAnimation("", SceneHelper.to1DArr(new Object3D[][] {
-				desks,files1,files2
+				desks,files1
 		}), new SimpleVector(5, 0, 0), null));
 
 	}
@@ -130,10 +134,12 @@ public class FileApp extends AbstractApp{
 			files1[i] = mPickGroupFiles[1].group[0].cloneObject();
 			files1[i].setTexture("dummy");
 			mPickGroupFiles1[i].group[0] = files1[i];
+			mPickGroupFiles1[i].oriPos[0] = getFilePos(i, 0);
 			world.addObject(files1[i]);
 			
 			files2[i] = mPickGroupFiles[1].group[0].cloneObject();
 			mPickGroupFiles2[i].group[0] = files2[i];
+			mPickGroupFiles2[i].oriPos[0] = getFilePos(i, 0);
 			world.addObject(files2[i]);
 		}
 
@@ -184,11 +190,11 @@ public class FileApp extends AbstractApp{
 	public void onPick() {
 		// TODO
 		pickList(mPickGroupDesks, 1, mPickGroupDesks.length);
-//		if(mFilePageIdx == 0){
-//			pickList(mPickGroupFiles1, 0, mPickGroupFiles1.length);
-//		}else {
-//			pickList(mPickGroupFiles2, 0, mPickGroupFiles2.length);
-//		}
+		if(mFilePageIdx == 0){
+			pickList(mPickGroupFiles1, 0, mPickGroupFiles1.length);
+		}else {
+			pickList(mPickGroupFiles2, 0, mPickGroupFiles2.length);
+		}
 	}
 
 	@Override
@@ -309,7 +315,7 @@ public class FileApp extends AbstractApp{
 			cur = files2;
 		}
 		
-		slideList(slideLeft, pre, cur, 1, false, false);
+		slideList(slideLeft, pre, cur, 4, false, true);
 	}
 	
 }

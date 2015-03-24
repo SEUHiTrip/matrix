@@ -12,6 +12,7 @@ import seu.lab.matrix.controllers.AppController;
 import seu.lab.matrix.controllers.FilesController;
 import seu.lab.matrix.controllers.FolderController;
 import seu.lab.matrix.controllers.VideoController;
+import seu.lab.matrix.controllers.WindowController;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -34,7 +35,8 @@ public abstract class AbstractApp {
 	public static VideoController videoController;
 	public static FilesController filesController;
 	public static FolderController folderController;
-
+	public static WindowController windowController;
+	
 	public AbstractApp(List<Animatable> animatables, SceneCallback callback,
 			Camera camera, Object3D ball1) {
 		mAnimatables = animatables;

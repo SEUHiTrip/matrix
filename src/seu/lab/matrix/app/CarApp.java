@@ -5,15 +5,18 @@ import java.util.List;
 import seu.lab.matrix.animation.Animatable;
 import seu.lab.matrix.controllers.AppController.app_name;
 
+import com.google.vrtoolkit.cardboard.CardboardView;
 import com.threed.jpct.Camera;
 import com.threed.jpct.Object3D;
 
-public class CarApp extends SimpleScreenApp{
+public class CarApp extends HeadControlApp{
 
-	public CarApp(app_name aName, List<Animatable> animatables,
-			SceneCallback callback, Camera camera, Object3D ball1) {
-		super(aName, animatables, callback, camera, ball1);
+	public CarApp(CardboardView cardboardView,
+			List<Animatable> animatables, SceneCallback callback,
+			Camera camera, Object3D ball1) {
+		super(cardboardView, 6002, app_name.game_car, animatables, callback, camera, ball1);
 		// TODO Auto-generated constructor stub
 	}
+
 
 }

@@ -10,9 +10,9 @@ import com.threed.jpct.Object3D;
 
 public class PPTApp extends SimpleScreenApp{
 
-	public PPTApp(app_name aName, List<Animatable> animatables,
+	public PPTApp(List<Animatable> animatables,
 			SceneCallback callback, Camera camera, Object3D ball1) {
-		super(aName, animatables, callback, camera, ball1);
+		super(app_name.office_ppt, animatables, callback, camera, ball1);
 		// TODO Auto-generated constructor stub
 	}
 

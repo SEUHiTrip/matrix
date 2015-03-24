@@ -85,7 +85,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 	final static int WORKSPACE_COUNT = 3;
 
 	final static boolean NEED_WORKSPACE = true;
-	final static boolean NEED_SCENE = false;
+	final static boolean NEED_SCENE = true;
 
 	final static int SINGLE_TAP = 0;
 	final static int DOUBLE_TAP = 1;
@@ -118,6 +118,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 		@Override
 		public void run() {
+			
 			try {
 				sleep(2000);
 			} catch (InterruptedException e) {
@@ -462,36 +463,37 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 			AbstractApp.videoController = videoController;
 			AbstractApp.filesController = filesController;
 			AbstractApp.folderController = folderController;
+			AbstractApp.windowController = windowController;
 
 			apps[AppType.NULL.ordinal()] = new NullApp(mAnimatables, this, cam,
 					ball1);
-			apps[AppType.MINECRAFT.ordinal()] = new MinecraftApp(app_name.game_minecraft, mAnimatables,
+			apps[AppType.MINECRAFT.ordinal()] = new MinecraftApp(cardboardView, mAnimatables,
 					this, cam, ball1);
-			apps[AppType.CAR.ordinal()] = new CarApp(app_name.game_car, mAnimatables, this, cam,
+			apps[AppType.CAR.ordinal()] = new CarApp(cardboardView, mAnimatables, this, cam,
 					ball1);
 			apps[AppType.VIDEO.ordinal()] = new VideoApp(mAnimatables, this,
 					cam, ball1);
 			apps[AppType.PIC.ordinal()] = new PicApp(mAnimatables, this, cam,
 					ball1);
-			apps[AppType.SKYPE.ordinal()] = new SkypeApp(app_name.skype, mAnimatables, this,
+			apps[AppType.SKYPE.ordinal()] = new SkypeApp(mAnimatables, this,
 					cam, ball1);
-			apps[AppType.IE.ordinal()] = new IEApp(app_name.internet, mAnimatables, this, cam,
+			apps[AppType.IE.ordinal()] = new IEApp(mAnimatables, this, cam,
 					ball1);
 			apps[AppType.FILE.ordinal()] = new FileApp(mAnimatables, this, cam,
 					ball1, world);
-			apps[AppType.WORD.ordinal()] = new WordApp(app_name.office_word, mAnimatables, this, cam,
+			apps[AppType.WORD.ordinal()] = new WordApp(mAnimatables, this, cam,
 					ball1);
-			apps[AppType.EXCEL.ordinal()] = new ExcelApp(app_name.office_excel, mAnimatables, this,
+			apps[AppType.EXCEL.ordinal()] = new ExcelApp(mAnimatables, this,
 					cam, ball1);
-			apps[AppType.PPT.ordinal()] = new PPTApp(app_name.office_ppt, mAnimatables, this, cam,
+			apps[AppType.PPT.ordinal()] = new PPTApp(mAnimatables, this, cam,
 					ball1);
-			apps[AppType.CAM.ordinal()] = new CamApp(mAnimatables, this, cam,
+			apps[AppType.CAM.ordinal()] = new CamApp(cardboardView, mAnimatables, this, cam,
 					ball1);
 			apps[AppType.FILE_OPEN.ordinal()] = new FileOpenApp(mAnimatables,
 					this, cam, ball1);
 			apps[AppType.LAUNCHER.ordinal()] = new LauncherApp(mAnimatables,
 					this, cam, ball1);
-			apps[AppType.DRONE.ordinal()] = new DroneApp(mAnimatables, this,
+			apps[AppType.DRONE.ordinal()] = new DroneApp(cardboardView, mAnimatables, this,
 					cam, ball1);
 
 			for (int i = 0; i < workspaces.length; i++) {
@@ -533,6 +535,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 	@Override
 	public void onNewFrame(HeadTransform headTransform) {
+		headTransform.getEulerAngles(mAngles, 0);
 
 		if (mFrameCounter == 0) {
 			mFrameCounter++;
@@ -544,8 +547,6 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 		} else {
 			sceneLoop();
 		}
-
-		headTransform.getEulerAngles(mAngles, 0);
 
 		if (canCamRotate) {
 			cam.setOrientation(forward, up);
@@ -621,6 +622,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 			// deal with input actions
 			fireAction();
+			
 		}
 
 		// animation driver
@@ -694,7 +696,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 		}
 
 	}
-
+	
 	private void pickAction() {
 		// pick obj
 		if (NEED_WORKSPACE && mWsIdx != TREASURE) {
@@ -1536,7 +1538,14 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 	public void onActivateTilesGroup(PickGroup group) {
 		SimpleVector trans = new SimpleVector();
+		SimpleVector ori;
 
+		if(group.oriPos[0] == null){
+			ori = group.group[0].getTransformedCenter();
+		}else {
+			ori = group.oriPos[0];
+		}
+		
 		if (group.state == 0) {
 			group.state = 1;
 
@@ -1544,7 +1553,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 				Log.e(TAG, "trans 0 -> 1 with null");
 
 				trans = cam.getPosition()
-						.calcSub(group.group[0].getTransformedCenter())
+						.calcSub(ori)
 						.normalize();
 				group.animation = new TranslationAnimation("", group.group,
 						new SimpleVector(trans), group);
@@ -1555,7 +1564,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 				group.animation.stop();
 
 				trans = cam.getPosition()
-						.calcSub(group.group[0].getTransformedCenter())
+						.calcSub(ori)
 						.normalize();
 
 				SimpleVector hasTrns = new SimpleVector();
@@ -1572,6 +1581,15 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 	}
 
 	public void onDeactivateTilesGroup(PickGroup group) {
+		
+		SimpleVector ori;
+
+		if(group.oriPos[0] == null){
+			ori = new SimpleVector();
+		}else {
+			ori = group.oriPos[0];
+		}
+		
 		if (group.state == 0) {
 
 		} else {
@@ -1582,6 +1600,9 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 				SimpleVector trns = new SimpleVector();
 				group.group[0].getTranslation(trns);
+				
+				trns.sub(ori);
+				
 				trns.x = -trns.x;
 				trns.y = -trns.y;
 				trns.z = -trns.z;
@@ -1594,6 +1615,9 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 				group.animation.stop();
 				SimpleVector trns = new SimpleVector();
 				group.group[0].getTranslation(trns);
+				
+				trns.sub(ori);
+				
 				trns.x = -trns.x;
 				trns.y = -trns.y;
 				trns.z = -trns.z;
@@ -1601,6 +1625,8 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 				group.animation = new TranslationAnimation("", group.group,
 						trns, group);
 				mAnimatables.add(group.animation);
+				
+				
 			}
 		}
 	}

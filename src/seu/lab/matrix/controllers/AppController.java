@@ -13,7 +13,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 public class AppController {
 	private static String TAG = "AppController";
 	private static String type = "App";
-	private static String rootUrl = Confg.ip + type + "/";
+	private static String rootUrl = Confg.WEB_API + type + "/";
 
 	public static enum app_name {
 		game_minecraft, game_car, office_word, office_ppt, office_excel, internet, skype, pic, video, file, cam, drone

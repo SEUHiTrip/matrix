@@ -30,9 +30,20 @@ public class SimpleScreenApp extends AbstractScreenApp{
 			appController.open(scene.getScreenIdx(),
 					aName, defaultErrorListener,
 					defaultListener);
+			windowController.setMouse(scene.getScreenIdx());
 		} catch (JSONException e) {
 			Log.e(TAG, e.toString());
 		}
+	}
+	
+	@Override
+	public void onShown() {
+		try {
+			windowController.setMouse(scene.getScreenIdx());
+		} catch (JSONException e) {
+			Log.e(TAG, e.toString());
+		}
+		super.onShown();
 	}
 	
 	@Override
@@ -46,4 +57,5 @@ public class SimpleScreenApp extends AbstractScreenApp{
 		}
 		super.onClose(runnable);
 	}
+	
 }

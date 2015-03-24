@@ -18,6 +18,7 @@ import seu.lab.matrix.controllers.AppController;
 import seu.lab.matrix.controllers.FilesController;
 import seu.lab.matrix.controllers.FolderController;
 import seu.lab.matrix.controllers.VideoController;
+import seu.lab.matrix.controllers.WindowController;
 import seu.lab.matrix.red.RemoteManager.OnRemoteChangeListener;
 import seu.lab.matrix.red.SimpleCameraBridge;
 import seu.lab.matrix.red.SimpleCameraBridge.DefaultCvCameraViewListener2;
@@ -88,7 +89,7 @@ public abstract class Framework3DMatrixActivity extends
 
 	protected Point point = new Point();
 
-	private SimpleCameraBridge mOpenCvCameraView;
+	protected SimpleCameraBridge mOpenCvCameraView;
 
 	Dolphin dolphin = null;
 
@@ -105,6 +106,8 @@ public abstract class Framework3DMatrixActivity extends
 	protected FilesController filesController;
 	
 	protected FolderController folderController;
+	
+	protected WindowController windowController;
 		
 	class IDisplayKeeper extends Thread{
 		
@@ -281,9 +284,10 @@ public abstract class Framework3DMatrixActivity extends
 		}
 	};
 
-	private boolean mIDisplayConnected;
-	private OnRemoteChangeListener remoteListener;
-	private IGestureListener gestureListener;
+	protected boolean mIDisplayConnected;
+	protected OnRemoteChangeListener remoteListener;
+	protected IGestureListener gestureListener;
+	protected CardboardView cardboardView;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -297,6 +301,7 @@ public abstract class Framework3DMatrixActivity extends
 		videoController = new VideoController(mQueue);
 		filesController = new FilesController(mQueue);
 		folderController = new FolderController(mQueue);
+		windowController = new WindowController(mQueue);
 		
 		Bundle extras = getIntent().getExtras();
 		if (extras != null) {
@@ -311,7 +316,7 @@ public abstract class Framework3DMatrixActivity extends
 		}
 
 		setContentView(R.layout.common_ui);
-		CardboardView cardboardView = (CardboardView) findViewById(R.id.cardboard_view);
+		cardboardView = (CardboardView) findViewById(R.id.cardboard_view);
 		cardboardView.setRenderer(this);
 		setCardboardView(cardboardView);
 

@@ -13,7 +13,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 public class VideoController {
 	private static String TAG="FolderController";
 	private static String type="Video";
-	private static String rootUrl=Confg.ip+type+"/";
+	private static String rootUrl=Confg.WEB_API+type+"/";
 	
 	RequestQueue mQueue;
 	

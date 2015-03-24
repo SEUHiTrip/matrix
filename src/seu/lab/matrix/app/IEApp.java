@@ -10,9 +10,9 @@ import com.threed.jpct.Object3D;
 
 public class IEApp extends SimpleScreenApp{
 
-	public IEApp(app_name aName, List<Animatable> animatables,
+	public IEApp(List<Animatable> animatables,
 			SceneCallback callback, Camera camera, Object3D ball1) {
-		super(aName, animatables, callback, camera, ball1);
+		super(app_name.internet, animatables, callback, camera, ball1);
 		// TODO Auto-generated constructor stub
 	}
 

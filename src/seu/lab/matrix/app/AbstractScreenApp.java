@@ -54,8 +54,8 @@ public class AbstractScreenApp extends AbstractApp{
 		}
 	};
 	
-	DefaulteErrorListener defaultErrorListener = new DefaulteErrorListener();
-	DefaultListener defaultListener = new DefaultListener();
+	protected DefaulteErrorListener defaultErrorListener = new DefaulteErrorListener();
+	protected DefaultListener defaultListener = new DefaultListener();
 	
 	ErrorListener closeErrorListener = new ErrorListener(){
 		@Override

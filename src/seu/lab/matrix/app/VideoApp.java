@@ -33,6 +33,7 @@ public class VideoApp extends AbstractScreenApp {
 	public int mVideoPageIdx;
 	final static String[] videoUrl = new String[]{
 		"c:\\Users\\qf\\Desktop\\LynnTemp\\bigHero.mkv",
+		
 	};
 
 	PickGroup[] mPickGroupLists = new PickGroup[4 + 2 + 1];
@@ -87,7 +88,7 @@ public class VideoApp extends AbstractScreenApp {
 	public void onShown() {
 		toggleList(true, 0, 7);
 		SceneHelper.drawText("w_opt", new String[] { "hello video", "line2" });
-
+		// TODO
 	}
 
 	@Override

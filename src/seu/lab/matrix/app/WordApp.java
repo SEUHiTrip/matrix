@@ -10,9 +10,9 @@ import com.threed.jpct.Object3D;
 
 public class WordApp extends SimpleScreenApp{
 
-	public WordApp(app_name aName, List<Animatable> animatables,
+	public WordApp(List<Animatable> animatables,
 			SceneCallback callback, Camera camera, Object3D ball1) {
-		super(aName, animatables, callback, camera, ball1);
+		super(app_name.office_word, animatables, callback, camera, ball1);
 		// TODO Auto-generated constructor stub
 	}
 

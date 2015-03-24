@@ -15,7 +15,7 @@ import com.google.gson.Gson;
 public class FilesController {
 	private static String TAG="FilesController";
 	private static String type="Files";
-	private static String rootUrl=Confg.ip+type+"/";
+	private static String rootUrl=Confg.WEB_API+type+"/";
 	private static Gson gson = new Gson();
 	
 	public class Files{
@@ -74,8 +74,7 @@ public class FilesController {
 	}
 
 	public void copy(String ori,String dest) throws JSONException {
-		
-		
+
 		JSONObject jo=new JSONObject();
 		jo.put("ori", ori);
 		jo.put("dest", dest);

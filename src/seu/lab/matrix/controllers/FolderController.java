@@ -17,7 +17,7 @@ import com.google.gson.Gson;
 public class FolderController {
 	private static String TAG="FolderController";
 	private static String type="Folder";
-	private static String rootUrl=Confg.ip+type+"/";
+	private static String rootUrl=Confg.WEB_API+type+"/";
 	private static Gson gson = new Gson();
 
 	
