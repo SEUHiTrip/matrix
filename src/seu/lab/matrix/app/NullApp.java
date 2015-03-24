@@ -4,6 +4,8 @@ import java.util.List;
 
 import seu.lab.matrix.animation.Animatable;
 
+import android.os.Bundle;
+
 import com.threed.jpct.Camera;
 import com.threed.jpct.Object3D;
 
@@ -100,7 +102,7 @@ public class NullApp extends AbstractApp{
 	}
 
 	@Override
-	public void onOpen() {
+	public void onOpen(Bundle bundle) {
 		// TODO Auto-generated method stub
 		
 	}

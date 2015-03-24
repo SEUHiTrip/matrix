@@ -358,6 +358,18 @@ public class Screen3DMatrixActivity extends AbstractScreenMatrixActivity
 		
 	}
 
+	@Override
+	public void onIDisplayDenyed() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void OnIDisplayUnexpectedError() {
+		// TODO Auto-generated method stub
+		
+	}
+
 
 //	@Override
 //	public void update(Observable observable, Object obj) {

@@ -8,6 +8,7 @@ import seu.lab.matrix.animation.Animatable;
 import seu.lab.matrix.controllers.AppController;
 import seu.lab.matrix.controllers.AppController.app_name;
 
+import android.os.Bundle;
 import android.util.Log;
 
 import com.threed.jpct.Camera;
@@ -24,7 +25,7 @@ public class SimpleScreenApp extends AbstractScreenApp{
 	}
 
 	@Override
-	public void onOpen() {
+	public void onOpen(Bundle bundle) {
 		try {
 			appController.open(scene.getScreenIdx(),
 					aName, defaultErrorListener,

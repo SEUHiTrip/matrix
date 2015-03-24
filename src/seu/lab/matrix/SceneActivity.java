@@ -108,10 +108,11 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 	AbstractApp[] apps = new AbstractApp[11 + 1 + 1 + 1 + 1];
 
 	class AppLaunchThead extends Thread {
-		AppType appType;
+		private AppType appType;
+		private Bundle bundle;
 
-		AppLaunchThead(AppType appType) {
-
+		AppLaunchThead(AppType appType, Bundle bundle) {
+			this.bundle = bundle;
 			this.appType = appType;
 		}
 
@@ -129,7 +130,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 			ws.mCurrentAppType = appType;
 			ws.mCurrentApp = apps[appType.ordinal()];
 
-			ws.mCurrentApp.onOpen();
+			ws.mCurrentApp.onOpen(bundle);
 
 			Log.e(TAG, "ws open : " + appType.toString());
 		}
@@ -165,6 +166,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 	protected Light sun2 = null;
 	protected Light spot = null;
 	protected Object3D[] screens = null;
+	protected Object3D curtain = null;
 	protected Object3D[] weathers = null;
 	protected Object3D[] entrances = null;
 	protected Object3D[] islands = null;
@@ -219,9 +221,9 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 		public void onLongPress(MotionEvent e) {
 			if (e.getRawX() < 480) {
-				actionFired[RIGHT] = true;
-			} else if (e.getRawX() > 1920 - 480) {
 				actionFired[LEFT] = true;
+			} else if (e.getRawX() > 1920 - 480) {
+				actionFired[RIGHT] = true;
 			} else {
 				if (e.getRawY() < 540) {
 					actionFired[UP] = true;
@@ -458,7 +460,9 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 			AbstractApp.appController = appController;
 			AbstractApp.videoController = videoController;
-			
+			AbstractApp.filesController = filesController;
+			AbstractApp.folderController = folderController;
+
 			apps[AppType.NULL.ordinal()] = new NullApp(mAnimatables, this, cam,
 					ball1);
 			apps[AppType.MINECRAFT.ordinal()] = new MinecraftApp(app_name.game_minecraft, mAnimatables,
@@ -601,7 +605,12 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 		if (NEED_SCENE) {
 			switchIsland(TREASURE);
 		}
-		// startIDisplay(currentMode);
+		
+		if(NEED_RED)startRed();
+		if(NEED_DOLPHIN)startDolphin();
+		synchronized (iDisplayKeeper) {
+			if(NEED_IDISPLAY)iDisplayKeeper.start();		
+		}
 
 	}
 
@@ -805,7 +814,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 	}
 
 	private void toggleFullscreen() {
-		Log.e(TAG, "toggleFullscreen " + mCamViewIndex + " " + ws.isScrShown);
+		Log.e(TAG, "toggleFullscreen " + mCamViewIndex + " " + screens[mWsIdx].getVisibility());
 
 		if (mCamViewIndex != 3 && screens[mWsIdx].getVisibility()) {
 			canCamRotate = canCamRotate ? false : true;
@@ -817,11 +826,11 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 				mAnimatables.add(new TranslationAnimation("",
 						new Object3D[] { screens[mWsIdx] }, new SimpleVector(
-								0.8, 0, -0.1), null));
+								0.85, 0, -0.1), null));
 			} else {
 				mAnimatables.add(new TranslationAnimation("",
 						new Object3D[] { screens[mWsIdx] }, new SimpleVector(
-								-0.8, 0, 0.1), null) {
+								-0.85, 0, 0.1), null) {
 					@Override
 					public void onAnimateSuccess() {
 						screens[mWsIdx].clearTranslation();
@@ -1003,7 +1012,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 		}
 	}
 
-	public void openApp(final int idx) {
+	public void openApp(final int idx, final Bundle bundle) {
 		Log.e(TAG, ws.mState + " ==> going to open " + AppType.valueOf(idx + 1));
 
 		// prevent from opening app while waiting
@@ -1015,7 +1024,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 				@Override
 				public void run() {
-					openApp(idx);
+					openApp(idx, bundle);
 				}
 			});
 
@@ -1027,7 +1036,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 			AppType app = AppType.valueOf(idx + 1);
 
-			new AppLaunchThead(app).start();
+			new AppLaunchThead(app, bundle).start();
 		}
 	}
 
@@ -1216,11 +1225,15 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 	private void initScr(String name, Object3D object3d) {
 		object3d.clearAdditionalColor();
-		object3d.setShader(screenShaders[name.charAt(5) - '1']);
-		object3d.calcTextureWrapSpherical();
-		object3d.build();
-		object3d.strip();
-		screens[name.charAt(5) - '1'] = object3d;
+		if(name.charAt(5) == '4'){
+			curtain = object3d;
+		}else {
+			object3d.setShader(screenShaders[name.charAt(5) - '1']);
+			object3d.calcTextureWrapSpherical();
+			object3d.build();
+			object3d.strip();
+			screens[name.charAt(5) - '1'] = object3d;
+		}
 
 		object3d.setVisibility(false);
 	}
@@ -1429,6 +1442,9 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 	@Override
 	public void onIDisplayConnected() {
 		show3DToast("onIDisplayConnected");
+		synchronized (iDisplayKeeper) {
+			iDisplayKeeper.notifyAll();
+		}
 		super.onIDisplayConnected();
 	}
 
@@ -1454,18 +1470,23 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 		ws.mCurrentAppType = AppType.NULL;
 	}
 
+	public void onCallObj(Object3D[] cur, boolean display) {
+		for (Object3D object3d : cur) {
+			object3d.translate(-5, 0, 0);
+		}
+		mAnimatables.add(new TranslationAnimation("",
+				cur, new SimpleVector(5, 0, 0),
+				null));
+		mAnimatables.add(new DisplayAnimation(
+				cur, "", false));
+	}
+	
 	@Override
 	public void onCallScreen() {
 		if (screens[mWsIdx].getVisibility())
 			return;
 
-		screens[mWsIdx].translate(-5, 0, 0);
-
-		mAnimatables.add(new TranslationAnimation("",
-				new Object3D[] { screens[mWsIdx] }, new SimpleVector(5, 0, 0),
-				null));
-		mAnimatables.add(new DisplayAnimation(
-				new Object3D[] { screens[mWsIdx] }, "", false));
+		onCallObj(new Object3D[]{screens[mWsIdx]}, true);
 	}
 
 	@Override
@@ -1477,24 +1498,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 		Object3D[] cur = new Object3D[] { screens[mWsIdx] };
 
-		mAnimatables.add(new TranslationAnimation("", cur, new SimpleVector(
-				-40, 0, 0), null) {
-			@Override
-			public void onAnimateSuccess() {
-				for (int i = 0; i < object3ds.length; i++) {
-					object3ds[i].setVisibility(false);
-					object3ds[0].clearTranslation();
-				}
-
-				if (runnable != null)
-					runnable.run();
-				// TODO scene.
-
-				super.onAnimateSuccess();
-			}
-		});
-
-		mAnimatables.add(new DisplayAnimation(cur, "", true));
+		onHideObj(cur, true, runnable);
 	}
 
 	@Override
@@ -1507,7 +1511,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 			public void onAnimateSuccess() {
 				for (int i = 0; i < object3ds.length; i++) {
 					object3ds[i].setVisibility(false);
-					object3ds[0].clearTranslation();
+					object3ds[i].clearTranslation();
 				}
 
 				if (runnable != null)
@@ -1602,8 +1606,8 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 	}
 
 	@Override
-	public void onOpenApp(int idx) {
-		openApp(idx);
+	public void onOpenApp(int idx, Bundle bundle) {
+		openApp(idx, bundle);
 	}
 
 	@Override
@@ -1614,6 +1618,37 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 	@Override
 	public boolean isLookingAtScreen() {
 		return SceneHelper.isLookingDir(cam, ball1, scrDir) > 0.95;
+	}
+
+	@Override
+	public void onIDisplayDenyed() {
+		show3DToast("onIDisplayDenyed");
+		synchronized (iDisplayKeeper) {
+			iDisplayKeeper.notifyAll();
+		}
+		super.onIDisplayDenyed();
+	}
+
+	@Override
+	public void OnIDisplayUnexpectedError() {
+		show3DToast("OnIDisplayUnexpectedError");
+		synchronized (iDisplayKeeper) {
+			iDisplayKeeper.notifyAll();
+		}
+		super.OnIDisplayUnexpectedError();
+	}
+
+	@Override
+	public void onCallCurtain(String tex) {
+		if(curtain.getVisibility())return;
+		curtain.setTexture(tex);
+		onCallObj(new Object3D[]{curtain}, true);
+	}
+
+	@Override
+	public void onHideCurtain() {
+		if(!curtain.getVisibility())return;
+		onHideObj(new Object3D[]{curtain}, true, null);
 	}
 
 }

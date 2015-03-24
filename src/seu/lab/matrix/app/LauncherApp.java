@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import android.os.Bundle;
 import android.util.Log;
 
 import com.threed.jpct.Camera;
@@ -115,7 +116,7 @@ public class LauncherApp extends AbstractApp{
 			group = mPickGroupBoards[i];
 			if (SceneHelper.isLookingAt(cam, ball1,
 					group.group[0].getTransformedCenter()) > 0.995) {
-				scene.onOpenApp(i);
+				scene.onOpenApp(i, null);
 			}
 		}
 	}
@@ -124,20 +125,6 @@ public class LauncherApp extends AbstractApp{
 	public void onSingleTap() {
 		// TODO Auto-generated method stub
 		
-	}
-
-	public void pickBoard() {
-		PickGroup group;
-		for (int i = 0; i < mPickGroupBoards.length; i++) {
-			group = mPickGroupBoards[i];
-
-			if (SceneHelper.isLookingAt(cam, ball1,
-					group.group[0].getTransformedCenter()) > 0.995) {
-				scene.onActivateTilesGroup(group);
-			} else {
-				scene.onDeactivateTilesGroup(group);
-			}
-		}
 	}
 
 	public void initBoard(String name, Object3D object3d) {
@@ -220,11 +207,11 @@ public class LauncherApp extends AbstractApp{
 
 	@Override
 	public void onPick() {
-		pickBoard();
+		pickList(mPickGroupBoards, 0, mPickGroupBoards.length);
 	}
 
 	@Override
-	public void onOpen() {
+	public void onOpen(Bundle bundle) {
 		// TODO Auto-generated method stub
 		
 	}

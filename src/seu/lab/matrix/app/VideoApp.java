@@ -14,6 +14,7 @@ import seu.lab.matrix.animation.PickGroup;
 import seu.lab.matrix.animation.SeqAnimation;
 import seu.lab.matrix.controllers.AppController;
 
+import android.os.Bundle;
 import android.util.Log;
 
 import com.android.volley.VolleyError;
@@ -27,6 +28,8 @@ public class VideoApp extends AbstractScreenApp {
 
 	final static int VIDEO_COUNT_PER_PAGE = 4;
 
+	boolean isVideoPlaying = false;
+	
 	public int mVideoPageIdx;
 	final static String[] videoUrl = new String[]{
 		"c:\\Users\\qf\\Desktop\\LynnTemp\\bigHero.mkv",
@@ -47,14 +50,14 @@ public class VideoApp extends AbstractScreenApp {
 			new LiveTileAnimation("", false, null),
 			new LiveTileAnimation("", false, null), };
 
-	private DefaultListener listener = new DefaultListener(){
+	private DefaultListener playListener = new DefaultListener(){
 		protected void onErr() {
-			onHide();
-			super.onErr();
+			isVideoPlaying = false;
 		}
 		protected void onOk() {
-			onShown();
-			super.onOk();
+			isVideoPlaying = true;
+			scene.onHideCurtain();
+			scene.onCallScreen();
 		}
 	};
 	
@@ -95,19 +98,24 @@ public class VideoApp extends AbstractScreenApp {
 
 	@Override
 	public void onClose(Runnable runnable) {
-		try {
-			videoController.close(scene.getScreenIdx());
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		if(isVideoPlaying){
+			try {
+				videoController.close(scene.getScreenIdx());
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
+
 		onHide();
+		scene.onHideCurtain();
 		scene.onHideScreen(runnable);
 		scene.onAppClosed();
 	}
 
 	@Override
 	public void onLeft() {
+		if(!isVideoPlaying)return;
 		try {
 			videoController.backward(scene.getScreenIdx());
 		} catch (JSONException e) {
@@ -118,6 +126,7 @@ public class VideoApp extends AbstractScreenApp {
 
 	@Override
 	public void onRight() {
+		if(!isVideoPlaying)return;
 		try {
 			videoController.forward(scene.getScreenIdx());
 		} catch (JSONException e) {
@@ -150,7 +159,7 @@ public class VideoApp extends AbstractScreenApp {
 		PickGroup group = null;
 		Object3D object3d;
 
-		if (scene.isLookingAtScreen()) {
+		if (isVideoPlaying && scene.isLookingAtScreen()) {
 			try {
 				videoController.continue_pause(scene.getScreenIdx());
 			} catch (JSONException e) {
@@ -190,34 +199,64 @@ public class VideoApp extends AbstractScreenApp {
 
 	@Override
 	public void onPick() {
-		pickList();
+		pickList(mPickGroupLists, 0, mPickGroupLists.length);
 	}
 
 	@Override
-	public void onOpen() {
+	public void onOpen(Bundle bundle) {
 
-		try {
-			appController.open(scene.getScreenIdx(),
-					AppController.app_name.video, defaultErrorListener,
-					defaultListener);
-		} catch (JSONException e) {
-			Log.e(TAG, e.toString());
-		}
+//		try {
+//			appController.open(scene.getScreenIdx(),
+//					AppController.app_name.video, defaultErrorListener,
+//					listener);
+//		} catch (JSONException e) {
+//			Log.e(TAG, e.toString());
+//		}
 
-		// onShown();
-		// super.onOpen();
+		 onShown();
+		 scene.onCallCurtain("b_v3ideo");
+		 scene.onAppReady();
 	}
 
 	private void openVideo(int i) {
 
 		// TODO gjw draw video desc
 
-		try {
-			videoController.play(scene.getScreenIdx(), videoUrl[0]);
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		if(isVideoPlaying){
+			scene.onCallCurtain("b_v3ideo");
+			scene.onHideScreen(null);
+			try {
+				videoController.close(scene.getScreenIdx());
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
+		
+		final boolean tmp = isVideoPlaying;
+		
+		new Thread(){
+			
+			public void run() {
+				try {
+					if(tmp){
+						sleep(2000);
+					}
+				} catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				try {
+					videoController.play(scene.getScreenIdx(), videoUrl[0], defaultErrorListener, playListener);
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}.start();
+		
+		isVideoPlaying = false;
+
 	}
 
 	private void toggleList(boolean on, int from, int to) {
@@ -226,19 +265,6 @@ public class VideoApp extends AbstractScreenApp {
 			group = mPickGroupLists[i].group;
 			for (int j = 0; j < group.length; j++) {
 				group[j].setVisibility(on);
-			}
-		}
-	}
-
-	private void pickList() {
-		PickGroup group = null;
-		for (int i = 0; i < mPickGroupLists.length; i++) {
-			group = mPickGroupLists[i];
-			if (SceneHelper.isLookingAt(cam, ball1,
-					group.group[0].getTransformedCenter()) > 0.995) {
-				scene.onActivateTilesGroup(group);
-			} else {
-				scene.onDeactivateTilesGroup(group);
 			}
 		}
 	}

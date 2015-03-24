@@ -13,14 +13,16 @@ import seu.lab.matrix.animation.ScaleAnimation;
 import seu.lab.matrix.animation.SeqAnimation;
 import seu.lab.matrix.animation.TranslationAnimation;
 
+import android.R.integer;
+import android.os.Bundle;
 import android.util.Log;
 
 import com.threed.jpct.Camera;
 import com.threed.jpct.Object3D;
 import com.threed.jpct.SimpleVector;
 
-public class PicApp extends AbstractApp{
-	
+public class PicApp extends AbstractApp {
+
 	final static int PIC_COUNT_PER_PAGE = 6;
 
 	public int mPicPageIdx = 0;
@@ -32,7 +34,7 @@ public class PicApp extends AbstractApp{
 		super(animatables, callback, camera, ball1);
 		// TODO Auto-generated constructor stub
 	}
-	
+
 	private Object3D[] picScrs = new Object3D[2];
 	PickGroup[] mPickGroupLists = new PickGroup[6 + 2 + 1];
 	private Map<String, Object3D> clickableLists = new HashMap<String, Object3D>();
@@ -44,7 +46,7 @@ public class PicApp extends AbstractApp{
 			new LiveTileAnimation("", false, null),
 			new LiveTileAnimation("", false, null),
 			new LiveTileAnimation("", false, null), };
-	
+
 	@Override
 	public void initObj(String name, Object3D object3d) {
 		initLists(name, object3d);
@@ -58,24 +60,24 @@ public class PicApp extends AbstractApp{
 	@Override
 	public void onCreate() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void onDestory() {
-		
+
 	}
 
 	@Override
 	public void onShown() {
 		SceneHelper.drawText("w_opt", new String[] { "hello pic", "line2" });
-		toggleList(true, 0, 6+3);
+		toggleList(true, 0, 6 + 3);
 		openPic(1);
 	}
 
 	@Override
 	public void onHide() {
-		toggleList(false, 0, 6+3);
+		toggleList(false, 0, 6 + 3);
 		scene.onHideObj(picScrs, true, null);
 	}
 
@@ -117,7 +119,7 @@ public class PicApp extends AbstractApp{
 				openPic(i + PIC_COUNT_PER_PAGE * mPicPageIdx + 1);
 			}
 		}
-		
+
 		for (int i = 6; i < 8; i++) {
 			group = mPickGroupLists[i];
 			object3d = group.group[0];
@@ -134,14 +136,13 @@ public class PicApp extends AbstractApp{
 	@Override
 	public void onSingleTap() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
-	
 	private void openPic(int i) {
 
-		Log.e(TAG, "openPic: "+i);
-		
+		Log.e(TAG, "openPic: " + i);
+
 		mCurrentPic = i;
 
 		picScrs[0].setVisibility(false);
@@ -182,49 +183,51 @@ public class PicApp extends AbstractApp{
 		mCurrentPic = mCurrentPic < 1 ? 12 : (mCurrentPic > 12 ? 1
 				: mCurrentPic);
 
-		Object3D pre = null, cur = null;
-		SimpleVector moveDir;
-		SimpleVector presetDir;
-
-		if (slideLeft) {
-			moveDir = new SimpleVector(0, -2, 0);
-			presetDir = new SimpleVector(0, 2, 0);
-		} else {
-			moveDir = new SimpleVector(0, 2, 0);
-			presetDir = new SimpleVector(0, -2, 0);
-		}
+		Object3D[] pre = null, cur = null;
+//		SimpleVector moveDir;
+//		SimpleVector presetDir;
+//
+//		if (slideLeft) {
+//			moveDir = new SimpleVector(0, -2, 0);
+//			presetDir = new SimpleVector(0, 2, 0);
+//		} else {
+//			moveDir = new SimpleVector(0, 2, 0);
+//			presetDir = new SimpleVector(0, -2, 0);
+//		}
 
 		if (picScrs[0].getVisibility()) {
-			pre = picScrs[0];
-			cur = picScrs[1];
+			pre = new Object3D[]{picScrs[0]};
+			cur = new Object3D[]{picScrs[1]};
 		} else if (picScrs[1].getVisibility()) {
-			pre = picScrs[1];
-			cur = picScrs[0];
+			pre = new Object3D[]{picScrs[1]};
+			cur = new Object3D[]{picScrs[0]};
 		}
 
 		if (mCurrentPic < 10) {
-			cur.setTexture("p_" + mCurrentPic);
+			cur[0].setTexture("p_" + mCurrentPic);
 		} else {
-			cur.setTexture("p_" + (char) ('a' + (mCurrentPic - 10)));
+			cur[0].setTexture("p_" + (char) ('a' + (mCurrentPic - 10)));
 		}
-		pre.clearTranslation();
-		cur.clearTranslation();
-		cur.setScale(1f);
+		pre[0].clearTranslation();
+		cur[0].clearTranslation();
+		cur[0].setScale(1f);
 
-		cur.translate(presetDir);
+//		cur.translate(presetDir);
+//
+//		mAnimatables.add(new TranslationAnimation("", new Object3D[] { pre },
+//				moveDir, null));
+//		mAnimatables.add(new TranslationAnimation("", new Object3D[] { cur },
+//				moveDir, null));
+//
+//		mAnimatables
+//				.add(new DisplayAnimation(new Object3D[] { pre }, "", true));
+//		mAnimatables
+//				.add(new DisplayAnimation(new Object3D[] { cur }, "", false));
+//
+//		mAnimatables.add(new ScaleAnimation(new Object3D[] { pre }, "", 1f));
 
-		mAnimatables.add(new TranslationAnimation("", new Object3D[] { pre },
-				moveDir, null));
-		mAnimatables.add(new TranslationAnimation("", new Object3D[] { cur },
-				moveDir, null));
-
-		mAnimatables
-				.add(new DisplayAnimation(new Object3D[] { pre }, "", true));
-		mAnimatables
-				.add(new DisplayAnimation(new Object3D[] { cur }, "", false));
-
-		mAnimatables.add(new ScaleAnimation(new Object3D[] { pre }, "", 1f));
-
+		slideList(slideLeft, pre, cur, 2, true, true);
+		
 		// TODO gjw draw pic desc
 
 	}
@@ -306,8 +309,7 @@ public class PicApp extends AbstractApp{
 		tmp = clickableLists.get("w_opt");
 		mPickGroupLists[8].group[0] = tmp;
 	}
-	
-	
+
 	private void initLists(String name, Object3D object3d) {
 
 		String tname = name.substring(2, name.indexOf("_Plane"));
@@ -318,14 +320,14 @@ public class PicApp extends AbstractApp{
 		object3d.setVisibility(false);
 
 		clickableLists.put(tname, object3d);
-		
+
 		if (name.startsWith("x_p_s1lide")) {
 			picScrs[0] = object3d;
 		} else if (name.startsWith("x_p_s2lide")) {
 			picScrs[1] = object3d;
 		}
 	}
-	
+
 	private void flipPicList() {
 
 		for (int i1 = 0; i1 < mPicListTiles.length; i1++) {
@@ -337,44 +339,32 @@ public class PicApp extends AbstractApp{
 
 		mPicPageIdx = (mPicPageIdx + 1) % 2;
 	}
-	
+
 	private void toggleList(boolean on, int from, int to) {
 		Object3D[] group;
 		for (int i = from; i < to; i++) {
 			group = mPickGroupLists[i].group;
 			for (int j = 0; j < group.length; j++) {
-				Log.e(TAG, i+" "+j+" "+(group[j]==null));
+				Log.e(TAG, i + " " + j + " " + (group[j] == null));
 				group[j].setVisibility(on);
-			}
-		}
-	}
-
-	private void pickList() {
-		PickGroup group = null;
-		for (int i = 0; i < mPickGroupLists.length; i++) {
-			group = mPickGroupLists[i];
-			if (SceneHelper.isLookingAt(cam, ball1,
-					group.group[0].getTransformedCenter()) > 0.995) {
-				scene.onActivateTilesGroup(group);
-			} else {
-				scene.onDeactivateTilesGroup(group);
 			}
 		}
 	}
 
 	@Override
 	public void onPick() {
-		pickList();
+		pickList(mPickGroupLists, 0, mPickGroupLists.length);
 	}
 
 	@Override
-	public void onOpen() {
+	public void onOpen(Bundle bundle) {
 		onShown();
+		scene.onAppReady();
 	}
 
 	@Override
 	public void onClose(Runnable runnable) {
-		toggleList(false, 0, 6+3);
+		toggleList(false, 0, 6 + 3);
 		scene.onHideObj(picScrs, true, runnable);
 		scene.onAppClosed();
 	}

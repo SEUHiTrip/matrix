@@ -153,26 +153,11 @@ public class FilesController {
 		mQueue.add(new JsonObjectRequest(Method.POST,url, jo ,listener,errorListener));
 	}
 	
-	public void open(int screen,String file_name) throws JSONException {
-		
+	public void open(int screen,String file_name, ErrorListener errorListener, Listener<JSONObject> listener) throws JSONException {
 		
 		String url=rootUrl+"open?screen="+screen+"&file_name="+file_name;
 		
 		Log.d(TAG, "req : " + url);
-		
-		ErrorListener errorListener = new ErrorListener() {
-			@Override
-			public void onErrorResponse(VolleyError error) {
-				Log.d(TAG, "onError : " + error.toString());
-			}
-		};
-
-		Listener<JSONObject> listener = new Listener<JSONObject>() {
-			@Override
-			public void onResponse(JSONObject res) {
-				Log.d(TAG, "onResponse : " + res.toString());
-			}
-		};
 
 		mQueue.add(new JsonObjectRequest(Method.POST,url, null ,listener,errorListener));
 	}

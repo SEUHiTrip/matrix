@@ -53,6 +53,8 @@ public class IDisplayConnection implements UnexpectedErrorListner,
 
 	public static interface IDisplayConnectionCallback {
 		void onIDisplayConnected();
+		void onIDisplayDenyed();
+		void OnIDisplayUnexpectedError();
 	}
 
 	public static class ConnectionMode implements Parcelable {
@@ -187,6 +189,7 @@ public class IDisplayConnection implements UnexpectedErrorListner,
 					return;
 				}
 				Logger.w(className + ":Server denied");
+				callback.onIDisplayDenyed();
 
 				connected = false;
 				listScreenHandler
@@ -199,6 +202,7 @@ public class IDisplayConnection implements UnexpectedErrorListner,
 			if (!user_cancel_action) {
 				Logger.w(className + ":UNABLE TO CONNECT");
 				user_cancel_action = false;
+				callback.onIDisplayDenyed();
 
 				connected = false;
 				listScreenHandler.sendEmptyMessage(ErrorCode.MISSING_LAYOUT);
@@ -352,6 +356,7 @@ public class IDisplayConnection implements UnexpectedErrorListner,
 
 	public void OnUnexpectedError(boolean z, String str) {
 		Logger.e("OnUnexpectedError" + str);
+		callback.OnIDisplayUnexpectedError();
 	}
 
 	public void onServerDenied(boolean z) {

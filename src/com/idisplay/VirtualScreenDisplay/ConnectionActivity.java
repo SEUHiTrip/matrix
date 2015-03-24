@@ -127,4 +127,16 @@ public class ConnectionActivity extends Activity implements
 		startActivity(intent);
 	}
 
+	@Override
+	public void onIDisplayDenyed() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void OnIDisplayUnexpectedError() {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

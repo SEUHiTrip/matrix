@@ -7,6 +7,7 @@ import org.json.JSONObject;
 
 import seu.lab.matrix.animation.Animatable;
 
+import android.os.Bundle;
 import android.util.Log;
 
 import com.android.volley.VolleyError;
@@ -165,7 +166,7 @@ public class AbstractScreenApp extends AbstractApp{
 	}
 
 	@Override
-	public void onOpen() {
+	public void onOpen(Bundle bundle) {
 		scene.onCallScreen();
 		scene.onAppReady();
 	}

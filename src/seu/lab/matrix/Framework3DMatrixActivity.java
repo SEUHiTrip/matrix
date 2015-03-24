@@ -15,6 +15,8 @@ import seu.lab.dolphin.client.DolphinException;
 import seu.lab.dolphin.client.IDolphinStateCallback;
 import seu.lab.dolphin.client.IGestureListener;
 import seu.lab.matrix.controllers.AppController;
+import seu.lab.matrix.controllers.FilesController;
+import seu.lab.matrix.controllers.FolderController;
 import seu.lab.matrix.controllers.VideoController;
 import seu.lab.matrix.red.RemoteManager.OnRemoteChangeListener;
 import seu.lab.matrix.red.SimpleCameraBridge;
@@ -47,6 +49,7 @@ import com.idisplay.util.ImageContainer;
 import com.idisplay.util.Logger;
 import com.idisplay.util.RLEImage;
 import com.idisplay.util.ServerItem;
+import com.jme.scene.SwitchModel;
 import com.threed.jpct.GLSLShader;
 import com.threed.jpct.Loader;
 import com.threed.jpct.Texture;
@@ -62,6 +65,9 @@ public abstract class Framework3DMatrixActivity extends
 	protected static Activity master = null;
 	protected static final String TAG = "Framework3DMatrixActivity";
 	final static boolean NEED_SKYBOX = false;
+	final static boolean NEED_IDISPLAY = true;
+	final static boolean NEED_RED = false;
+	final static boolean NEED_DOLPHIN = false;
 
 	protected ServerItem usbServerItem;
 	protected IDisplayConnection iDisplayConnection;
@@ -95,7 +101,46 @@ public abstract class Framework3DMatrixActivity extends
 	protected AppController appController;
 	
 	protected VideoController videoController;
+	
+	protected FilesController filesController;
+	
+	protected FolderController folderController;
+		
+	class IDisplayKeeper extends Thread{
+		
+		boolean needIdisplay = true;
 
+		
+		public IDisplayKeeper() {
+			// TODO Auto-generated constructor stub
+		}
+		
+		public void stopGracefully() {
+			needIdisplay = false;
+		}
+		
+		public void SwitchModel(ConnectionMode mode){
+			currentMode = mode;
+			stopIDisplay();
+		}
+		
+		public void run() {
+			while (needIdisplay) {
+				startIDisplay(currentMode);
+				try {
+					synchronized (this) {
+						this.wait(10*1000);
+					}
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+	};
+	
+	IDisplayKeeper iDisplayKeeper = new IDisplayKeeper();
+	
 	public BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
 		@Override
 		public void onManagerConnected(int status) {
@@ -250,6 +295,8 @@ public abstract class Framework3DMatrixActivity extends
 
 		appController = new AppController(mQueue);
 		videoController = new VideoController(mQueue);
+		filesController = new FilesController(mQueue);
+		folderController = new FolderController(mQueue);
 		
 		Bundle extras = getIntent().getExtras();
 		if (extras != null) {
@@ -308,15 +355,15 @@ public abstract class Framework3DMatrixActivity extends
 	@Override
 	protected void onStart() {
 		super.onStart();
-		// startRed();
-		// startDolphin();
 	}
 
 	@Override
 	protected void onPause() {
 		stopRed();
-		stopIDisplay();
-
+		iDisplayKeeper.stopGracefully();
+		synchronized (iDisplayKeeper) {
+			iDisplayKeeper.notifyAll();
+		}
 		try {
 			dolphin.pause();
 		} catch (DolphinException e) {
@@ -350,6 +397,16 @@ public abstract class Framework3DMatrixActivity extends
 	@Override
 	public void onIDisplayConnected() {
 		mIDisplayConnected = true;
+	}
+	
+	@Override
+	public void onIDisplayDenyed() {
+		mIDisplayConnected = false;
+	}
+	
+	@Override
+	public void OnIDisplayUnexpectedError() {
+		mIDisplayConnected = false;
 	}
 
 	protected void startIDisplay(ConnectionMode mode) {
@@ -417,6 +474,7 @@ public abstract class Framework3DMatrixActivity extends
 		message.what = 1;
 		mHandler.sendMessage(message);
 	}
+	
 
 	// @Override
 	// public void onDrawEye(Eye eye) {
@@ -749,6 +807,11 @@ public abstract class Framework3DMatrixActivity extends
 						R.drawable.b_v2ideo)), 512, 512));
 		tm.addTexture("b_v2ideo", b_v2ideo);
 
+		Texture b_v3ideo = new Texture(BitmapHelper.rescale(
+				BitmapHelper.convert(getResources().getDrawable(
+						R.drawable.b_v3ideo)), 512, 512));
+		tm.addTexture("b_v3ideo", b_v3ideo);
+		
 		Texture b_minecraft = new Texture(BitmapHelper.rescale(
 				BitmapHelper.convert(getResources().getDrawable(
 						R.drawable.b_minecraft)), 512, 512));
@@ -814,6 +877,26 @@ public abstract class Framework3DMatrixActivity extends
 				BitmapHelper.convert(getResources().getDrawable(
 						R.drawable.i_fullscreen)), 64, 64));
 		tm.addTexture("w_opt", l_opt);
+		
+		Texture f_i_open = new Texture(BitmapHelper.rescale(
+				BitmapHelper.convert(getResources().getDrawable(
+						R.drawable.f_i_open)), 64, 64));
+		tm.addTexture("f_i_open", f_i_open);
+		
+		Texture f_i_delete = new Texture(BitmapHelper.rescale(
+				BitmapHelper.convert(getResources().getDrawable(
+						R.drawable.f_i_delete)), 64, 64));
+		tm.addTexture("f_i_delete", f_i_delete);
+		
+		Texture f_i_cut = new Texture(BitmapHelper.rescale(
+				BitmapHelper.convert(getResources().getDrawable(
+						R.drawable.f_i_cut)), 64, 64));
+		tm.addTexture("f_i_cut", f_i_cut);
+		
+		Texture f_i_copy = new Texture(BitmapHelper.rescale(
+				BitmapHelper.convert(getResources().getDrawable(
+						R.drawable.f_i_copy)), 64, 64));
+		tm.addTexture("f_i_copy", f_i_copy);
 	}
 
 	protected void loadSkyboxTexture(TextureManager tm) {
@@ -875,7 +958,7 @@ public abstract class Framework3DMatrixActivity extends
 		for (int i = 0; i < 8; i++) {
 			drawable = new BitmapDrawable(am.open("video/l_m" + c[i] + ".jpg"));
 			texture = new Texture(SceneHelper.RotateBitmap(BitmapHelper
-					.rescale(BitmapHelper.convert(drawable), 1024, 1024), 90f));
+					.rescale(BitmapHelper.convert(drawable), 512, 512), 90f));
 			texture.removeAlpha();
 			tm.addTexture("l_m" + c[i], texture);
 		}

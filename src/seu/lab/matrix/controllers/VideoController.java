@@ -21,26 +21,11 @@ public class VideoController {
 		mQueue = queue;
 	}
 	
-	public void play(int screen,String video_name) throws JSONException {
+	public void play(int screen,String video_name, ErrorListener errorListener, Listener<JSONObject> listener) throws JSONException {
 		
 		String url=rootUrl+"play?screen="+screen+"&video_name="+video_name;
 		
 		Log.d(TAG, "req : " + url);
-		
-
-		ErrorListener errorListener = new ErrorListener() {
-			@Override
-			public void onErrorResponse(VolleyError error) {
-				Log.d(TAG, "onError : " + error.toString());
-			}
-		};
-
-		Listener<JSONObject> listener = new Listener<JSONObject>() {
-			@Override
-			public void onResponse(JSONObject res) {
-				Log.d(TAG, "onResponse : " + res.toString());
-			}
-		};
 
 		mQueue.add(new JsonObjectRequest(Method.POST,url, null,listener,errorListener));
 	}
