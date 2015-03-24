@@ -6,6 +6,8 @@ import seu.lab.matrix.animation.Animatable;
 import seu.lab.matrix.animation.DisplayAnimation;
 import seu.lab.matrix.animation.PickGroup;
 import seu.lab.matrix.animation.TranslationAnimation;
+import seu.lab.matrix.controllers.AppController;
+import seu.lab.matrix.controllers.VideoController;
 
 import android.util.Log;
 
@@ -16,11 +18,15 @@ import com.threed.jpct.SimpleVector;
 public abstract class AbstractApp {
 
 	public static String TAG = "AbstractApp";
-	
+	public static boolean OFFINE = true;
+
 	protected List<Animatable> mAnimatables;
 	protected Camera cam;
 	protected Object3D ball1;
 	protected SceneCallback scene;
+	
+	public static AppController appController;
+	public static VideoController videoController;
 	
 	public AbstractApp(List<Animatable> animatables, SceneCallback callback, Camera camera, Object3D ball1){
 		mAnimatables = animatables;

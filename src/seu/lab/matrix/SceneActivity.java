@@ -41,6 +41,7 @@ import seu.lab.matrix.app.SceneCallback;
 import seu.lab.matrix.app.SkypeApp;
 import seu.lab.matrix.app.VideoApp;
 import seu.lab.matrix.app.WordApp;
+import seu.lab.matrix.controllers.AppController.app_name;
 import seu.lab.matrix.red.RemoteManager.OnRemoteChangeListener;
 import android.R.integer;
 import android.graphics.Bitmap;
@@ -84,7 +85,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 	final static int WORKSPACE_COUNT = 3;
 
 	final static boolean NEED_WORKSPACE = true;
-	final static boolean NEED_SCENE = true;
+	final static boolean NEED_SCENE = false;
 
 	final static int SINGLE_TAP = 0;
 	final static int DOUBLE_TAP = 1;
@@ -123,8 +124,6 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 			}
 
 			Log.e(TAG, "thread run");
-
-			peopleAnimation.fadeout(mAnimatables);
 
 			ws.mState = 2;
 			ws.mCurrentAppType = appType;
@@ -457,27 +456,30 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 			peopleAnimation = new PeopleAnimation();
 
+			AbstractApp.appController = appController;
+			AbstractApp.videoController = videoController;
+			
 			apps[AppType.NULL.ordinal()] = new NullApp(mAnimatables, this, cam,
 					ball1);
-			apps[AppType.MINECRAFT.ordinal()] = new MinecraftApp(mAnimatables,
+			apps[AppType.MINECRAFT.ordinal()] = new MinecraftApp(app_name.game_minecraft, mAnimatables,
 					this, cam, ball1);
-			apps[AppType.CAR.ordinal()] = new CarApp(mAnimatables, this, cam,
+			apps[AppType.CAR.ordinal()] = new CarApp(app_name.game_car, mAnimatables, this, cam,
 					ball1);
 			apps[AppType.VIDEO.ordinal()] = new VideoApp(mAnimatables, this,
 					cam, ball1);
 			apps[AppType.PIC.ordinal()] = new PicApp(mAnimatables, this, cam,
 					ball1);
-			apps[AppType.SKYPE.ordinal()] = new SkypeApp(mAnimatables, this,
+			apps[AppType.SKYPE.ordinal()] = new SkypeApp(app_name.skype, mAnimatables, this,
 					cam, ball1);
-			apps[AppType.IE.ordinal()] = new IEApp(mAnimatables, this, cam,
+			apps[AppType.IE.ordinal()] = new IEApp(app_name.internet, mAnimatables, this, cam,
 					ball1);
 			apps[AppType.FILE.ordinal()] = new FileApp(mAnimatables, this, cam,
 					ball1, world);
-			apps[AppType.WORD.ordinal()] = new WordApp(mAnimatables, this, cam,
+			apps[AppType.WORD.ordinal()] = new WordApp(app_name.office_word, mAnimatables, this, cam,
 					ball1);
-			apps[AppType.EXCEL.ordinal()] = new ExcelApp(mAnimatables, this,
+			apps[AppType.EXCEL.ordinal()] = new ExcelApp(app_name.office_excel, mAnimatables, this,
 					cam, ball1);
-			apps[AppType.PPT.ordinal()] = new PPTApp(mAnimatables, this, cam,
+			apps[AppType.PPT.ordinal()] = new PPTApp(app_name.office_ppt, mAnimatables, this, cam,
 					ball1);
 			apps[AppType.CAM.ordinal()] = new CamApp(mAnimatables, this, cam,
 					ball1);
@@ -1442,8 +1444,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 	@Override
 	public void onAppReady() {
-		// TODO Auto-generated method stub
-
+		peopleAnimation.fadeout(mAnimatables);
 	}
 
 	@Override
@@ -1603,6 +1604,16 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 	@Override
 	public void onOpenApp(int idx) {
 		openApp(idx);
+	}
+
+	@Override
+	public int getScreenIdx() {
+		return mWsIdx;
+	}
+
+	@Override
+	public boolean isLookingAtScreen() {
+		return SceneHelper.isLookingDir(cam, ball1, scrDir) > 0.95;
 	}
 
 }

@@ -14,6 +14,8 @@ import seu.lab.dolphin.client.Dolphin;
 import seu.lab.dolphin.client.DolphinException;
 import seu.lab.dolphin.client.IDolphinStateCallback;
 import seu.lab.dolphin.client.IGestureListener;
+import seu.lab.matrix.controllers.AppController;
+import seu.lab.matrix.controllers.VideoController;
 import seu.lab.matrix.red.RemoteManager.OnRemoteChangeListener;
 import seu.lab.matrix.red.SimpleCameraBridge;
 import seu.lab.matrix.red.SimpleCameraBridge.DefaultCvCameraViewListener2;
@@ -29,6 +31,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.Volley;
 import com.google.vrtoolkit.cardboard.CardboardView;
 import com.google.vrtoolkit.cardboard.Eye;
 import com.google.vrtoolkit.cardboard.Viewport;
@@ -84,6 +89,12 @@ public abstract class Framework3DMatrixActivity extends
 	protected CardboardOverlayView mOverlayView;
 
 	protected Handler mHandler;
+
+	protected RequestQueue mQueue;
+	
+	protected AppController appController;
+	
+	protected VideoController videoController;
 
 	public BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
 		@Override
@@ -235,7 +246,11 @@ public abstract class Framework3DMatrixActivity extends
 
 		usbServerItem = ServerItem.CreateUsbItem(this);
 		iDisplayConnection = new IDisplayConnection(this);
+		mQueue = Volley.newRequestQueue(getApplicationContext());
 
+		appController = new AppController(mQueue);
+		videoController = new VideoController(mQueue);
+		
 		Bundle extras = getIntent().getExtras();
 		if (extras != null) {
 			if (extras.isEmpty()) {
@@ -259,10 +274,10 @@ public abstract class Framework3DMatrixActivity extends
 		remoteListener = getRemoteListener();
 		gestureListener = getDolphinGestureListener();
 
-		mHandler = new Handler(getMainLooper()){
+		mHandler = new Handler(getMainLooper()) {
 			@Override
 			public void handleMessage(Message msg) {
-				if(msg.what == 0)
+				if (msg.what == 0)
 					mOverlayView.show3DToast(msg.obj.toString());
 				else if (msg.what == 1) {
 					mOverlayView.show3DToastOnlyRight(msg.obj.toString());
@@ -395,14 +410,14 @@ public abstract class Framework3DMatrixActivity extends
 		message.what = 0;
 		mHandler.sendMessage(message);
 	}
-	
+
 	protected void show3DToastOnlyRight(String m) {
 		Message message = new Message();
 		message.obj = m;
 		message.what = 1;
 		mHandler.sendMessage(message);
 	}
-	
+
 	// @Override
 	// public void onDrawEye(Eye eye) {
 	//
@@ -651,10 +666,10 @@ public abstract class Framework3DMatrixActivity extends
 
 	@Override
 	public void onSurfaceCreated(EGLConfig config) {
-		 GLES20.glEnable(GLES20.GL_BLEND);
-//		 GLES20.glDisable(GLES20.GL_BLEND);
-//		 GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA,
-//		 GLES20.GL_ONE_MINUS_SRC_ALPHA);
+		GLES20.glEnable(GLES20.GL_BLEND);
+		// GLES20.glDisable(GLES20.GL_BLEND);
+		// GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA,
+		// GLES20.GL_ONE_MINUS_SRC_ALPHA);
 
 		Resources res = getResources();
 
@@ -669,7 +684,7 @@ public abstract class Framework3DMatrixActivity extends
 							R.drawable.icon)), 512, 512));
 			tm.addTexture("dummy", texture);
 
-			if(NEED_SKYBOX)
+			if (NEED_SKYBOX)
 				loadSkyboxTexture(tm);
 
 			loadBoardTexture(tm);
@@ -768,33 +783,33 @@ public abstract class Framework3DMatrixActivity extends
 				BitmapHelper.convert(getResources().getDrawable(
 						R.drawable.b_word)), 256, 256));
 		tm.addTexture("b_word", b_word);
-		
+
 		Texture b_null = new Texture(BitmapHelper.rescale(
 				BitmapHelper.convert(getResources().getDrawable(
 						R.drawable.b_null)), 256, 256));
 		tm.addTexture("b_null", b_null);
-		
+
 		Texture i_close = new Texture(BitmapHelper.rescale(
 				BitmapHelper.convert(getResources().getDrawable(
 						R.drawable.i_close)), 64, 64));
 		tm.addTexture("i_close", i_close);
-		
+
 		Texture i_fullscreen = new Texture(BitmapHelper.rescale(
 				BitmapHelper.convert(getResources().getDrawable(
 						R.drawable.i_fullscreen)), 64, 64));
 		tm.addTexture("i_fullscreen", i_fullscreen);
-		
+
 		Texture l_back = new Texture(BitmapHelper.rescale(
 				BitmapHelper.convert(getResources().getDrawable(
 						R.drawable.i_back)), 64, 64));
-		
+
 		tm.addTexture("w_back", l_back);
-		
+
 		Texture l_next = new Texture(BitmapHelper.rescale(
 				BitmapHelper.convert(getResources().getDrawable(
 						R.drawable.i_next)), 64, 64));
 		tm.addTexture("w_next", l_next);
-		
+
 		Texture l_opt = new Texture(BitmapHelper.rescale(
 				BitmapHelper.convert(getResources().getDrawable(
 						R.drawable.i_fullscreen)), 64, 64));
@@ -849,20 +864,18 @@ public abstract class Framework3DMatrixActivity extends
 					BitmapHelper.convert(drawable), 256, 256));
 			texture.removeAlpha();
 			tm.addTexture("l_l" + c[i], texture);
-			
-			drawable = new BitmapDrawable(am.open("pic/p_" + c[i]
-					+ ".jpg"));
+
+			drawable = new BitmapDrawable(am.open("pic/p_" + c[i] + ".jpg"));
 			texture = new Texture(BitmapHelper.rescale(
 					BitmapHelper.convert(drawable), 1024, 1024));
 			texture.removeAlpha();
 			tm.addTexture("p_" + c[i], texture);
 		}
-		
+
 		for (int i = 0; i < 8; i++) {
-			drawable = new BitmapDrawable(am.open("video/l_m" + c[i]
-					+ ".jpg"));
-			texture = new Texture(SceneHelper.RotateBitmap(BitmapHelper.rescale(
-					BitmapHelper.convert(drawable), 1024, 1024), 90f));
+			drawable = new BitmapDrawable(am.open("video/l_m" + c[i] + ".jpg"));
+			texture = new Texture(SceneHelper.RotateBitmap(BitmapHelper
+					.rescale(BitmapHelper.convert(drawable), 1024, 1024), 90f));
 			texture.removeAlpha();
 			tm.addTexture("l_m" + c[i], texture);
 		}
@@ -927,11 +940,11 @@ public abstract class Framework3DMatrixActivity extends
 			if (currentMode.type == IDisplayConnection.ConnectionType.Single) {
 				simpleFillTextures(iArr, 0, 0, len, x, y);
 			} else {
-				if(shown[0])
+				if (shown[0])
 					simpleFillTextures(iArr, 0, 0, len / 4, x, y / 4);
-				if(shown[1])
+				if (shown[1])
 					simpleFillTextures(iArr, 3, len / 4, len / 4, x, y / 4);
-				if(shown[2])
+				if (shown[2])
 					simpleFillTextures(iArr, 6, len / 2, len / 4, x, y / 4);
 				// if (eye.getType() == Eye.Type.LEFT) {
 				// simpleFillTextures(iArr, 0, 0, len >> 1, x, y >> 1);

@@ -4,27 +4,37 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import seu.lab.matrix.SceneHelper;
 import seu.lab.matrix.animation.Animatable;
 import seu.lab.matrix.animation.LiveTileAnimation;
 import seu.lab.matrix.animation.PickGroup;
 import seu.lab.matrix.animation.SeqAnimation;
+import seu.lab.matrix.controllers.AppController;
 
 import android.util.Log;
 
+import com.android.volley.VolleyError;
+import com.android.volley.Response.ErrorListener;
+import com.android.volley.Response.Listener;
 import com.threed.jpct.Camera;
 import com.threed.jpct.Object3D;
 import com.threed.jpct.SimpleVector;
 
-public class VideoApp extends SimpleScreenApp{
-	
+public class VideoApp extends AbstractScreenApp {
+
 	final static int VIDEO_COUNT_PER_PAGE = 4;
 
 	public int mVideoPageIdx;
-	
+	final static String[] videoUrl = new String[]{
+		"c:\\Users\\qf\\Desktop\\LynnTemp\\bigHero.mkv",
+	};
+
 	PickGroup[] mPickGroupLists = new PickGroup[4 + 2 + 1];
 	private Map<String, Object3D> clickableLists = new HashMap<String, Object3D>();
-	
+
 	public VideoApp(List<Animatable> animatables, SceneCallback callback,
 			Camera camera, Object3D ball1) {
 		super(animatables, callback, camera, ball1);
@@ -37,6 +47,17 @@ public class VideoApp extends SimpleScreenApp{
 			new LiveTileAnimation("", false, null),
 			new LiveTileAnimation("", false, null), };
 
+	private DefaultListener listener = new DefaultListener(){
+		protected void onErr() {
+			onHide();
+			super.onErr();
+		}
+		protected void onOk() {
+			onShown();
+			super.onOk();
+		}
+	};
+	
 	@Override
 	public void initObj(String name, Object3D object3d) {
 		initLists(name, object3d);
@@ -50,13 +71,13 @@ public class VideoApp extends SimpleScreenApp{
 	@Override
 	public void onCreate() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void onDestory() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -69,11 +90,17 @@ public class VideoApp extends SimpleScreenApp{
 	@Override
 	public void onHide() {
 		toggleList(false, 0, 7);
-		
+
 	}
 
 	@Override
 	public void onClose(Runnable runnable) {
+		try {
+			videoController.close(scene.getScreenIdx());
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		onHide();
 		scene.onHideScreen(runnable);
 		scene.onAppClosed();
@@ -81,49 +108,67 @@ public class VideoApp extends SimpleScreenApp{
 
 	@Override
 	public void onLeft() {
-		// TODO Auto-generated method stub
-		
+		try {
+			videoController.backward(scene.getScreenIdx());
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	public void onRight() {
-		// TODO Auto-generated method stub
-		
+		try {
+			videoController.forward(scene.getScreenIdx());
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	public void onUp() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void onDown() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void onLongPress() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void onDoubleTap() {
-		
+
 		PickGroup group = null;
 		Object3D object3d;
+
+		if (scene.isLookingAtScreen()) {
+			try {
+				videoController.continue_pause(scene.getScreenIdx());
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return;
+		}
+
 		for (int i = 0; i < 4; i++) {
 			group = mPickGroupLists[i];
 			if (SceneHelper.isLookingAt(cam, ball1,
 					group.group[0].getTransformedCenter()) > 0.995) {
-				openVideo(i + VIDEO_COUNT_PER_PAGE * mVideoPageIdx
-						+ 1);
+				openVideo(i + VIDEO_COUNT_PER_PAGE * mVideoPageIdx + 1);
 				break;
 			}
 		}
-		
+
 		for (int i = 4; i < 6; i++) {
 			group = mPickGroupLists[i];
 			object3d = group.group[0];
@@ -140,27 +185,41 @@ public class VideoApp extends SimpleScreenApp{
 	@Override
 	public void onSingleTap() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void onPick() {
 		pickList();
 	}
-	
+
 	@Override
 	public void onOpen() {
-		onShown();
-		super.onOpen();
+
+		try {
+			appController.open(scene.getScreenIdx(),
+					AppController.app_name.video, defaultErrorListener,
+					defaultListener);
+		} catch (JSONException e) {
+			Log.e(TAG, e.toString());
+		}
+
+		// onShown();
+		// super.onOpen();
 	}
-	
 
 	private void openVideo(int i) {
 
 		// TODO gjw draw video desc
 
+		try {
+			videoController.play(scene.getScreenIdx(), videoUrl[0]);
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
-	
+
 	private void toggleList(boolean on, int from, int to) {
 		Object3D[] group;
 		for (int i = from; i < to; i++) {
@@ -170,7 +229,7 @@ public class VideoApp extends SimpleScreenApp{
 			}
 		}
 	}
-	
+
 	private void pickList() {
 		PickGroup group = null;
 		for (int i = 0; i < mPickGroupLists.length; i++) {
@@ -183,7 +242,6 @@ public class VideoApp extends SimpleScreenApp{
 			}
 		}
 	}
-	
 
 	private void postInitList() {
 
@@ -229,8 +287,7 @@ public class VideoApp extends SimpleScreenApp{
 		tmp = clickableLists.get("w_opt");
 		mPickGroupLists[6].group[0] = tmp;
 	}
-	
-	
+
 	private void initLists(String name, Object3D object3d) {
 
 		String tname = name.substring(2, name.indexOf("_Plane"));
@@ -241,10 +298,9 @@ public class VideoApp extends SimpleScreenApp{
 		object3d.setVisibility(false);
 
 		clickableLists.put(tname, object3d);
-		
+
 	}
-	
-	
+
 	private void flipVideoList() {
 
 		for (int i1 = 0; i1 < mVideoListTiles.length; i1++) {

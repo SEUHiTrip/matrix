@@ -18,5 +18,6 @@ public interface SceneCallback {
 	void onOpenApp(final int idx);
 	void onActivateTilesGroup(PickGroup group);
 	void onDeactivateTilesGroup(PickGroup group);
-	
+	int getScreenIdx();
+	boolean isLookingAtScreen();
 }

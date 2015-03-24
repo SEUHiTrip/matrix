@@ -7,7 +7,7 @@ import seu.lab.matrix.animation.Animatable;
 import com.threed.jpct.Camera;
 import com.threed.jpct.Object3D;
 
-public class FileOpenApp extends SimpleScreenApp{
+public class FileOpenApp extends AbstractScreenApp{
 
 	public FileOpenApp(List<Animatable> animatables, SceneCallback callback,
 			Camera camera, Object3D ball1) {
