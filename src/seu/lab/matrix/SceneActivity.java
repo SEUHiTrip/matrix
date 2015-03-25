@@ -101,7 +101,6 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 	final static int WORKSPACE = 4;
 
 	final static int HORSE = 0;
-	final static int DRONE = 1;
 
 	AbstractApp[] apps = new AbstractApp[11 + 1 + 1 + 1 + 1];
 
@@ -164,6 +163,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 	protected Light sun = null;
 	protected Light sun2 = null;
 	protected Light spot = null;
+	protected Light treasureLight = null;
 	protected Object3D[] screens = null;
 	protected Object3D curtain = null;
 	protected Object3D[] weathers = null;
@@ -278,7 +278,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 		@Override
 		public void onMove(Point p) {
-			//Log.e(TAG, "remote : onMove x:" + p.x + " y: " + p.y);
+			// Log.e(TAG, "remote : onMove x:" + p.x + " y: " + p.y);
 			point = p;
 			lastBallUpdate = System.currentTimeMillis();
 		}
@@ -287,13 +287,13 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 		public void onClick() {
 			Log.e(TAG, "remote : onClick");
 			actionFired[DOUBLE_TAP] = true;
-//			if (test) {
-//				test = false;
-//				ball1.setAdditionalColor(new RGBColor(0, 100, 0));
-//			} else {
-//				test = true;
-//				ball1.setAdditionalColor(new RGBColor(0, 0, 100));
-//			}
+			// if (test) {
+			// test = false;
+			// ball1.setAdditionalColor(new RGBColor(0, 100, 0));
+			// } else {
+			// test = true;
+			// ball1.setAdditionalColor(new RGBColor(0, 0, 100));
+			// }
 		}
 
 		@Override
@@ -311,8 +311,8 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 			// remote drag
 			double x = p.x - dragStartPoint.x;
 			double y = p.y - dragStartPoint.y;
-			
-			Log.e(TAG, "remote : drag  "+x+"  "+y);
+
+			Log.e(TAG, "remote : drag  " + x + "  " + y);
 
 			if (x < -0.5) {
 				actionFired[LEFT] = true;
@@ -345,7 +345,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 			} else if (event.type == Gestures.SWIPE_RIGHT_P.ordinal()
 					|| event.type == Gestures.SWIPE_RIGHT_L.ordinal()) {
 				actionFired[RIGHT] = true;
-			} else if(event.type == Gestures.PUSH.ordinal() && event.speed > 8){
+			} else if (event.type == Gestures.PUSH.ordinal() && event.speed > 8) {
 				actionFired[DOWN] = true;
 			} else if (event.type == Gestures.PULL.ordinal() && event.speed > 8) {
 				actionFired[UP] = true;
@@ -383,11 +383,13 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 				masks.put("" + GestureEvent.Gestures.PUSH_PULL_PUSH.ordinal(),
 						true);
 				masks.put(
-						"" + GestureEvent.Gestures.PUSH_PULL_PUSH_PULL.ordinal(),
-						true);
+						""
+								+ GestureEvent.Gestures.PUSH_PULL_PUSH_PULL
+										.ordinal(), true);
 				masks.put(
-						"" + GestureEvent.Gestures.PULL_PUSH_PULL_PUSH.ordinal(),
-						true);
+						""
+								+ GestureEvent.Gestures.PULL_PUSH_PULL_PUSH
+										.ordinal(), true);
 				config.put("masks", masks);
 			} catch (JSONException e) {
 				Log.e(TAG, e.toString());
@@ -432,7 +434,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 		cam.setPosition(0, 0, 0);
 
-		world.setAmbientLight(120, 120, 120);
+		world.setAmbientLight(130, 130, 130);
 
 		sun = new Light(world);
 		sun.setIntensity(250, 250, 250);
@@ -445,6 +447,10 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 		spot.setIntensity(50, 50, 50);
 		spot.setPosition(new SimpleVector(0, 0, 5));
 
+		treasureLight = new Light(world);
+		treasureLight.setIntensity(0, 0, 0);
+		treasureLight.setPosition(new SimpleVector(0, 0, 5));
+		
 		ball1 = Primitives.getSphere(0.05f);
 		ball1.translate(0, 0, -2);
 		ball1.calcTextureWrapSpherical();
@@ -514,8 +520,10 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 		}
 
 		if (NEED_SKYBOX) {
-			sky = new SkyBox("star_left", "star_forward", "star_left",
-					"star_right", "star_back", "star_bottom", 10000f);
+//			sky = new SkyBox("star_left", "star_forward", "star_right",
+//					"star_back", "star_top", "star_bottom", 10000f);
+			sky = new SkyBox("star_forward", "star_top", "star_back",
+			"star_bottom", "star_left", "star_right", 10000f);
 			sky.setCenter(new SimpleVector());
 		}
 
@@ -563,17 +571,15 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 			cam.rotateY(mAngles[1]);
 			cam.rotateZ(-mAngles[2]);
 			cam.rotateX(mAngles[0]);
-		} else if (mCamViewIndex == TREASURE) {
+		} else if (mCamViewIndex == TREASURE && !isCamFlying) {
 			cam.setOrientation(forward, up);
 			cam.rotateZ(3.1415926f / 2);
 
 			if (mAngles[1] > 0) {
 				headAngle = (float) (Math.log(mAngles[1] + 1) / Math.log(2.2));
 			} else {
-				headAngle = -(float) (Math.log(-mAngles[1] + 1) / Math
-						.log(2.2));
+				headAngle = -(float) (Math.log(-mAngles[1] + 1) / Math.log(2.2));
 			}
-			
 
 			cam.rotateY(headAngle);
 
@@ -595,6 +601,10 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 			cam.setPosition(mCamViewspots[TREASURE].getTransformedCenter());
 			mAnimatables.add(new WeatherAnimation(weathers[3], weathers[1],
 					mAnimatables));
+			
+			treasureLight.setIntensity(250, 250, 250);
+			treasureLight.enable();
+			treasureLight.setPosition(mCamViewspots[TREASURE].getTransformedCenter());
 		}
 
 		if (NEED_WORKSPACE) {
@@ -874,10 +884,10 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 										new Object3D[] { screens[i] },
 										new SimpleVector(5, 1.8 * (i - 1), 2.5).calcSub(screens[i]
 												.getTransformedCenter()), null));
-//						screens[i]
-//								.translate(new SimpleVector(5, 1.8 * (i - 1),
-//										2.5).calcSub(screens[i]
-//										.getTransformedCenter()));
+						// screens[i]
+						// .translate(new SimpleVector(5, 1.8 * (i - 1),
+						// 2.5).calcSub(screens[i]
+						// .getTransformedCenter()));
 					}
 				}
 			}
@@ -1278,7 +1288,9 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 	public void onDrawEye(Eye eye) {
 
 		fb.clear(back);
+
 		if (NEED_SKYBOX) {
+			world.renderScene(fb);
 			sky.render(world, fb);
 		} else {
 			world.renderScene(fb);
@@ -1302,28 +1314,30 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 		SimpleVector ori = new SimpleVector();
 		cam.getPosition(ori);
 
-		final Animatable a3 = new CamTranslationAnimation("", ori.calcSub(cam
-				.getPosition()), cam, forward, (float) Math.PI / 2) {
 
-			public void onAnimateSuccess() {
-				super.onAnimateSuccess();
-
-				isCamFlying = false;
-				canCamRotate = true;
-			}
-		};
 
 		final Animatable a2 = new CamAnimation(cam, ori, ori, 0, 2.5, 10, 3) {
 			public void onAnimateSuccess() {
 				// super.onAnimateSuccess();
 
+				final Animatable a3 = new CamTranslationAnimation("", ori.calcSub(cam
+						.getPosition()), cam, ori.calcAdd(forward), (float) Math.PI / 2) {
+
+					public void onAnimateSuccess() {
+						super.onAnimateSuccess();
+
+						isCamFlying = false;
+						canCamRotate = true;
+					}
+				};
+				
 				mAnimatables.add(a3);
 
 			}
 		};
 
 		Animatable a1 = new CamTranslationAnimation("", new SimpleVector(0, 10,
-				0), cam, screens[0].getTransformedCenter(), (float) Math.PI / 2) {
+				0), cam, ori, -(float) Math.PI / 2) {
 			public void onAnimateSuccess() {
 				super.onAnimateSuccess();
 
@@ -1340,24 +1354,25 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 		SimpleVector ori = new SimpleVector();
 		cam.getPosition(ori);
 
-		SimpleVector volcano = islands[VOLCANO].getTransformedCenter();
-
-		final Animatable a5 = new CamTranslationAnimation("",
-				mCamViewspots[TREASURE].getTransformedCenter().calcSub(
-						cam.getPosition()), cam,
-				islands[VOLCANO].getTransformedCenter(), (float) Math.PI / 2) {
-			@Override
-			public void onAnimateSuccess() {
-				canCamRotate = true;
-				isCamFlying = false;
-				super.onAnimateSuccess();
-			}
-		};
+		final SimpleVector volcano = islands[VOLCANO].getTransformedCenter();
 
 		final Animatable a4 = new CamAnimation(cam, volcano, volcano,
 				3 * Math.PI / 4, Math.PI / 4, 50, 10, false) {
 			@Override
 			public void onAnimateSuccess() {
+				
+				final Animatable a5 = new CamTranslationAnimation("",
+						mCamViewspots[TREASURE].getTransformedCenter().calcSub(
+								cam.getPosition()), cam,
+								volcano, (float) Math.PI / 2) {
+					@Override
+					public void onAnimateSuccess() {
+						canCamRotate = true;
+						isCamFlying = false;
+						super.onAnimateSuccess();
+					}
+				};
+				
 				mAnimatables.add(a5);
 			}
 		};
@@ -1366,8 +1381,8 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 				.getTransformedCenter()
 				.calcAdd(
 						new SimpleVector(50 / Math.sqrt(2), -50 / Math.sqrt(2),
-								5)).calcSub(cam.getPosition()), cam, ori,
-				(float) -Math.PI / 2) {
+								5)).calcSub(cam.getPosition()), cam,
+								volcano, (float) Math.PI / 2) {
 
 			public void onAnimateSuccess() {
 				super.onAnimateSuccess();
@@ -1387,7 +1402,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 		};
 
 		final Animatable a1 = new CamTranslationAnimation("", new SimpleVector(
-				0, 10, 0), cam, cam.getPosition(), (float) -Math.PI / 2) {
+				0, 10, 0), cam, ori, (float) -Math.PI / 2) {
 			public void onAnimateSuccess() {
 				super.onAnimateSuccess();
 

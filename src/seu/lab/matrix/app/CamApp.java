@@ -14,7 +14,7 @@ public class CamApp extends HeadControlApp{
 	public CamApp(CardboardView cardboardView,
 			List<Animatable> animatables, SceneCallback callback,
 			Camera camera, Object3D ball1) {
-		super(cardboardView, 6004, app_name.cam, animatables, callback, camera, ball1);
+		super(cardboardView, 6003, app_name.cam, animatables, callback, camera, ball1);
 
 	}
 }

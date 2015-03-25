@@ -35,7 +35,9 @@ public class HeadControlApp extends SimpleScreenApp{
 	private final String IP = Confg.IP;
 	boolean stopped = false;
 
-    Thread getHeadTransform = new Thread(new Runnable() {
+	Thread curThread;
+	
+	Runnable getHeadTransform = new Runnable() {
 		@Override
 		public void run() {
 			head = new HeadTransform();
@@ -49,6 +51,7 @@ public class HeadControlApp extends SimpleScreenApp{
 				outStream = socket.getOutputStream();
 				Log.d("Connection", "Connection ok");
 			} catch (Exception e) {
+				stopped = true;
 				e.printStackTrace();
 			}
 			
@@ -58,7 +61,6 @@ public class HeadControlApp extends SimpleScreenApp{
 				values[0] = (float) Math.toDegrees(sAngles[0]); // Y
 				values[1] = (float) Math.toDegrees(sAngles[1]); // X
 				values[2] = (float) Math.toDegrees(sAngles[2]);
-				Log.d("angles", values[0] + " " + values[1] + " " + values[2]);
 
 				if (outStream != null) {
 					byte[] buf = ByteBuffer.allocate(12).putFloat(values[0])
@@ -91,7 +93,7 @@ public class HeadControlApp extends SimpleScreenApp{
 			Log.d("Connection", "Connection closed");
 		}
 		
-	});
+	};
 	
 	public HeadControlApp(CardboardView cardboardView, int port, app_name aName, List<Animatable> animatables,
 			SceneCallback callback, Camera camera, Object3D ball1) {
@@ -108,17 +110,26 @@ public class HeadControlApp extends SimpleScreenApp{
 			@Override
 			protected void onOk() {
 				stopped = false;
-				getHeadTransform.start();
+				(curThread = new Thread(getHeadTransform)).start();
 				super.onOk();
 			}
 		};
 	}
 	
 	@Override
+	public void onOpen(Bundle bundle) {
+		if(DEBUG){
+			stopped = false;
+			(curThread = new Thread(getHeadTransform)).start();
+		}
+		super.onOpen(bundle);
+	}
+	
+	@Override
 	public void onClose(Runnable runnable) {
 		stopped = true;
-		if (getHeadTransform.isAlive()) {
-			getHeadTransform.interrupt();
+		if (curThread != null && curThread.isAlive()) {
+			curThread.interrupt();
 		}
 		super.onClose(runnable);
 	}

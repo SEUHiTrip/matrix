@@ -57,20 +57,20 @@ import com.threed.jpct.Texture;
 import com.threed.jpct.TextureManager;
 import com.threed.jpct.util.BitmapHelper;
 
-// merge and manage dolphin, cam, and IDisplay
+// merge and manage dolphin, red, and IDisplay
 
 public abstract class Framework3DMatrixActivity extends
 		AbstractScreenMatrixActivity implements CardboardView.StereoRenderer,
 		IDisplayConnectionCallback {
 
-	protected static Activity master = null;
-	protected static final String TAG = "Framework3DMatrixActivity";
-	protected final static boolean NEED_SKYBOX = false;
-	protected final static boolean NEED_IDISPLAY = false;
-	protected final static boolean NEED_RED = false;
-	protected final static boolean NEED_DOLPHIN = false;
-	protected final static boolean NEED_WORKSPACE = true;
-	protected final static boolean NEED_SCENE = false;
+	public static Activity master = null;
+	public static final String TAG = "Framework3DMatrixActivity";
+	public final static boolean NEED_SKYBOX = true;
+	public final static boolean NEED_IDISPLAY = false;
+	public final static boolean NEED_RED = false;
+	public final static boolean NEED_DOLPHIN = false;
+	public final static boolean NEED_WORKSPACE = true;
+	public final static boolean NEED_SCENE = false;
 	
 	protected ServerItem usbServerItem;
 	protected IDisplayConnection iDisplayConnection;
@@ -907,34 +907,34 @@ public abstract class Framework3DMatrixActivity extends
 	}
 
 	protected void loadSkyboxTexture(TextureManager tm) {
-		Texture star_back = new Texture(BitmapHelper.rescale(
+		Texture star_back = new Texture(SceneHelper.RotateBitmap(BitmapHelper.rescale(
 				BitmapHelper.convert(getResources().getDrawable(
-						R.drawable.star_back)), 512, 512));
+						R.drawable.star_back)), 256, 256), -90));
 		tm.addTexture("star_back", star_back);
 
-		Texture star_bottom = new Texture(BitmapHelper.rescale(
+		Texture star_bottom = new Texture(SceneHelper.RotateBitmap(BitmapHelper.rescale(
 				BitmapHelper.convert(getResources().getDrawable(
-						R.drawable.star_bottom)), 512, 512));
+						R.drawable.star_bottom)), 256, 256),90));
 		tm.addTexture("star_bottom", star_bottom);
 
-		Texture star_forward = new Texture(BitmapHelper.rescale(
+		Texture star_forward = new Texture(SceneHelper.RotateBitmap(BitmapHelper.rescale(
 				BitmapHelper.convert(getResources().getDrawable(
-						R.drawable.star_forward)), 512, 512));
+						R.drawable.star_forward)), 256, 256),90));
 		tm.addTexture("star_forward", star_forward);
 
-		Texture star_left = new Texture(BitmapHelper.rescale(
+		Texture star_left = new Texture(SceneHelper.RotateBitmap(BitmapHelper.rescale(
 				BitmapHelper.convert(getResources().getDrawable(
-						R.drawable.star_left)), 512, 512));
+						R.drawable.star_left)), 256, 256),90));
 		tm.addTexture("star_left", star_left);
 
-		Texture star_right = new Texture(BitmapHelper.rescale(
+		Texture star_right = new Texture(SceneHelper.RotateBitmap(BitmapHelper.rescale(
 				BitmapHelper.convert(getResources().getDrawable(
-						R.drawable.star_right)), 512, 512));
+						R.drawable.star_right)), 256, 256),90));
 		tm.addTexture("star_right", star_right);
 
-		Texture star_top = new Texture(BitmapHelper.rescale(
+		Texture star_top = new Texture(SceneHelper.RotateBitmap(BitmapHelper.rescale(
 				BitmapHelper.convert(getResources().getDrawable(
-						R.drawable.star_top)), 512, 512));
+						R.drawable.star_top)), 256, 256),90));
 		tm.addTexture("star_top", star_top);
 	}
 

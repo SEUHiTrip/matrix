@@ -14,7 +14,7 @@ public class DroneApp extends HeadControlApp{
 	public DroneApp(CardboardView cardboardView,
 			List<Animatable> animatables, SceneCallback callback,
 			Camera camera, Object3D ball1) {
-		super(cardboardView, 6003, app_name.drone, animatables, callback, camera, ball1);
+		super(cardboardView, 6004, app_name.drone, animatables, callback, camera, ball1);
 		// TODO Auto-generated constructor stub
 	}
 

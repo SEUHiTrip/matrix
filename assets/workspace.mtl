@@ -1,5 +1,5 @@
 # Blender MTL File: 'workspace.blend'
-# Material Count: 86
+# Material Count: 85
 
 newmtl 2x_Twill_Carbon_Fibre
 Ns 90.196078
@@ -312,15 +312,6 @@ newmtl Material.061
 Ns 96.078431
 Ka 0.000000 0.000000 0.000000
 Kd 0.341961 0.216471 0.109804
-Ks 0.500000 0.500000 0.500000
-Ni 1.000000
-d 1.000000
-illum 2
-
-newmtl Material.068
-Ns 96.078431
-Ka 0.000000 0.000000 0.000000
-Kd 0.640000 0.166275 0.263529
 Ks 0.500000 0.500000 0.500000
 Ni 1.000000
 d 1.000000

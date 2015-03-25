@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.json.JSONException;
 
+import seu.lab.matrix.Framework3DMatrixActivity;
 import seu.lab.matrix.animation.Animatable;
 import seu.lab.matrix.controllers.AppController;
 import seu.lab.matrix.controllers.AppController.app_name;
@@ -18,7 +19,7 @@ public class SimpleScreenApp extends AbstractScreenApp{
 
 	private app_name aName;
 	
-	final static boolean DEBUG = false;
+	final static boolean DEBUG = !Framework3DMatrixActivity.NEED_IDISPLAY;
 
 	public SimpleScreenApp(app_name aName, List<Animatable> animatables,
 			SceneCallback callback, Camera camera, Object3D ball1) {
