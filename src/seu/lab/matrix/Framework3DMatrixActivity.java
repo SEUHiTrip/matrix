@@ -65,11 +65,13 @@ public abstract class Framework3DMatrixActivity extends
 
 	protected static Activity master = null;
 	protected static final String TAG = "Framework3DMatrixActivity";
-	final static boolean NEED_SKYBOX = false;
-	final static boolean NEED_IDISPLAY = true;
-	final static boolean NEED_RED = false;
-	final static boolean NEED_DOLPHIN = false;
-
+	protected final static boolean NEED_SKYBOX = false;
+	protected final static boolean NEED_IDISPLAY = false;
+	protected final static boolean NEED_RED = false;
+	protected final static boolean NEED_DOLPHIN = false;
+	protected final static boolean NEED_WORKSPACE = true;
+	protected final static boolean NEED_SCENE = false;
+	
 	protected ServerItem usbServerItem;
 	protected IDisplayConnection iDisplayConnection;
 	protected ConnectionMode currentMode;
@@ -122,7 +124,7 @@ public abstract class Framework3DMatrixActivity extends
 			needIdisplay = false;
 		}
 		
-		public void SwitchModel(ConnectionMode mode){
+		public void switchMode(ConnectionMode mode){
 			currentMode = mode;
 			stopIDisplay();
 		}

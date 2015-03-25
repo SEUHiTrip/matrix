@@ -17,6 +17,8 @@ import com.threed.jpct.Object3D;
 public class SimpleScreenApp extends AbstractScreenApp{
 
 	private app_name aName;
+	
+	final static boolean DEBUG = false;
 
 	public SimpleScreenApp(app_name aName, List<Animatable> animatables,
 			SceneCallback callback, Camera camera, Object3D ball1) {
@@ -26,6 +28,12 @@ public class SimpleScreenApp extends AbstractScreenApp{
 
 	@Override
 	public void onOpen(Bundle bundle) {
+		
+		if(DEBUG){
+			super.onOpen(bundle);
+			return;
+		}
+		
 		try {
 			appController.open(scene.getScreenIdx(),
 					aName, defaultErrorListener,

@@ -5,6 +5,7 @@ import seu.lab.matrix.animation.TranslationAnimation;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.idisplay.VirtualScreenDisplay.IDisplayConnection.ConnectionMode;
 import com.threed.jpct.Object3D;
 import com.threed.jpct.SimpleVector;
 
@@ -23,4 +24,6 @@ public interface SceneCallback {
 	void onDeactivateTilesGroup(PickGroup group);
 	int getScreenIdx();
 	boolean isLookingAtScreen();
+	void onSwitchMode(ConnectionMode mode);
+
 }

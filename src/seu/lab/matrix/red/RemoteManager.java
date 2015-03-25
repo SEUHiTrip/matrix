@@ -27,7 +27,6 @@ public class RemoteManager {
 	private boolean press = false;
 	private boolean raise = false;
 
-	
 	private long startMillis;
 	private long durMillis;
 
@@ -37,25 +36,30 @@ public class RemoteManager {
 
 	protected void processData(List<Point> array) {
 
-		 for (int i=0; i<array.size(); i++) {
-		 Log.i("Point", "" + array.get(i));
-		 }
+		press = false;
+		raise = false;
+		click = false;
+
+//		for (int i = 0; i < array.size(); i++) {
+//			Log.i("Point", "" + array.get(i));
+//		}
 
 		// 去除附近干扰点
+		int distance = 20;
 		for (int i = 1; i < array.size(); i++) {
-			if ((array.get(i).x < (array.get(i - 1).x + 50) && array.get(i).x > (array
-					.get(i - 1).x - 50))
-					&& (array.get(i).y < (array.get(i - 1).y + 50) && array
-							.get(i).y > (array.get(i - 1).y - 50))) {
+			if ((array.get(i).x < (array.get(i - 1).x + distance) && array.get(i).x > (array
+					.get(i - 1).x - distance))
+					&& (array.get(i).y < (array.get(i - 1).y + distance) && array
+							.get(i).y > (array.get(i - 1).y - distance))) {
 				array.get(i - 1).x = (array.get(i - 1).x + array.get(i).x) / 2;
 				array.get(i - 1).y = (array.get(i - 1).y + array.get(i).y) / 2;
 				array.remove(i);
 			}
 		}
 
-		 for (int i=0; i<array.size(); i++) {
-			 Log.i("!Point", "" + array.get(i));
-		 }
+//		for (int i = 0; i < array.size(); i++) {
+//			Log.i("!Point", "" + array.get(i));
+//		}
 
 		assert (array.size() == 2) || (array.size() == 3);
 		Point point = new Point();
@@ -86,16 +90,18 @@ public class RemoteManager {
 				point.x = (array.get(0).x + array.get(1).x) / 2;
 				point.y = (array.get(0).y + array.get(1).y) / 2;
 			}
-			// Log.i("Remote", "X:" + point.x + "/tY:" + point.y);
+//			Log.i("Remote", ""+click+" "+raise+" "+press);
 
-			Point p = new Point((point.x - 50) / 300 - 1,
-					point.y / 240 - 1);
-			
+			Point p = new Point((point.x - 50) / 300 - 1, point.y / 240 - 1);
+
 			mListener.onMove(p);
-			if(press)mListener.onPress(p);
-			if(raise)mListener.onRaise(p);
-			if(click)mListener.onClick();
-			
+			if (press)
+				mListener.onPress(p);
+			if (raise)
+				mListener.onRaise(p);
+			if (click)
+				mListener.onClick();
+
 		}
 	}
 

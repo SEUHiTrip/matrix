@@ -7,6 +7,7 @@ import java.util.Map;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.idisplay.VirtualScreenDisplay.IDisplayConnection.ConnectionMode;
 import com.threed.jpct.Camera;
 import com.threed.jpct.Object3D;
 import com.threed.jpct.SimpleVector;
@@ -289,6 +290,9 @@ public class FileApp extends AbstractApp{
 				desks, files1, files2
 		}), false, runnable);
 		scene.onAppClosed();
+		
+		
+		scene.onSwitchMode(new ConnectionMode(1));
 	}
 	
 	void openFileOnScene(String file){
