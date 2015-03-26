@@ -3,7 +3,11 @@ package seu.lab.matrix.controllers;
 import org.json.JSONException;
 import org.json.JSONObject;
 import android.util.Log;
+
+import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.Request;
 import com.android.volley.RequestQueue;
+import com.android.volley.RetryPolicy;
 import com.android.volley.VolleyError;
 import com.android.volley.Request.Method;
 import com.android.volley.Response.ErrorListener;
@@ -32,8 +36,15 @@ public class AppController {
 
 		Log.d(TAG, "req : " + url);
 
-		mQueue.add(new JsonObjectRequest(Method.POST, url, null, listener,
-				errorListener));
+		int socketTimeout = 30000;//30 seconds - change to what you want
+		RetryPolicy policy = new DefaultRetryPolicy(socketTimeout, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+		
+		JsonObjectRequest request = new JsonObjectRequest(Method.POST, url, null, listener,
+				errorListener);
+		request.setRetryPolicy(policy);
+
+		
+		mQueue.add(request);
 	}
 
 	public void close(int screen, ErrorListener errorListener,

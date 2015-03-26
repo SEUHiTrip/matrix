@@ -46,6 +46,7 @@ public class HeadControlApp extends SimpleScreenApp{
 	        rightEye = new Eye(2);
 			sAngles = new float[3];
 			Log.d("Connection", "Connection ready to connect");
+			
 			try {
 				socket = new Socket(IP, PORT);
 				outStream = socket.getOutputStream();
@@ -91,6 +92,7 @@ public class HeadControlApp extends SimpleScreenApp{
 				}
 			}
 			Log.d("Connection", "Connection closed");
+			
 		}
 		
 	};
@@ -110,7 +112,25 @@ public class HeadControlApp extends SimpleScreenApp{
 			@Override
 			protected void onOk() {
 				stopped = false;
-				(curThread = new Thread(getHeadTransform)).start();
+				(curThread = new Thread(getHeadTransform){
+					@Override
+					public void run() {
+						try {
+							sleep(2000);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						super.run();
+						try {
+							sleep(5000);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						superClose();
+					}
+				}).start();
 				super.onOk();
 			}
 		};
@@ -120,7 +140,18 @@ public class HeadControlApp extends SimpleScreenApp{
 	public void onOpen(Bundle bundle) {
 		if(DEBUG){
 			stopped = false;
-			(curThread = new Thread(getHeadTransform)).start();
+			(curThread = new Thread(getHeadTransform){
+				@Override
+				public void run() {
+					try {
+						sleep(2000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					super.run();
+				}
+			}).start();
 		}
 		super.onOpen(bundle);
 	}
@@ -130,8 +161,13 @@ public class HeadControlApp extends SimpleScreenApp{
 		stopped = true;
 		if (curThread != null && curThread.isAlive()) {
 			curThread.interrupt();
+		}else {
+			super.onClose(runnable);
 		}
-		super.onClose(runnable);
+	}
+	
+	void superClose(){
+		super.onClose(null);
 	}
 
 }

@@ -1,8 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen
   xmlns:android="http://schemas.android.com/apk/res/android">
-    <CheckBoxPreference android:title="@string/settings_autoconnect" android:key="settings_autoconnect" android:summary="@string/settings_autoconnect_summary" android:defaultValue="true" />
-    <ListPreference android:title="@string/menu_resolution_title" android:key="settings_zoom" android:summary="@string/menu_resolution_description" android:entryValues="@array/scalesize" />
-    <CheckBoxPreference android:title="@string/settings_show_battery" android:key="show_battery" android:summary="@string/settings_show_battery_summary" android:defaultValue="true" />
-    <CheckBoxPreference android:title="@string/settings_sound_enabled" android:key="sound_enabled" android:summary="@string/settings_sound_enabled_summary" android:defaultValue="true" />
 </PreferenceScreen>

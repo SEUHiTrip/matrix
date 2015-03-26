@@ -93,6 +93,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 	final static int RIGHT = 5;
 	final static int UP = 6;
 	final static int DOWN = 7;
+	final static int BACK = 8;
 
 	final static int GREEN = 0;
 	final static int VOLCANO = 1;
@@ -116,6 +117,22 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 		@Override
 		public void run() {
 
+			switch (appType) {
+			case CAM:
+			case DRONE:
+			case MINECRAFT:
+			case CAR:
+			case SKYPE:
+				break;
+
+			default:
+				try {
+					sleep(2000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				break;
+			}
 			try {
 				sleep(2000);
 			} catch (InterruptedException e) {
@@ -204,8 +221,12 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 	GestureDetector mGestureDetector = null;
 
-	boolean[] actionFired = new boolean[8];
+	boolean[] actionFired = new boolean[8+1];
 
+	float headAngle = 0f;
+	
+	int headDir = 0;
+	
 	SimpleOnGestureListener mGestureListener = new SimpleOnGestureListener() {
 
 		public boolean onDoubleTap(MotionEvent e) {
@@ -220,18 +241,20 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 		public void onLongPress(MotionEvent e) {
 			if (e.getRawX() < 480) {
-				actionFired[LEFT] = true;
+//				actionFired[LEFT] = true;
 			} else if (e.getRawX() > 1920 - 480) {
-				actionFired[RIGHT] = true;
+//				actionFired[RIGHT] = true;
 			} else {
 				if (e.getRawY() < 540) {
-					actionFired[UP] = true;
+//					actionFired[UP] = true;
+					actionFired[TOGGLE_FULLSCREEN] = true;
+
 				} else {
-					actionFired[DOWN] = true;
+//					actionFired[DOWN] = true;
+					actionFired[BACK] = true;
 				}
 			}
 
-			actionFired[TOGGLE_FULLSCREEN] = true;
 		}
 
 		public boolean onScroll(MotionEvent e1, MotionEvent e2,
@@ -349,6 +372,8 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 				actionFired[DOWN] = true;
 			} else if (event.type == Gestures.PULL.ordinal() && event.speed > 8) {
 				actionFired[UP] = true;
+			}else if (event.type == Gestures.PULL_PUSH_PULL.ordinal()) {
+				actionFired[BACK] = true;
 			}
 
 			show3DToast(event.result);
@@ -548,8 +573,6 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 	}
 
-	float headAngle = 0f;
-
 	@Override
 	public void onNewFrame(HeadTransform headTransform) {
 		headTransform.getEulerAngles(mAngles, 0);
@@ -581,6 +604,26 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 				headAngle = -(float) (Math.log(-mAngles[1] + 1) / Math.log(2.2));
 			}
 
+			int newDir = 0;
+			if(Math.abs(headAngle) < 0.8){
+				newDir = 1;
+			}else if(headAngle < 0){
+				newDir = 0;
+			}else {
+				newDir = 2;
+			}
+			
+			if(newDir != headDir){
+				headDir = newDir;
+				Log.e(TAG, "headDir change to "+headDir);
+				try {
+					windowController.setMouse(headDir);
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			
 			cam.rotateY(headAngle);
 
 		}
@@ -842,6 +885,13 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 				break;
 			case TOGGLE_FULLSCREEN:
 				toggleFullscreen();
+				break;
+			case BACK:
+
+				if(isLookingAtScreen() && mCamViewIndex != TREASURE && NEED_SCENE){
+					switchIsland(TREASURE);
+				}
+				
 				break;
 			default:
 				break;
@@ -1193,8 +1243,10 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 	}
 
 	private void initIslands(String name, Object3D object3d) {
-		if (name.startsWith("i_trea"))
+		if (name.startsWith("i_trea")){
 			islands[3] = object3d;
+			object3d.setAdditionalColor(new RGBColor(255, 255, 255));
+		}
 		else if (name.startsWith("i_ship"))
 			islands[2] = object3d;
 		else if (name.startsWith("i_volcano"))
@@ -1314,8 +1366,6 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 		SimpleVector ori = new SimpleVector();
 		cam.getPosition(ori);
 
-
-
 		final Animatable a2 = new CamAnimation(cam, ori, ori, 0, 2.5, 10, 3) {
 			public void onAnimateSuccess() {
 				// super.onAnimateSuccess();
@@ -1357,7 +1407,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 		final SimpleVector volcano = islands[VOLCANO].getTransformedCenter();
 
 		final Animatable a4 = new CamAnimation(cam, volcano, volcano,
-				3 * Math.PI / 4, Math.PI / 4, 50, 10, false) {
+				3 * Math.PI / 4, Math.PI / 4, 50, 30, false) {
 			@Override
 			public void onAnimateSuccess() {
 				
@@ -1381,7 +1431,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 				.getTransformedCenter()
 				.calcAdd(
 						new SimpleVector(50 / Math.sqrt(2), -50 / Math.sqrt(2),
-								5)).calcSub(cam.getPosition()), cam,
+								30)).calcSub(cam.getPosition()), cam,
 								volcano, (float) Math.PI / 2) {
 
 			public void onAnimateSuccess() {
@@ -1566,12 +1616,12 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 	public void onDeactivateTilesGroup(PickGroup group) {
 
-		SimpleVector ori;
+		SimpleVector trns;
 
 		if (group.oriPos[0] == null) {
-			ori = new SimpleVector();
+			trns = new SimpleVector().calcSub(group.group[0].getTranslation());
 		} else {
-			ori = group.oriPos[0];
+			trns = group.oriPos[0].calcSub(group.group[0].getTransformedCenter());
 		}
 
 		if (group.state == 0) {
@@ -1582,14 +1632,6 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 			if (group.animation == null) {
 				Log.e(TAG, "trans 1 -> 0 with null");
 
-				SimpleVector trns = new SimpleVector();
-				group.group[0].getTranslation(trns);
-
-				trns.sub(ori);
-
-				trns.x = -trns.x;
-				trns.y = -trns.y;
-				trns.z = -trns.z;
 				group.animation = new TranslationAnimation("", group.group,
 						trns, group);
 				mAnimatables.add(group.animation);
@@ -1597,14 +1639,6 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 				Log.e(TAG, "trans 1 -> 0 with animation");
 
 				group.animation.stop();
-				SimpleVector trns = new SimpleVector();
-				group.group[0].getTranslation(trns);
-
-				trns.sub(ori);
-
-				trns.x = -trns.x;
-				trns.y = -trns.y;
-				trns.z = -trns.z;
 
 				group.animation = new TranslationAnimation("", group.group,
 						trns, group);

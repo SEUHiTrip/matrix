@@ -19,11 +19,12 @@ import seu.lab.matrix.animation.PickGroup;
 import seu.lab.matrix.animation.SeqAnimation;
 import seu.lab.matrix.animation.TranslationAnimation;
 
-public class FileApp extends AbstractApp{
+public class FileApp extends AbstractApp {
 
 	private World world;
-	
+
 	public int mFilePageIdx = 0;
+	public int mPickState = 0;
 
 	public FileApp(List<Animatable> animatables, SceneCallback callback,
 			Camera camera, Object3D ball1, World world) {
@@ -41,41 +42,40 @@ public class FileApp extends AbstractApp{
 	protected Object3D[] files = null;
 	protected Object3D[] files1 = null;
 	protected Object3D[] files2 = null;
-	
+
 	private Map<String, Object3D> clickableFiles = new HashMap<String, Object3D>();
 	private Map<String, Object3D> clickableDesks = new HashMap<String, Object3D>();
 
-	SimpleVector getFilePos(int i, int x){
-		return new SimpleVector(-3 - x, 0.8 * (i / 3 - 1),
-				0.5 + 0.8 * (i % 3 - 1));
+	SimpleVector getFilePos(int i, int x) {
+		SimpleVector target = new SimpleVector();
+		cam.getPosition(target);
+		target.add(new SimpleVector(-3 - x, 0.8 * (i / 3 - 1),
+				0.5 + 0.8 * (i % 3 - 1)));
+		return target;
 	}
-	
-	void resetFilePosition(Object3D[] files, int x){
+
+	void resetFilePosition(Object3D[] files, int x) {
 		for (int i = 0; i < 9; i++) {
-			SimpleVector target = new SimpleVector();
-			cam.getPosition(target);
-			target.add(getFilePos(i, x));
-			files[i].translate(target.calcSub(files[i]
-					.getTransformedCenter()));
-			Log.e(TAG, "files[i]:"+files[i].getTransformedCenter());
+			files[i].translate(getFilePos(i, x).calcSub(
+					files[i].getTransformedCenter()));
+			Log.e(TAG, "files[i]:" + files[i].getTransformedCenter());
 		}
 	}
-	
-	
+
 	void file() {
 
 		startFrom(desks, 5);
 		startFrom(files1, 5);
 		resetFilePosition(files1, 5);
-		//startFrom(files2, 5);
-		//resetFilePosition(files2, 5);
+		// startFrom(files2, 5);
+		// resetFilePosition(files2, 5);
 
-		mAnimatables.add(new TranslationAnimation("", SceneHelper.to1DArr(new Object3D[][] {
-				desks,files1
-		}), new SimpleVector(5, 0, 0), null));
+		mAnimatables.add(new TranslationAnimation("", SceneHelper
+				.to1DArr(new Object3D[][] { desks, files1 }), new SimpleVector(
+				5, 0, 0), null));
 
 	}
-	
+
 	void startFrom(Object3D[] object3ds, int distance) {
 		for (int i = 0; i < object3ds.length; i++) {
 			object3ds[i].clearTranslation();
@@ -124,10 +124,10 @@ public class FileApp extends AbstractApp{
 
 		desks = new Object3D[clickableDesks.size()];
 		files = new Object3D[clickableFiles.size()];
-		
+
 		files1 = new Object3D[mPickGroupFiles1.length];
 		files2 = new Object3D[mPickGroupFiles2.length];
-		
+
 		desks = clickableDesks.values().toArray(desks);
 		files = clickableFiles.values().toArray(files);
 
@@ -137,7 +137,7 @@ public class FileApp extends AbstractApp{
 			mPickGroupFiles1[i].group[0] = files1[i];
 			mPickGroupFiles1[i].oriPos[0] = getFilePos(i, 0);
 			world.addObject(files1[i]);
-			
+
 			files2[i] = mPickGroupFiles[1].group[0].cloneObject();
 			mPickGroupFiles2[i].group[0] = files2[i];
 			mPickGroupFiles2[i].oriPos[0] = getFilePos(i, 0);
@@ -145,7 +145,7 @@ public class FileApp extends AbstractApp{
 		}
 
 	}
-	
+
 	private void initFile(String name, Object3D object3d) {
 		object3d.setVisibility(false);
 		// object3d.setAdditionalColor(new RGBColor(100, 100, 100));
@@ -171,7 +171,7 @@ public class FileApp extends AbstractApp{
 			clickableDesks.put(tname, object3d);
 		}
 	}
-	
+
 	private void toggleDesk(boolean on) {
 		for (int i = 0; i < desks.length; i++) {
 			desks[i].setVisibility(on);
@@ -191,9 +191,9 @@ public class FileApp extends AbstractApp{
 	public void onPick() {
 		// TODO
 		pickList(mPickGroupDesks, 1, mPickGroupDesks.length);
-		if(mFilePageIdx == 0){
+		if (mFilePageIdx == 0) {
 			pickList(mPickGroupFiles1, 0, mPickGroupFiles1.length);
-		}else {
+		} else {
 			pickList(mPickGroupFiles2, 0, mPickGroupFiles2.length);
 		}
 	}
@@ -211,18 +211,18 @@ public class FileApp extends AbstractApp{
 	@Override
 	public void onCreate() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void onDestory() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void onShown() {
-		//toggleDesk(true);
+		// toggleDesk(true);
 		file();
 	}
 
@@ -246,36 +246,74 @@ public class FileApp extends AbstractApp{
 	@Override
 	public void onUp() {
 		// TODO go to home folder
-		
+
 	}
 
 	@Override
 	public void onDown() {
 		// TODO go to up level
-		
+
 	}
 
 	@Override
 	public void onLongPress() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void onDoubleTap() {
-		// TODO 
-		// pick file 
+		// TODO
+		// pick file
+		// 1,2,3,4
+		// 
+		// -1,1,-1,1
+		// -1,-1,1,1
+		if (mPickState == 0) {
+
+			Object3D[] files = mFilePageIdx == 0 ? files1 : files2;
+
+			for (int i = 0; i < files.length; i++) {
+				if (SceneHelper.isLookingAt(cam, ball1,
+						files[i].getTransformedCenter()) > 0.99) {
+					
+					mPickState = 1;
+					
+					PickGroup group = null;
+					SimpleVector tmp;
+					for (int j = 1; j < mPickGroupDesks.length; j++) {
+						group = mPickGroupDesks[j];
+						tmp = getFilePos(i, 0);
+						group.group[0].translate(tmp);
+						group.oriPos[0] = tmp.calcAdd(new SimpleVector(1, (j%2*2-1)*0.2, (j/2*2-1)*0.2));
+					}
+					
+					break;
+				}
+			}
+		} else {
+			PickGroup group = null;
+			SimpleVector tmp = new SimpleVector(0,0,-1000);
+			for (int j = 1; j < mPickGroupDesks.length; j++) {
+				group = mPickGroupDesks[j];
+
+				group.group[0].translate(tmp);
+				group.oriPos[0] = null;
+			}
+			
+		}
+
 		// show the icons
 		// pick icons and do the action
-		
+
 		// drag the files
-		
+
 	}
 
 	@Override
 	public void onSingleTap() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -286,40 +324,39 @@ public class FileApp extends AbstractApp{
 
 	@Override
 	public void onClose(Runnable runnable) {
-		scene.onHideObj(SceneHelper.to1DArr(new Object3D[][]{
-				desks, files1, files2
-		}), false, runnable);
+		scene.onHideObj(
+				SceneHelper.to1DArr(new Object3D[][] { desks, files1, files2 }),
+				false, runnable);
 		scene.onAppClosed();
-		
-		
+
 		scene.onSwitchMode(new ConnectionMode(1));
 	}
-	
-	void openFileOnScene(String file){
-		
+
+	void openFileOnScene(String file) {
+
 		Bundle bundle = new Bundle();
 		bundle.putString("file", file);
-		
+
 		scene.onOpenApp(AppType.FILE_OPEN.ordinal(), bundle);
 	}
-	
-	void slideFile(boolean slideLeft){
+
+	void slideFile(boolean slideLeft) {
 		mFilePageIdx = (mFilePageIdx + 1) % 2;
 
 		resetFilePosition(files1, 0);
 		resetFilePosition(files2, 0);
-		
+
 		Object3D[] pre, cur;
-		
-		if(mFilePageIdx == 0){
+
+		if (mFilePageIdx == 0) {
 			pre = files2;
 			cur = files1;
-		}else {
+		} else {
 			pre = files1;
 			cur = files2;
 		}
-		
+
 		slideList(slideLeft, pre, cur, 4, false, true);
 	}
-	
+
 }

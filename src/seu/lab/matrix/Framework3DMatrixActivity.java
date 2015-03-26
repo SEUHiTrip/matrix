@@ -70,7 +70,7 @@ public abstract class Framework3DMatrixActivity extends
 	public final static boolean NEED_RED = false;
 	public final static boolean NEED_DOLPHIN = false;
 	public final static boolean NEED_WORKSPACE = true;
-	public final static boolean NEED_SCENE = false;
+	public final static boolean NEED_SCENE = true;
 	
 	protected ServerItem usbServerItem;
 	protected IDisplayConnection iDisplayConnection;
