@@ -215,5 +215,11 @@ public class LauncherApp extends AbstractApp{
 		// TODO Auto-generated method stub
 		
 	}
+
+	@Override
+	public boolean onToggleFullscreen() {
+		// TODO Auto-generated method stub
+		return false;
+	}
 	
 }

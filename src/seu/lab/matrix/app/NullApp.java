@@ -112,4 +112,10 @@ public class NullApp extends AbstractApp{
 		if(runnable != null)runnable.run();
 	}
 
+	@Override
+	public boolean onToggleFullscreen() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }

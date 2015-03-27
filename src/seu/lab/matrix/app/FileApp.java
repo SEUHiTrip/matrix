@@ -359,4 +359,10 @@ public class FileApp extends AbstractApp {
 		slideList(slideLeft, pre, cur, 4, false, true);
 	}
 
+	@Override
+	public boolean onToggleFullscreen() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }

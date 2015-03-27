@@ -121,4 +121,6 @@ public abstract class AbstractApp {
 
 	abstract public void onSingleTap();
 
+	abstract public boolean onToggleFullscreen();
+
 }

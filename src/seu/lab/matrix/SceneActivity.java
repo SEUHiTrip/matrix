@@ -221,12 +221,14 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 	GestureDetector mGestureDetector = null;
 
-	boolean[] actionFired = new boolean[8+1];
+	boolean[] actionFired = new boolean[8 + 1];
 
 	float headAngle = 0f;
-	
+
 	int headDir = 0;
 	
+	private boolean singleEye = false;
+
 	SimpleOnGestureListener mGestureListener = new SimpleOnGestureListener() {
 
 		public boolean onDoubleTap(MotionEvent e) {
@@ -241,16 +243,16 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 		public void onLongPress(MotionEvent e) {
 			if (e.getRawX() < 480) {
-//				actionFired[LEFT] = true;
+				// actionFired[LEFT] = true;
 			} else if (e.getRawX() > 1920 - 480) {
-//				actionFired[RIGHT] = true;
+				// actionFired[RIGHT] = true;
 			} else {
 				if (e.getRawY() < 540) {
-//					actionFired[UP] = true;
+					// actionFired[UP] = true;
 					actionFired[TOGGLE_FULLSCREEN] = true;
 
 				} else {
-//					actionFired[DOWN] = true;
+					// actionFired[DOWN] = true;
 					actionFired[BACK] = true;
 				}
 			}
@@ -372,11 +374,11 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 				actionFired[DOWN] = true;
 			} else if (event.type == Gestures.PULL.ordinal() && event.speed > 8) {
 				actionFired[UP] = true;
-			}else if (event.type == Gestures.PULL_PUSH_PULL.ordinal()) {
+			} else if (event.type == Gestures.PULL_PUSH_PULL.ordinal()) {
 				actionFired[BACK] = true;
 			}
 
-			show3DToast(event.result);
+			show3DToastOnlyRight(event.result);
 		}
 
 		@Override
@@ -475,7 +477,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 		treasureLight = new Light(world);
 		treasureLight.setIntensity(0, 0, 0);
 		treasureLight.setPosition(new SimpleVector(0, 0, 5));
-		
+
 		ball1 = Primitives.getSphere(0.05f);
 		ball1.translate(0, 0, -2);
 		ball1.calcTextureWrapSpherical();
@@ -545,10 +547,10 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 		}
 
 		if (NEED_SKYBOX) {
-//			sky = new SkyBox("star_left", "star_forward", "star_right",
-//					"star_back", "star_top", "star_bottom", 10000f);
+			// sky = new SkyBox("star_left", "star_forward", "star_right",
+			// "star_back", "star_top", "star_bottom", 10000f);
 			sky = new SkyBox("star_forward", "star_top", "star_back",
-			"star_bottom", "star_left", "star_right", 10000f);
+					"star_bottom", "star_left", "star_right", 10000f);
 			sky.setCenter(new SimpleVector());
 		}
 
@@ -605,17 +607,17 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 			}
 
 			int newDir = 0;
-			if(Math.abs(headAngle) < 0.8){
+			if (Math.abs(headAngle) < 0.75) {
 				newDir = 1;
-			}else if(headAngle < 0){
-				newDir = 0;
-			}else {
+			} else if (headAngle < 0) {
 				newDir = 2;
+			} else {
+				newDir = 0;
 			}
-			
-			if(newDir != headDir){
+
+			if (newDir != headDir) {
 				headDir = newDir;
-				Log.e(TAG, "headDir change to "+headDir);
+				Log.e(TAG, "headDir change to " + headDir);
 				try {
 					windowController.setMouse(headDir);
 				} catch (JSONException e) {
@@ -623,7 +625,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 					e.printStackTrace();
 				}
 			}
-			
+
 			cam.rotateY(headAngle);
 
 		}
@@ -644,10 +646,11 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 			cam.setPosition(mCamViewspots[TREASURE].getTransformedCenter());
 			mAnimatables.add(new WeatherAnimation(weathers[3], weathers[1],
 					mAnimatables));
-			
+
 			treasureLight.setIntensity(250, 250, 250);
 			treasureLight.enable();
-			treasureLight.setPosition(mCamViewspots[TREASURE].getTransformedCenter());
+			treasureLight.setPosition(mCamViewspots[TREASURE]
+					.getTransformedCenter());
 		}
 
 		if (NEED_WORKSPACE) {
@@ -765,11 +768,11 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 		ball1.setRotationPivot(originInballView);
 
 		if (System.currentTimeMillis() - lastBallUpdate > 5000) {
-			ball1.setTransparency(0);
+			ball1.setVisibility(false);
 			ball1.rotateAxis(cam.getUpVector(), 0f);
 			ball1.rotateAxis(cam.getSideVector(), 0f);
 		} else {
-			ball1.setTransparency(100);
+			ball1.setVisibility(true);
 			ball1.rotateAxis(cam.getUpVector(), (float) (0.5f * point.x));
 			ball1.rotateAxis(cam.getSideVector(), (float) (0.5f * point.y));
 		}
@@ -821,7 +824,8 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 				break;
 			case DOUBLE_TAP:
 
-				if (NEED_SCENE) {
+				if (NEED_SCENE && ws.mCurrentAppType != AppType.PIC
+						&& ws.mCurrentAppType != AppType.VIDEO) {
 					for (int i1 = 0; i1 < 4; i1++) {
 						if (i1 == mCamViewIndex)
 							continue;
@@ -843,7 +847,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 						} else if (SceneHelper.isLookingAt(cam,
 								islands[TREASURE].getTransformedCenter()) > 0.95) {
 							NEO = NEO ? false : true;
-							show3DToast("NEO");
+							show3DToastOnlyRight("NEO");
 							actionFired[DOUBLE_TAP] = false;
 						}
 					} else {
@@ -884,14 +888,16 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 				ws.mCurrentApp.onLongPress();
 				break;
 			case TOGGLE_FULLSCREEN:
-				toggleFullscreen();
+				if (!ws.mCurrentApp.onToggleFullscreen())
+					toggleFullscreen();
 				break;
 			case BACK:
 
-				if(isLookingAtScreen() && mCamViewIndex != TREASURE && NEED_SCENE){
+				if (isLookingAtScreen() && mCamViewIndex != TREASURE
+						&& NEED_SCENE) {
 					switchIsland(TREASURE);
 				}
-				
+
 				break;
 			default:
 				break;
@@ -1243,11 +1249,10 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 	}
 
 	private void initIslands(String name, Object3D object3d) {
-		if (name.startsWith("i_trea")){
+		if (name.startsWith("i_trea")) {
 			islands[3] = object3d;
 			object3d.setAdditionalColor(new RGBColor(255, 255, 255));
-		}
-		else if (name.startsWith("i_ship"))
+		} else if (name.startsWith("i_ship"))
 			islands[2] = object3d;
 		else if (name.startsWith("i_volcano"))
 			islands[1] = object3d;
@@ -1341,17 +1346,36 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 		fb.clear(back);
 
-		if (NEED_SKYBOX) {
-			world.renderScene(fb);
-			sky.render(world, fb);
-		} else {
-			world.renderScene(fb);
+		if(eye.getType() == Eye.Type.LEFT){
+			if (NEED_SKYBOX) {
+				world.renderScene(fb);
+				sky.render(world, fb);
+			} else {
+				world.renderScene(fb);
+			}
+			if (NEO) {
+				world.drawWireframe(fb, wire, 2, false);
+			} else {
+				world.draw(fb);
+			}
+		}else {
+			if(singleEye){
+				fb.clear(black);
+			}else {
+				if (NEED_SKYBOX) {
+					world.renderScene(fb);
+					sky.render(world, fb);
+				} else {
+					world.renderScene(fb);
+				}
+				if (NEO) {
+					world.drawWireframe(fb, wire, 2, false);
+				} else {
+					world.draw(fb);
+				}
+			}
 		}
-		if (NEO) {
-			world.drawWireframe(fb, wire, 2, false);
-		} else {
-			world.draw(fb);
-		}
+		
 		fb.display();
 	}
 
@@ -1370,8 +1394,9 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 			public void onAnimateSuccess() {
 				// super.onAnimateSuccess();
 
-				final Animatable a3 = new CamTranslationAnimation("", ori.calcSub(cam
-						.getPosition()), cam, ori.calcAdd(forward), (float) Math.PI / 2) {
+				final Animatable a3 = new CamTranslationAnimation("",
+						ori.calcSub(cam.getPosition()), cam,
+						ori.calcAdd(forward), (float) Math.PI / 2) {
 
 					public void onAnimateSuccess() {
 						super.onAnimateSuccess();
@@ -1380,7 +1405,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 						canCamRotate = true;
 					}
 				};
-				
+
 				mAnimatables.add(a3);
 
 			}
@@ -1410,19 +1435,20 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 				3 * Math.PI / 4, Math.PI / 4, 50, 30, false) {
 			@Override
 			public void onAnimateSuccess() {
-				
+
 				final Animatable a5 = new CamTranslationAnimation("",
 						mCamViewspots[TREASURE].getTransformedCenter().calcSub(
-								cam.getPosition()), cam,
-								volcano, (float) Math.PI / 2) {
+								cam.getPosition()), cam, volcano,
+						(float) Math.PI / 2) {
 					@Override
 					public void onAnimateSuccess() {
 						canCamRotate = true;
 						isCamFlying = false;
+						singleEye = true;
 						super.onAnimateSuccess();
 					}
 				};
-				
+
 				mAnimatables.add(a5);
 			}
 		};
@@ -1431,8 +1457,8 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 				.getTransformedCenter()
 				.calcAdd(
 						new SimpleVector(50 / Math.sqrt(2), -50 / Math.sqrt(2),
-								30)).calcSub(cam.getPosition()), cam,
-								volcano, (float) Math.PI / 2) {
+								30)).calcSub(cam.getPosition()), cam, volcano,
+				(float) Math.PI / 2) {
 
 			public void onAnimateSuccess() {
 				super.onAnimateSuccess();
@@ -1463,19 +1489,9 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 		mAnimatables.add(a1);
 	}
 
-	private void flyDrone() {
-		show3DToast("flyDrone");
-
-	}
-
-	private void exitDrone() {
-		show3DToast("exitDrone");
-
-	}
-
 	@Override
 	public void onCardboardTrigger() {
-		show3DToast("onCardboardTrigger");
+		show3DToastOnlyRight("onCardboardTrigger");
 
 		actionFired[TOGGLE_FULLSCREEN] = true;
 		super.onCardboardTrigger();
@@ -1483,7 +1499,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 	@Override
 	public void onIDisplayConnected() {
-		show3DToast("onIDisplayConnected");
+		show3DToastOnlyRight("onIDisplayConnected");
 		synchronized (iDisplayKeeper) {
 			iDisplayKeeper.notifyAll();
 		}
@@ -1621,7 +1637,8 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 		if (group.oriPos[0] == null) {
 			trns = new SimpleVector().calcSub(group.group[0].getTranslation());
 		} else {
-			trns = group.oriPos[0].calcSub(group.group[0].getTransformedCenter());
+			trns = group.oriPos[0].calcSub(group.group[0]
+					.getTransformedCenter());
 		}
 
 		if (group.state == 0) {
@@ -1665,7 +1682,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 	@Override
 	public void onIDisplayDenyed() {
-		show3DToast("onIDisplayDenyed");
+		show3DToastOnlyRight("onIDisplayDenyed");
 		synchronized (iDisplayKeeper) {
 			iDisplayKeeper.notifyAll();
 		}
@@ -1674,7 +1691,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 	@Override
 	public void OnIDisplayUnexpectedError() {
-		show3DToast("OnIDisplayUnexpectedError");
+		show3DToastOnlyRight("OnIDisplayUnexpectedError");
 		synchronized (iDisplayKeeper) {
 			iDisplayKeeper.notifyAll();
 		}
@@ -1699,6 +1716,11 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 	@Override
 	public void onSwitchMode(ConnectionMode mode) {
 		iDisplayKeeper.switchMode(mode);
+	}
+
+	@Override
+	public void onSceneToggleFullscreen() {
+		toggleFullscreen();
 	}
 
 }

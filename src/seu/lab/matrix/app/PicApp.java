@@ -369,4 +369,10 @@ public class PicApp extends AbstractApp {
 		scene.onAppClosed();
 	}
 
+	@Override
+	public boolean onToggleFullscreen() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }

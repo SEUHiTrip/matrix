@@ -171,4 +171,10 @@ public class AbstractScreenApp extends AbstractApp{
 		scene.onAppReady();
 	}
 
+	@Override
+	public boolean onToggleFullscreen() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }

@@ -25,5 +25,6 @@ public interface SceneCallback {
 	int getScreenIdx();
 	boolean isLookingAtScreen();
 	void onSwitchMode(ConnectionMode mode);
+	void onSceneToggleFullscreen();
 
 }

@@ -65,10 +65,10 @@ public abstract class Framework3DMatrixActivity extends
 
 	public static Activity master = null;
 	public static final String TAG = "Framework3DMatrixActivity";
-	public final static boolean NEED_SKYBOX = true;
+	public boolean NEED_SKYBOX = NEED_IDISPLAY;
 	public final static boolean NEED_IDISPLAY = false;
 	public final static boolean NEED_RED = false;
-	public final static boolean NEED_DOLPHIN = false;
+	public final static boolean NEED_DOLPHIN = true;
 	public final static boolean NEED_WORKSPACE = true;
 	public final static boolean NEED_SCENE = true;
 	

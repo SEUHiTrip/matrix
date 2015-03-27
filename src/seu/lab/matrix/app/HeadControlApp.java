@@ -116,18 +116,12 @@ public class HeadControlApp extends SimpleScreenApp{
 					@Override
 					public void run() {
 						try {
-							sleep(2000);
+							sleep(1000);
 						} catch (InterruptedException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 						super.run();
-						try {
-							sleep(5000);
-						} catch (InterruptedException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
 						superClose();
 					}
 				}).start();
