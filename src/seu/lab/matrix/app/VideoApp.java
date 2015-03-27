@@ -13,6 +13,8 @@ import seu.lab.matrix.animation.LiveTileAnimation;
 import seu.lab.matrix.animation.PickGroup;
 import seu.lab.matrix.animation.SeqAnimation;
 import seu.lab.matrix.controllers.AppController;
+import seu.lab.matrix.obj.PictureInfo;
+import seu.lab.matrix.obj.VideoInfo;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -38,6 +40,8 @@ public class VideoApp extends AbstractScreenApp {
 
 	PickGroup[] mPickGroupLists = new PickGroup[4 + 2 + 1];
 	private Map<String, Object3D> clickableLists = new HashMap<String, Object3D>();
+	
+	private String videoName=null;
 
 	public VideoApp(List<Animatable> animatables, SceneCallback callback,
 			Camera camera, Object3D ball1) {
@@ -249,12 +253,27 @@ public class VideoApp extends AbstractScreenApp {
 				}
 				try {
 					videoController.play(scene.getScreenIdx(), videoUrl[0], defaultErrorListener, playListener);
+					String[] temp=videoUrl[0].split("\\\\");
+					videoName=temp[temp.length-1];
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
 		}.start();
+		
+		
+		if(videoName==null)
+			SceneHelper.drawText("w_opt", new String[] { "hello pic", "line2" });
+		else {
+			VideoInfo videoInfo=new VideoInfo(videoName,"");
+			SceneHelper.drawText("w_opt", new String[] { videoInfo.name, 
+					 "Width: "+ videoInfo.width,
+					 "Height: "+ videoInfo.height,
+					 "Framerate: "+ videoInfo.framerate,
+					 "Length: "+ videoInfo.length,
+					 "Size: "+ videoInfo.size});
+		}
 		
 		isVideoPlaying = false;
 

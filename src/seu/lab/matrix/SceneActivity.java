@@ -85,7 +85,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 	final static int WORKSPACE_COUNT = 3;
 
 	final static boolean NEED_WORKSPACE = true;
-	final static boolean NEED_SCENE = true;
+	final static boolean NEED_SCENE = false;
 
 	final static int SINGLE_TAP = 0;
 	final static int DOUBLE_TAP = 1;

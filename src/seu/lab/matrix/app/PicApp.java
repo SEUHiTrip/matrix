@@ -12,8 +12,8 @@ import seu.lab.matrix.animation.PickGroup;
 import seu.lab.matrix.animation.ScaleAnimation;
 import seu.lab.matrix.animation.SeqAnimation;
 import seu.lab.matrix.animation.TranslationAnimation;
+import seu.lab.matrix.obj.PictureInfo;
 
-import android.R.integer;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -46,6 +46,8 @@ public class PicApp extends AbstractApp {
 			new LiveTileAnimation("", false, null),
 			new LiveTileAnimation("", false, null),
 			new LiveTileAnimation("", false, null), };
+	
+	private String picName=null;
 
 	@Override
 	public void initObj(String name, Object3D object3d) {
@@ -70,7 +72,6 @@ public class PicApp extends AbstractApp {
 
 	@Override
 	public void onShown() {
-		SceneHelper.drawText("w_opt", new String[] { "hello pic", "line2" });
 		toggleList(true, 0, 6 + 3);
 		openPic(1);
 	}
@@ -152,9 +153,33 @@ public class PicApp extends AbstractApp {
 
 		if (i < 10) {
 			picScrs[0].setTexture("p_" + i);
+			picName="p_" + i;
 		} else {
 			picScrs[0].setTexture("p_" + (char) ('a' + (i - 10)));
+			picName="p_" + (char) ('a' + (i - 10));
 		}
+		
+		
+		
+		
+		
+		if(picName==null)
+			SceneHelper.drawText("w_opt", new String[] { "hello pic", "line2" });
+		else {
+			PictureInfo pictureInfo=new PictureInfo(picName,"");
+			SceneHelper.drawText("w_opt", new String[] { pictureInfo.name+"."+pictureInfo.type, 
+					 "Width: "+ pictureInfo.width,
+					 "Height: "+ pictureInfo.height,
+					 "Iso: "+ pictureInfo.iso,
+					 "Duration: "+ pictureInfo.duration,
+					 "Aperture: "+ pictureInfo.aperture,
+					 "Size: "+ pictureInfo.size});
+		}
+		
+		
+		
+		
+		
 
 		picScrs[0].translate(-3, 0, 0);
 
