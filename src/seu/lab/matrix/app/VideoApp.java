@@ -13,6 +13,7 @@ import seu.lab.matrix.animation.LiveTileAnimation;
 import seu.lab.matrix.animation.PickGroup;
 import seu.lab.matrix.animation.SeqAnimation;
 import seu.lab.matrix.controllers.AppController;
+import seu.lab.matrix.obj.VideoInfo;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -20,6 +21,7 @@ import android.util.Log;
 import com.android.volley.VolleyError;
 import com.android.volley.Response.ErrorListener;
 import com.android.volley.Response.Listener;
+import com.idisplay.VirtualScreenDisplay.IDisplayConnection.ConnectionMode;
 import com.threed.jpct.Camera;
 import com.threed.jpct.Object3D;
 import com.threed.jpct.SimpleVector;
@@ -29,11 +31,12 @@ public class VideoApp extends AbstractScreenApp {
 	final static int VIDEO_COUNT_PER_PAGE = 4;
 
 	boolean isVideoPlaying = false;
+	private String videoName=null;
+	
 	
 	public int mVideoPageIdx;
-	final static String[] videoUrl = new String[]{
-		"c:\\Users\\qf\\Desktop\\LynnTemp\\bigHero.mkv",
-		
+	final static String[] videoUrl = new String[] { "c:\\bigHero.mkv",
+
 	};
 
 	PickGroup[] mPickGroupLists = new PickGroup[4 + 2 + 1];
@@ -51,17 +54,18 @@ public class VideoApp extends AbstractScreenApp {
 			new LiveTileAnimation("", false, null),
 			new LiveTileAnimation("", false, null), };
 
-	private DefaultListener playListener = new DefaultListener(){
+	private DefaultListener playListener = new DefaultListener() {
 		protected void onErr() {
 			isVideoPlaying = false;
 		}
+
 		protected void onOk() {
 			isVideoPlaying = true;
 			scene.onHideCurtain();
 			scene.onCallScreen();
 		}
 	};
-	
+
 	@Override
 	public void initObj(String name, Object3D object3d) {
 		initLists(name, object3d);
@@ -87,7 +91,7 @@ public class VideoApp extends AbstractScreenApp {
 	@Override
 	public void onShown() {
 		toggleList(true, 0, 7);
-		SceneHelper.drawText("w_opt", new String[] { "hello video", "line2" });
+		SceneHelper.drawText("w_opt", new String[] { "Video", "" });
 		// TODO
 	}
 
@@ -99,7 +103,13 @@ public class VideoApp extends AbstractScreenApp {
 
 	@Override
 	public void onClose(Runnable runnable) {
-		if(isVideoPlaying){
+		
+		scene.onScript("我们不能仅仅通过它进行娱乐\n既然屏幕大小不会受到限制\n当然数量也不会受到限制了\n所以我们可以自由的扩充自己的工作区\n与团队进行更好的协作");
+		
+//		scene.onStopRed();
+//		scene.onStartDolphin();
+		
+		if (isVideoPlaying) {
 			try {
 				videoController.close(scene.getScreenIdx());
 			} catch (JSONException e) {
@@ -112,11 +122,14 @@ public class VideoApp extends AbstractScreenApp {
 		scene.onHideCurtain();
 		scene.onHideScreen(runnable);
 		scene.onAppClosed();
+		scene.onSwitchMode(new ConnectionMode(1));
+		
 	}
 
 	@Override
 	public void onLeft() {
-		if(!isVideoPlaying)return;
+		if (!isVideoPlaying)
+			return;
 		try {
 			videoController.backward(scene.getScreenIdx());
 		} catch (JSONException e) {
@@ -127,7 +140,8 @@ public class VideoApp extends AbstractScreenApp {
 
 	@Override
 	public void onRight() {
-		if(!isVideoPlaying)return;
+		if (!isVideoPlaying)
+			return;
 		try {
 			videoController.forward(scene.getScreenIdx());
 		} catch (JSONException e) {
@@ -155,7 +169,7 @@ public class VideoApp extends AbstractScreenApp {
 	}
 
 	@Override
-	public void onDoubleTap() {
+	public boolean onDoubleTap() {
 
 		PickGroup group = null;
 		Object3D object3d;
@@ -167,7 +181,7 @@ public class VideoApp extends AbstractScreenApp {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			return;
+			return true;
 		}
 
 		for (int i = 0; i < 4; i++) {
@@ -175,7 +189,7 @@ public class VideoApp extends AbstractScreenApp {
 			if (SceneHelper.isLookingAt(cam, ball1,
 					group.group[0].getTransformedCenter()) > 0.995) {
 				openVideo(i + VIDEO_COUNT_PER_PAGE * mVideoPageIdx + 1);
-				break;
+				return true;
 			}
 		}
 
@@ -187,9 +201,10 @@ public class VideoApp extends AbstractScreenApp {
 					object3d.getTransformedCenter()) > 0.995) {
 
 				flipVideoList();
+				return true;
 			}
 		}
-
+		return false;
 	}
 
 	@Override
@@ -206,24 +221,27 @@ public class VideoApp extends AbstractScreenApp {
 	@Override
 	public void onOpen(Bundle bundle) {
 
-//		try {
-//			appController.open(scene.getScreenIdx(),
-//					AppController.app_name.video, defaultErrorListener,
-//					listener);
-//		} catch (JSONException e) {
-//			Log.e(TAG, e.toString());
-//		}
-
-		 onShown();
-		 scene.onCallCurtain("b_v3ideo");
-		 scene.onAppReady();
+		// try {
+		// appController.open(scene.getScreenIdx(),
+		// AppController.app_name.video, defaultErrorListener,
+		// listener);
+		// } catch (JSONException e) {
+		// Log.e(TAG, e.toString());
+		// }
+		scene.onScript("我们撑满眼眶的画面让你感觉似乎是在电影院\n红外操控");
+		onShown();
+		scene.onCallCurtain("b_v3ideo");
+		scene.onAppReady();
+		
+		scene.onStopDolphin();
+		scene.onStartRed();
 	}
 
 	private void openVideo(int i) {
 
 		// TODO gjw draw video desc
 
-		if(isVideoPlaying){
+		if (isVideoPlaying) {
 			scene.onCallCurtain("b_v3ideo");
 			scene.onHideScreen(null);
 			try {
@@ -233,14 +251,14 @@ public class VideoApp extends AbstractScreenApp {
 				e.printStackTrace();
 			}
 		}
-		
+
 		final boolean tmp = isVideoPlaying;
-		
-		new Thread(){
-			
+
+		new Thread() {
+
 			public void run() {
 				try {
-					if(tmp){
+					if (tmp) {
 						sleep(2000);
 					}
 				} catch (InterruptedException e1) {
@@ -248,13 +266,29 @@ public class VideoApp extends AbstractScreenApp {
 					e1.printStackTrace();
 				}
 				try {
-					videoController.play(scene.getScreenIdx(), videoUrl[0], defaultErrorListener, playListener);
+					videoController.play(scene.getScreenIdx(), videoUrl[0],
+							defaultErrorListener, playListener);
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
 		}.start();
+
+		String[] temp=videoUrl[0].split("\\\\");
+		videoName=temp[temp.length-1];
+		
+		if(videoName==null)
+			SceneHelper.drawText("w_opt", new String[] { "hello pic", "line2" });
+		else {
+			VideoInfo videoInfo=new VideoInfo(videoName,"");
+			SceneHelper.drawText("w_opt", new String[] { videoInfo.name, 
+					 "Width: "+ videoInfo.width,
+					 "Height: "+ videoInfo.height,
+					 "Framerate: "+ videoInfo.framerate,
+					 "Length: "+ videoInfo.length,
+					 "Size: "+ videoInfo.size});
+		}
 		
 		isVideoPlaying = false;
 

@@ -107,7 +107,7 @@ public class LauncherApp extends AbstractApp{
 	}
 
 	@Override
-	public void onDoubleTap() {
+	public boolean onDoubleTap() {
 		
 		Log.e(TAG, "onDoubleTap");
 		
@@ -117,8 +117,10 @@ public class LauncherApp extends AbstractApp{
 			if (SceneHelper.isLookingAt(cam, ball1,
 					group.group[0].getTransformedCenter()) > 0.995) {
 				scene.onOpenApp(i, null);
+				return true;
 			}
 		}
+		return false;
 	}
 
 	@Override

@@ -262,7 +262,7 @@ public class FileApp extends AbstractApp {
 	}
 
 	@Override
-	public void onDoubleTap() {
+	public boolean onDoubleTap() {
 		// TODO
 		// pick file
 		// 1,2,3,4
@@ -307,7 +307,7 @@ public class FileApp extends AbstractApp {
 		// pick icons and do the action
 
 		// drag the files
-
+		return false;
 	}
 
 	@Override

@@ -236,7 +236,7 @@ public class IDisplayConnection implements UnexpectedErrorListner,
 				
 				break;
 			case 1:
-				
+
 				break;
 			case 2:
 				switch (message.arg1) {
@@ -345,6 +345,11 @@ public class IDisplayConnection implements UnexpectedErrorListner,
 		this.connected = false;
 	}
 
+	public void stopConnection(){
+		connected = false;
+        ccMngr.stopProcesses();
+	}
+	
 	private void initCodecs() {
 		Logger.d(className + ": initCodes");
 		VP8Decoder.getInstance().reInit();

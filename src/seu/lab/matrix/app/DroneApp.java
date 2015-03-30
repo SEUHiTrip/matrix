@@ -13,73 +13,24 @@ import com.threed.jpct.Camera;
 import com.threed.jpct.Object3D;
 
 public class DroneApp extends HeadControlApp{
-
-	boolean canPlay = false;
 	
 	public DroneApp(CardboardView cardboardView,
 			List<Animatable> animatables, SceneCallback callback,
 			Camera camera, Object3D ball1) {
 		super(cardboardView, 6004, app_name.drone, animatables, callback, camera, ball1);
-		
-		defaultListener = new DefaultListener(){
-			@Override
-			protected void onErr() {
-				// TODO Auto-generated method stub
-				super.onErr();
-			}
-			@Override
-			protected void onOk() {
-				scene.onCallScreen();
-				scene.onAppReady();
-			}
-		};	
+		SLEEPTIME = 4000;
 	}
 	
 	@Override
 	public void onOpen(Bundle bundle) {
-		canPlay = true;
+		scene.onScript("你仅仅只需要坐在原地\n通过头部的转动控制无人机的转动\n通过低头也抬头控制无人机的移动\n就可以轻松地看到你平时难以看到的画面");
 		super.onOpen(bundle);
 	}
-
+	
 	@Override
-	public boolean onToggleFullscreen() {
-		scene.onSceneToggleFullscreen();
-		
-		if(canPlay){
-			canPlay = false;
-			stopped = false;
-			(curThread = new Thread(getHeadTransform){
-				@Override
-				public void run() {
-					try {
-						sleep(1000);
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					super.run();
-					try {
-						sleep(5000);
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					superClose();
-				}
-			}).start();
-			
-		}else {
-			stopped = true;
-			if(curThread.isAlive()){
-				curThread.interrupt();
-			}else {
-				superClose();
-			}
-		}
-
-		return true;
+	public void onClose(Runnable runnable) {
+		scene.onScript("在虚拟空间\n我们当然不会受屏幕大小的限制啦\n所以用它来看电影也很不错");
+		super.onClose(runnable);
 	}
-	
-	
 	
 }

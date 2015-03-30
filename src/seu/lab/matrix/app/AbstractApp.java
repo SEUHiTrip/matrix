@@ -117,7 +117,7 @@ public abstract class AbstractApp {
 
 	abstract public void onLongPress();
 
-	abstract public void onDoubleTap();
+	abstract public boolean onDoubleTap();
 
 	abstract public void onSingleTap();
 

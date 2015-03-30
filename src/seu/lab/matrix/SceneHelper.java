@@ -109,11 +109,32 @@ public class SceneHelper {
 
 		p.setAntiAlias(true);
 
-		p.setColor(Color.WHITE);
+		//p.setColor(Color.WHITE);
 		p.setTypeface(typeface);
-		p.setTextSize(28);
+		p.setTextSize(20);
 		for (int i = 0; i < msg.length; i++) {
-			canvas.drawText(msg[i], 0, 100 * i, p);
+			if(i==0){
+				p.setColor(Color.rgb(255, 125, 125));
+				canvas.drawText(msg[i], 0, 30 * i+30, p);
+			}
+			else{
+				if(msg[i].contains(":")){
+					p.setColor(Color.WHITE);
+					String[] temp=msg[i].split(":");
+					canvas.drawText(temp[0]+":", 0, 30 * i+30, p);
+					p.setColor(Color.rgb(80, 144, 255));
+					canvas.drawText(temp[1], 100, 30 * i+30, p);
+				}
+				else {
+					p.setColor(Color.rgb(255, 125, 125));
+					canvas.drawText(msg[i], 0, 30 * i+30, p);
+				}
+			}
+//			else if(i%2==1)
+//				p.setColor(Color.rgb(80, 144, 255));
+//			else 
+//				p.setColor(Color.WHITE);
+			
 		}
 
 		TextureManager tm = TextureManager.getInstance();

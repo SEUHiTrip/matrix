@@ -9,8 +9,9 @@ public class Workspace {
 	
 	public int id;
 	
-	public Workspace(int id) {
+	public Workspace(int id, AbstractApp app) {
 		this.id = id;
+		this.mCurrentApp = app;
 	}
 	
 	public boolean isScrShown = false;

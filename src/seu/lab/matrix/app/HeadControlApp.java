@@ -34,7 +34,10 @@ public class HeadControlApp extends SimpleScreenApp{
 	private int PORT;
 	private final String IP = Confg.IP;
 	boolean stopped = false;
+	boolean canPlay = false;
 
+	protected int SLEEPTIME = 1000;
+	
 	Thread curThread;
 	
 	Runnable getHeadTransform = new Runnable() {
@@ -112,19 +115,6 @@ public class HeadControlApp extends SimpleScreenApp{
 			@Override
 			protected void onOk() {
 				stopped = false;
-				(curThread = new Thread(getHeadTransform){
-					@Override
-					public void run() {
-						try {
-							sleep(1000);
-						} catch (InterruptedException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-						super.run();
-						superClose();
-					}
-				}).start();
 				super.onOk();
 			}
 		};
@@ -147,6 +137,8 @@ public class HeadControlApp extends SimpleScreenApp{
 				}
 			}).start();
 		}
+		canPlay = true;
+
 		super.onOpen(bundle);
 	}
 	
@@ -155,6 +147,7 @@ public class HeadControlApp extends SimpleScreenApp{
 		stopped = true;
 		if (curThread != null && curThread.isAlive()) {
 			curThread.interrupt();
+			super.onClose(null);
 		}else {
 			super.onClose(runnable);
 		}
@@ -164,4 +157,43 @@ public class HeadControlApp extends SimpleScreenApp{
 		super.onClose(null);
 	}
 
+	
+	@Override
+	public boolean onToggleFullscreen() {
+		scene.onSceneToggleFullscreen();
+		
+		if(canPlay){
+			canPlay = false;
+			stopped = false;
+			(curThread = new Thread(getHeadTransform){
+				@Override
+				public void run() {
+					try {
+						sleep(1000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					super.run();
+					try {
+						sleep(SLEEPTIME);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					superClose();
+				}
+			}).start();
+			
+		}else {
+			stopped = true;
+			if(curThread.isAlive()){
+				curThread.interrupt();
+			}else {
+				superClose();
+			}
+		}
+
+		return true;
+	}
 }

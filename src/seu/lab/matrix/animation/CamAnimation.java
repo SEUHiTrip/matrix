@@ -16,7 +16,7 @@ public class CamAnimation implements Animatable {
 	int height = 3;
 	protected SimpleVector ori;
 	protected SimpleVector lookat;
-	double speed = 0.005f;
+	double speed = 0.01f;
 	double angle;
 	double end;
 	double x, y;

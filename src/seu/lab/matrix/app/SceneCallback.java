@@ -26,5 +26,9 @@ public interface SceneCallback {
 	boolean isLookingAtScreen();
 	void onSwitchMode(ConnectionMode mode);
 	void onSceneToggleFullscreen();
-
+	void onScript(String msg);
+	void onStartDolphin();
+	void onStopDolphin();
+	void onStartRed();
+	void onStopRed();
 }

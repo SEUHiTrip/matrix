@@ -90,9 +90,8 @@ public class NullApp extends AbstractApp{
 	}
 
 	@Override
-	public void onDoubleTap() {
-		// TODO Auto-generated method stub
-		
+	public boolean onDoubleTap() {
+		return false;
 	}
 
 	@Override

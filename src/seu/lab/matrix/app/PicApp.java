@@ -12,6 +12,7 @@ import seu.lab.matrix.animation.PickGroup;
 import seu.lab.matrix.animation.ScaleAnimation;
 import seu.lab.matrix.animation.SeqAnimation;
 import seu.lab.matrix.animation.TranslationAnimation;
+import seu.lab.matrix.obj.PictureInfo;
 
 import android.R.integer;
 import android.os.Bundle;
@@ -28,7 +29,8 @@ public class PicApp extends AbstractApp {
 	public int mPicPageIdx = 0;
 	public int mCurrentPic = 0;
 	public boolean isPicScrShown = false;
-
+	private String picName=null;
+	
 	public PicApp(List<Animatable> animatables, SceneCallback callback,
 			Camera camera, Object3D ball1) {
 		super(animatables, callback, camera, ball1);
@@ -107,7 +109,7 @@ public class PicApp extends AbstractApp {
 	}
 
 	@Override
-	public void onDoubleTap() {
+	public boolean onDoubleTap() {
 		PickGroup group;
 		Object3D object3d;
 		for (int i = 0; i < 6; i++) {
@@ -117,6 +119,7 @@ public class PicApp extends AbstractApp {
 			if (SceneHelper.isLookingAt(cam, ball1,
 					object3d.getTransformedCenter()) > 0.995) {
 				openPic(i + PIC_COUNT_PER_PAGE * mPicPageIdx + 1);
+				return true;
 			}
 		}
 
@@ -128,9 +131,11 @@ public class PicApp extends AbstractApp {
 					object3d.getTransformedCenter()) > 0.995) {
 
 				flipPicList();
+				return true;
 
 			}
 		}
+		return false;
 	}
 
 	@Override
@@ -152,8 +157,23 @@ public class PicApp extends AbstractApp {
 
 		if (i < 10) {
 			picScrs[0].setTexture("p_" + i);
+			picName="p_" + (char) ('a' + (i - 10));
 		} else {
 			picScrs[0].setTexture("p_" + (char) ('a' + (i - 10)));
+			picName="p_" + (char) ('a' + (i - 10));
+		}
+		
+		if(picName==null)
+			SceneHelper.drawText("w_opt", new String[] { "Picture", "" });
+		else {
+			PictureInfo pictureInfo=new PictureInfo(picName,"");
+			SceneHelper.drawText("w_opt", new String[] { pictureInfo.name+"."+pictureInfo.type, 
+					 "Width: "+ pictureInfo.width,
+					 "Height: "+ pictureInfo.height,
+					 "Iso: "+ pictureInfo.iso,
+					 "Duration: "+ pictureInfo.duration,
+					 "Aperture: "+ pictureInfo.aperture,
+					 "Size: "+ pictureInfo.size});
 		}
 
 		picScrs[0].translate(-3, 0, 0);
@@ -358,6 +378,7 @@ public class PicApp extends AbstractApp {
 
 	@Override
 	public void onOpen(Bundle bundle) {
+		scene.onScript("你可以通过手势方便的\n进行图片的选择浏览、放大、缩小等操作\n哦对了\n你还可以概览一下当前工作区的布局");
 		onShown();
 		scene.onAppReady();
 	}

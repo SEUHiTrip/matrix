@@ -66,7 +66,7 @@ public abstract class Framework3DMatrixActivity extends
 	public static Activity master = null;
 	public static final String TAG = "Framework3DMatrixActivity";
 	public boolean NEED_SKYBOX = NEED_IDISPLAY;
-	public final static boolean NEED_IDISPLAY = false;
+	public final static boolean NEED_IDISPLAY = true;
 	public final static boolean NEED_RED = false;
 	public final static boolean NEED_DOLPHIN = true;
 	public final static boolean NEED_WORKSPACE = true;
@@ -110,41 +110,6 @@ public abstract class Framework3DMatrixActivity extends
 	protected FolderController folderController;
 	
 	protected WindowController windowController;
-		
-	class IDisplayKeeper extends Thread{
-		
-		boolean needIdisplay = true;
-
-		
-		public IDisplayKeeper() {
-			// TODO Auto-generated constructor stub
-		}
-		
-		public void stopGracefully() {
-			needIdisplay = false;
-		}
-		
-		public void switchMode(ConnectionMode mode){
-			currentMode = mode;
-			stopIDisplay();
-		}
-		
-		public void run() {
-			while (needIdisplay) {
-				startIDisplay(currentMode);
-				try {
-					synchronized (this) {
-						this.wait(10*1000);
-					}
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		}
-	};
-	
-	IDisplayKeeper iDisplayKeeper = new IDisplayKeeper();
 	
 	public BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
 		@Override
@@ -335,6 +300,8 @@ public abstract class Framework3DMatrixActivity extends
 					mOverlayView.show3DToast(msg.obj.toString());
 				else if (msg.what == 1) {
 					mOverlayView.show3DToastOnlyRight(msg.obj.toString());
+				}else if (msg.what == 2) {
+					mOverlayView.show3DToastOnlyRightUp(msg.obj.toString());
 				}
 				super.handleMessage(msg);
 			}
@@ -357,6 +324,7 @@ public abstract class Framework3DMatrixActivity extends
 		} catch (JSONException e) {
 			Log.e(TAG, e.toString());
 		}
+
 	}
 
 	@Override
@@ -366,11 +334,10 @@ public abstract class Framework3DMatrixActivity extends
 
 	@Override
 	protected void onPause() {
-		stopRed();
-		iDisplayKeeper.stopGracefully();
-		synchronized (iDisplayKeeper) {
-			iDisplayKeeper.notifyAll();
-		}
+		if(NEED_RED)
+			stopRed();
+		if(NEED_IDISPLAY)
+			stopIDisplay();
 		try {
 			dolphin.pause();
 		} catch (DolphinException e) {
@@ -418,13 +385,18 @@ public abstract class Framework3DMatrixActivity extends
 
 	protected void startIDisplay(ConnectionMode mode) {
 		currentMode = mode;
-		if (!mIDisplayConnected)
-			IDisplayConnection.connectToServer(usbServerItem, currentMode);
+		if (!mIDisplayConnected){
+			new Thread(){
+				public void run() {
+					IDisplayConnection.connectToServer(usbServerItem, currentMode);
+				};
+			}.start();
+		}
 	}
 
 	protected void stopIDisplay() {
 		if (mIDisplayConnected)
-			IDisplayConnection.listScreenHandler.sendEmptyMessage(1);
+			iDisplayConnection.stopConnection();
 		mIDisplayConnected = false;
 	}
 
@@ -474,12 +446,24 @@ public abstract class Framework3DMatrixActivity extends
 		message.what = 0;
 		mHandler.sendMessage(message);
 	}
+	protected boolean singleEye = false;
 
 	protected void show3DToastOnlyRight(String m) {
-		Message message = new Message();
-		message.obj = m;
-		message.what = 1;
-		mHandler.sendMessage(message);
+		if(singleEye){
+			Message message = new Message();
+			message.obj = m;
+			message.what = 1;
+			mHandler.sendMessage(message);
+		}
+	}
+	
+	protected void show3DToastOnlyRightUp(String m) {
+		if(singleEye){
+			Message message = new Message();
+			message.obj = m;
+			message.what = 2;
+			mHandler.sendMessage(message);
+		}
 	}
 	
 

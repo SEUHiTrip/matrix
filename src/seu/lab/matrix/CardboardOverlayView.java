@@ -20,6 +20,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
@@ -81,6 +82,10 @@ public class CardboardOverlayView extends LinearLayout {
     	mRightView.setTextViewAlpha(1f);
     }
     
+    public void show3DToastOnlyRightUp(String message) {
+    	mRightView.setUpText(message);
+    }
+    
     private abstract class EndAnimationListener implements Animation.AnimationListener {
         @Override public void onAnimationRepeat(Animation animation) {}
         @Override public void onAnimationStart(Animation animation) {}
@@ -115,6 +120,8 @@ public class CardboardOverlayView extends LinearLayout {
     private class CardboardOverlayEyeView extends ViewGroup {
         private final ImageView imageView;
         private final TextView textView;
+        private final TextView upTextView;
+
         private float offset;
 
         public CardboardOverlayEyeView(Context context, AttributeSet attrs) {
@@ -127,9 +134,16 @@ public class CardboardOverlayView extends LinearLayout {
             textView = new TextView(context, attrs);
             textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14.0f);
             textView.setTypeface(textView.getTypeface(), Typeface.BOLD);
-            textView.setGravity(Gravity.CENTER);
+            textView.setGravity(Gravity.CENTER_HORIZONTAL);
             textView.setShadowLayer(3.0f, 0.0f, 0.0f, Color.DKGRAY);
             addView(textView);
+            
+            upTextView = new TextView(context, attrs);
+            upTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14.0f);
+            upTextView.setTypeface(textView.getTypeface(), Typeface.BOLD);
+            upTextView.setGravity(Gravity.TOP);
+            upTextView.setShadowLayer(3.0f, 0.0f, 0.0f, Color.DKGRAY);
+            addView(upTextView);
         }
 
         public void setColor(int color) {
@@ -139,6 +153,12 @@ public class CardboardOverlayView extends LinearLayout {
 
         public void setText(String text) {
             textView.setText(text);
+        }
+        
+        public void setUpText(String text) {
+        	Log.e(TAG, "setUpText");
+            upTextView.setText(text);
+            upTextView.setAlpha(1f);
         }
 
         public void setTextViewAlpha(float alpha) {
@@ -181,6 +201,7 @@ public class CardboardOverlayView extends LinearLayout {
             textView.layout(
                 (int) leftMargin, (int) topMargin,
                 (int) (leftMargin + width), (int) (topMargin + height * (1.0f - verticalTextPos)));
+            
         }
     }
 }
