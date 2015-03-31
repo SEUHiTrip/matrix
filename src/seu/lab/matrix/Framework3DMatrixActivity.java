@@ -30,6 +30,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.media.AudioManager;
 import android.opengl.GLES20;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -65,8 +66,8 @@ public abstract class Framework3DMatrixActivity extends
 
 	public static Activity master = null;
 	public static final String TAG = "Framework3DMatrixActivity";
-	public boolean NEED_SKYBOX = NEED_IDISPLAY;
-	public final static boolean NEED_IDISPLAY = true;
+	public final static boolean NEED_SKYBOX = true;
+	public static boolean NEED_IDISPLAY = true;
 	public final static boolean NEED_RED = false;
 	public final static boolean NEED_DOLPHIN = true;
 	public final static boolean NEED_WORKSPACE = true;
@@ -315,16 +316,18 @@ public abstract class Framework3DMatrixActivity extends
 
 		mIDisplayConnected = false;
 
-		try {
-			dolphin = Dolphin.getInstance(
-					(AudioManager) getSystemService(Context.AUDIO_SERVICE),
-					getContentResolver(), stateCallback, null, gestureListener);
-		} catch (DolphinException e) {
-			Log.e(TAG, e.toString());
-		} catch (JSONException e) {
-			Log.e(TAG, e.toString());
-		}
-
+		
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+			try {
+				dolphin = Dolphin.getInstance(
+						(AudioManager) getSystemService(Context.AUDIO_SERVICE),
+						getContentResolver(), stateCallback, null, gestureListener);
+			} catch (DolphinException e) {
+				Log.e(TAG, e.toString());
+			} catch (JSONException e) {
+				Log.e(TAG, e.toString());
+			}
+        }
 	}
 
 	@Override
@@ -339,7 +342,8 @@ public abstract class Framework3DMatrixActivity extends
 		if(NEED_IDISPLAY)
 			stopIDisplay();
 		try {
-			dolphin.pause();
+			if(dolphin != null)
+				dolphin.pause();
 		} catch (DolphinException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -351,7 +355,8 @@ public abstract class Framework3DMatrixActivity extends
 	@Override
 	protected void onStop() {
 		try {
-			dolphin.stop();
+			if(dolphin != null)
+				dolphin.stop();
 		} catch (DolphinException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -419,7 +424,8 @@ public abstract class Framework3DMatrixActivity extends
 
 	protected void startDolphin() {
 		try {
-			dolphin.prepare(getApplicationContext());
+			if(dolphin != null)
+				dolphin.prepare(getApplicationContext());
 		} catch (DolphinException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -428,7 +434,8 @@ public abstract class Framework3DMatrixActivity extends
 
 	protected void stopDolphin() {
 		try {
-			dolphin.pause();
+			if(dolphin != null)
+				dolphin.pause();
 		} catch (DolphinException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

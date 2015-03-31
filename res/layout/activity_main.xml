@@ -4,75 +4,49 @@
     android:layout_height="match_parent"
     tools:context="${relativePackage}.${activityClass}" >
 
-    <Button
-        android:id="@+id/connect_btn_single"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        android:text="Single" />
-
-    <Button
-        android:id="@+id/test"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@+id/connect_btn"
-        android:text="Test" />
-
-    <ImageView
-        android:id="@+id/image_view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:src="@android:drawable/btn_star_big_off" />
-
-     <Button
-         android:id="@+id/connect_btn_duel"
-         android:layout_width="wrap_content"
-         android:layout_height="wrap_content"
-         android:layout_alignParentTop="true"
-         android:layout_toRightOf="@+id/connect_btn_single"
-         android:text="Duel" />
-
-     <Button
-         android:id="@+id/connect_btn_sidebyside"
-         android:layout_width="wrap_content"
-         android:layout_height="wrap_content"
-         android:layout_alignParentRight="true"
-         android:text="Side by side" />
-
-     <Button
-         android:id="@+id/connect_btn"
+     <ImageView
+         android:id="@+id/imageView1"
          android:layout_width="wrap_content"
          android:layout_height="wrap_content"
          android:layout_alignParentLeft="true"
-         android:layout_below="@+id/connect_btn_single"
-         android:text="Connect" />
+         android:layout_alignParentTop="true"
+         android:src="@drawable/ic_launcher" />
 
      <Button
-         android:id="@+id/track_btn"
+         android:id="@+id/scene_offline_btn"
          android:layout_width="wrap_content"
          android:layout_height="wrap_content"
-         android:layout_above="@+id/test"
+         android:layout_alignParentBottom="true"
          android:layout_alignParentRight="true"
-         android:text="Track color" />
+         android:layout_marginBottom="44dp"
+         android:text="Offline Mode" />
 
      <Button
-         android:id="@+id/ar_btn"
+         android:id="@+id/scene_online_btn"
          android:layout_width="wrap_content"
          android:layout_height="wrap_content"
+         android:layout_alignBaseline="@+id/scene_offline_btn"
+         android:layout_alignBottom="@+id/scene_offline_btn"
+         android:layout_marginRight="40dp"
+         android:layout_toLeftOf="@+id/scene_offline_btn"
+         android:text="Online Mode" />
+
+     <TextView
+         android:id="@+id/textView1"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_alignLeft="@+id/scene_online_btn"
+         android:layout_alignParentTop="true"
+         android:layout_marginTop="41dp"
+         android:text="If this phone is not connect to the PC both via WIFI and USB, please choose offline mode."
+         android:textAppearance="?android:attr/textAppearanceLarge" />
+
+     <Button
+         android:id="@+id/ip_btn"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_alignParentBottom="true"
          android:layout_alignParentRight="true"
-         android:layout_below="@+id/track_btn"
-         android:text="AR" />
-
-     <Button
-         android:id="@+id/scene_btn"
-         android:layout_width="wrap_content"
-         android:layout_height="wrap_content"
-         android:layout_below="@+id/test"
-         android:layout_toLeftOf="@+id/connect_btn_duel"
-         android:text="Scene" />
-
+         android:text="Set Server IP" />
+     
 </RelativeLayout>

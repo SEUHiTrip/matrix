@@ -50,6 +50,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.opengl.GLES20;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Message;
 import android.util.Log;
@@ -722,8 +723,10 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 			startIDisplay(currentMode);
 		if (NEED_RED)
 			startRed();
-		if (NEED_DOLPHIN)
-			startDolphin();
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+			if (NEED_DOLPHIN)
+				startDolphin();
+        }
 		
 	}
 
@@ -1486,7 +1489,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 					public void onAnimateSuccess() {
 						canCamRotate = true;
 						isCamFlying = false;
-						singleEye = true;
+						//singleEye = true;
 						adjust();
 
 						show3DToastOnlyRight("为了让大家\n更加清楚的看到画面\n我们着重展示其中\n一只眼睛所看到的画面\n我们现在选择一个工作区\n飞入其中");
