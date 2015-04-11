@@ -270,5 +270,7 @@ public class MatrixActivity extends CardboardActivity implements
 
 		return Math.abs(pitch) < PITCH_LIMIT && Math.abs(yaw) < YAW_LIMIT;
 	}
+	
+	
 
 }

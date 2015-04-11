@@ -19,7 +19,7 @@
 //
 //        public void run() {
 //            Socket socket;
-//            InputStream inputStream;
+//            InputStream inputStream = null;
 //            byte[] bArr;
 //            int TwoByteArrayToInt;
 //            byte[] bArr2;

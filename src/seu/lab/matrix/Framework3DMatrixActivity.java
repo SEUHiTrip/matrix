@@ -34,6 +34,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.Vibrator;
 import android.util.Log;
 
 import com.android.volley.RequestQueue;
@@ -51,6 +52,8 @@ import com.idisplay.util.ImageContainer;
 import com.idisplay.util.Logger;
 import com.idisplay.util.RLEImage;
 import com.idisplay.util.ServerItem;
+import com.idisplay.util.ServerItem.DeviceType;
+import com.idisplay.util.ServerItem.ServerType;
 import com.jme.scene.SwitchModel;
 import com.threed.jpct.GLSLShader;
 import com.threed.jpct.Loader;
@@ -66,14 +69,18 @@ public abstract class Framework3DMatrixActivity extends
 
 	public static Activity master = null;
 	public static final String TAG = "Framework3DMatrixActivity";
-	public final static boolean NEED_SKYBOX = true;
-	public static boolean NEED_IDISPLAY = true;
-	public final static boolean NEED_RED = false;
-	public final static boolean NEED_DOLPHIN = true;
+	public static boolean NEED_IDISPLAY = false;
+	public static boolean NEED_RED = false;
+	public static boolean NEED_DOLPHIN = true;
+
+	public final static boolean NEED_ADJUST = Build.MODEL.equals("SCH-I545");
 	public final static boolean NEED_WORKSPACE = true;
 	public final static boolean NEED_SCENE = true;
+	public static boolean NEED_SKYBOX = NEED_SCENE;
 	
-	protected ServerItem usbServerItem;
+	public final static boolean NEED_USB = false;
+
+	protected ServerItem serverItem;
 	protected IDisplayConnection iDisplayConnection;
 	protected ConnectionMode currentMode;
 
@@ -84,6 +91,7 @@ public abstract class Framework3DMatrixActivity extends
 
 	boolean mRedWorking = false;
 
+	protected float[] mHeadAngles = new float[3];
 	protected float[] mAngles = new float[3];
 
 	protected GLSLShader[] screenShaders = null;
@@ -256,12 +264,17 @@ public abstract class Framework3DMatrixActivity extends
 	protected OnRemoteChangeListener remoteListener;
 	protected IGestureListener gestureListener;
 	protected CardboardView cardboardView;
+	protected Vibrator mVibrator;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		usbServerItem = ServerItem.CreateUsbItem(this);
+		if(NEED_USB){
+			serverItem = ServerItem.CreateUsbItem(this);
+		}else {
+			serverItem = ServerItem.CreateServerItem("default", "192.168.1.109", 53432, ServerType.WINDOWS, DeviceType.DESKTOP);
+		}
 		iDisplayConnection = new IDisplayConnection(this);
 		mQueue = Volley.newRequestQueue(getApplicationContext());
 
@@ -316,7 +329,8 @@ public abstract class Framework3DMatrixActivity extends
 
 		mIDisplayConnected = false;
 
-		
+		mVibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
 			try {
 				dolphin = Dolphin.getInstance(
@@ -393,7 +407,7 @@ public abstract class Framework3DMatrixActivity extends
 		if (!mIDisplayConnected){
 			new Thread(){
 				public void run() {
-					IDisplayConnection.connectToServer(usbServerItem, currentMode);
+					IDisplayConnection.connectToServer(serverItem, currentMode);
 				};
 			}.start();
 		}
@@ -895,6 +909,46 @@ public abstract class Framework3DMatrixActivity extends
 				BitmapHelper.convert(getResources().getDrawable(
 						R.drawable.f_i_copy)), 64, 64));
 		tm.addTexture("f_i_copy", f_i_copy);
+		
+		Texture sw_dolphin_off = new Texture(SceneHelper.RotateBitmap(BitmapHelper.rescale(
+				BitmapHelper.convert(getResources().getDrawable(
+						R.drawable.sw_dolphin_off)), 64, 64),90));
+		tm.addTexture("sw_dolphin_off", sw_dolphin_off);
+		
+		Texture sw_dolphin_on = new Texture(SceneHelper.RotateBitmap(BitmapHelper.rescale(
+				BitmapHelper.convert(getResources().getDrawable(
+						R.drawable.sw_dolphin_on)), 64, 64),90));
+		tm.addTexture("sw_dolphin_on", sw_dolphin_on);
+		
+		Texture sw_red_off = new Texture(SceneHelper.RotateBitmap(BitmapHelper.rescale(
+				BitmapHelper.convert(getResources().getDrawable(
+						R.drawable.sw_red_off)), 64, 64),90));
+		tm.addTexture("sw_red_off", sw_red_off);
+		
+		Texture sw_red_on = new Texture(SceneHelper.RotateBitmap(BitmapHelper.rescale(
+				BitmapHelper.convert(getResources().getDrawable(
+						R.drawable.sw_red_on)), 64, 64),90));
+		tm.addTexture("sw_red_on", sw_red_on);
+		
+		Texture sw_display_on = new Texture(SceneHelper.RotateBitmap(BitmapHelper.rescale(
+				BitmapHelper.convert(getResources().getDrawable(
+						R.drawable.sw_display_on)), 64, 64),90));
+		tm.addTexture("sw_display_on", sw_display_on);
+		
+		Texture sw_display_off = new Texture(SceneHelper.RotateBitmap(BitmapHelper.rescale(
+				BitmapHelper.convert(getResources().getDrawable(
+						R.drawable.sw_display_off)), 64, 64),90));
+		tm.addTexture("sw_display_off", sw_display_off);
+		
+		Texture sw_display2_on = new Texture(SceneHelper.RotateBitmap(BitmapHelper.rescale(
+				BitmapHelper.convert(getResources().getDrawable(
+						R.drawable.sw_display2_on)), 64, 64),90));
+		tm.addTexture("sw_display2_on", sw_display2_on);
+		
+		Texture sw_display2_off = new Texture(SceneHelper.RotateBitmap(BitmapHelper.rescale(
+				BitmapHelper.convert(getResources().getDrawable(
+						R.drawable.sw_display2_off)), 64, 64),90));
+		tm.addTexture("sw_display2_off", sw_display2_off);
 	}
 
 	protected void loadSkyboxTexture(TextureManager tm) {

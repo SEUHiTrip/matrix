@@ -10,6 +10,7 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Typeface;
+import android.util.FloatMath;
 import android.util.Log;
 
 import com.threed.jpct.Camera;
@@ -20,6 +21,25 @@ import com.threed.jpct.TextureManager;
 
 public class SceneHelper {
 
+    public static void getEulerAngles(float[] mHeadView, float[] eulerAngles, int offset) {
+        if (offset + 3 > eulerAngles.length) {
+            throw new IllegalArgumentException("Not enough space to write the result");
+        }
+        float yaw;
+        float roll;
+        float pitch = (float) Math.asin((double) mHeadView[6]);
+        if (FloatMath.sqrt(1.0f - (mHeadView[6] * mHeadView[6])) >= 0.01f) {
+            yaw = (float) Math.atan2((double) (-mHeadView[2]), (double) mHeadView[10]);
+            roll = (float) Math.atan2((double) (-mHeadView[4]), (double) mHeadView[5]);
+        } else {
+            yaw = 0.0f;
+            roll = (float) Math.atan2((double) mHeadView[1], (double) mHeadView[0]);
+        }
+        eulerAngles[offset + 0] = -pitch;
+        eulerAngles[offset + 1] = -yaw;
+        eulerAngles[offset + 2] = -roll;
+    }
+	
 	public static double isLookingAt(Camera cam, SimpleVector center) {
 		SimpleVector camDir = new SimpleVector();
 		cam.getDirection(camDir);

@@ -1,8 +1,17 @@
 package com.idisplay.DataChannelManager.cursor;
 
 import android.util.Log;
+
+import com.idisplay.VirtualScreenDisplay.ConnectionActivity;
+import com.idisplay.VirtualScreenDisplay.IDisplayConnection;
 import com.idisplay.util.Logger;
+
+import java.io.IOException;
+import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.SocketException;
+
+import seu.lab.matrix.Framework3DMatrixActivity;
 
 public class UDPCursorSocket extends CursorSocket {
     private DatagramSocket socket;
@@ -17,8 +26,41 @@ public class UDPCursorSocket extends CursorSocket {
         /* JADX WARNING: inconsistent code. */
         /* Code decompiled incorrectly, please refer to instructions dump. */
         public void run() {
-            throw new UnsupportedOperationException("Method not decompiled: com.idisplay.DataChannelManager.cursor.UDPCursorSocket.AnonymousClass_1.run():void");
-            /*
+//            throw new UnsupportedOperationException("Method not decompiled: com.idisplay.DataChannelManager.cursor.UDPCursorSocket.AnonymousClass_1.run():void");
+            
+        	int size = 0;
+        	byte[] buffer;
+        	DatagramPacket packet;
+        	while (!udpStop) {
+        		try {
+    				size = socket.getReceiveBufferSize();
+    				
+    				buffer = new byte[size];
+    				packet = new DatagramPacket(buffer, size);
+    				socket.receive(packet);
+
+    				if(udpCursorReceived == false){
+    					udpCursorReceived = true;
+    					socket.setSoTimeout(0);
+    				}
+    				createCursorImage(buffer, true);
+				} catch (Exception e) {
+		            com.idisplay.util.Logger.e("UDP cursor - run", e);
+		            if(socket == null){
+		            	// sendTurnOffUDP
+		            	udpStop = true;
+		            	continue;
+		            }else {
+						socket.close();
+					}
+		        }
+				
+			}
+        	
+        	socket.close();
+        	return;
+        	
+        	/*
             this = this;
             r3 = 1;
             r0 = 0;

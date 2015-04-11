@@ -23,7 +23,7 @@ public class TranslationAnimation extends BaseVectorAnimation{
 	public TranslationAnimation(String tag, Object3D[] object3ds, SimpleVector translation, PickGroup group) {
 		super(tag, translation);
 		loop = false;
-		frames = 60;
+		frames = 30;
 		this.object3ds = object3ds;
 		this.translation = translation;
 		this.group = group;

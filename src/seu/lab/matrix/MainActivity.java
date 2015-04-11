@@ -28,6 +28,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -67,7 +68,7 @@ public class MainActivity extends Activity {
 				Intent intent = new Intent(getApplicationContext(),
 						SceneActivity.class);
 				intent.putExtra("mode", new IDisplayConnection.ConnectionMode(
-						ConnectionType.Duel.ordinal()));
+						ConnectionType.Single.ordinal()));
 				startActivity(intent);
 			}
 		});
@@ -81,7 +82,7 @@ public class MainActivity extends Activity {
 				Intent intent = new Intent(getApplicationContext(),
 						SceneActivity.class);
 				intent.putExtra("mode", new IDisplayConnection.ConnectionMode(
-						ConnectionType.Duel.ordinal()));
+						ConnectionType.Single.ordinal()));
 				startActivity(intent);
 			}
 		});
@@ -92,7 +93,7 @@ public class MainActivity extends Activity {
 			public void onClick(View arg0) {
 				final EditText editText = new EditText(MainActivity.this);
 				new AlertDialog.Builder(MainActivity.this)
-						.setTitle("Server IP")
+						.setTitle("Server IP for "+Build.MODEL)
 						.setIcon(android.R.drawable.ic_dialog_info)
 						.setView(editText)
 						.setPositiveButton("confirm", new DialogInterface.OnClickListener() {

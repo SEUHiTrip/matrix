@@ -19,7 +19,7 @@ public class SimpleScreenApp extends AbstractScreenApp{
 
 	private app_name aName;
 	
-	final static boolean DEBUG = !Framework3DMatrixActivity.NEED_IDISPLAY;
+	final static boolean DEBUG = true || !Framework3DMatrixActivity.NEED_IDISPLAY;
 
 	public SimpleScreenApp(app_name aName, List<Animatable> animatables,
 			SceneCallback callback, Camera camera, Object3D ball1) {
