@@ -108,7 +108,12 @@ public class ConnectionActivity extends Activity implements
 
 		Logger.d("usbServerItem : " + usbServerItem);
 
-		iDisplayConnection.connectToServer(usbServerItem, currentMode);
+		try {
+			iDisplayConnection.connectToServer(usbServerItem, currentMode);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	protected void onStop() {

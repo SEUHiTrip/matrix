@@ -307,7 +307,7 @@ public class IDisplayConnection implements UnexpectedErrorListner,
 		listScreenHandler = new ListScreenHandler();
 	}
 
-	public static void connectToServer(ServerItem serverItem, ConnectionMode mode) {
+	public static void connectToServer(ServerItem serverItem, ConnectionMode mode) throws Exception {
 		Logger.d("in static connectToServer: " + serverItem);
 		currentMode = mode;
 		Message message = new Message();

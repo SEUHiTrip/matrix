@@ -6,6 +6,7 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.List;
 
+import seu.lab.matrix.Framework3DMatrixActivity;
 import seu.lab.matrix.animation.Animatable;
 import seu.lab.matrix.controllers.Confg;
 import seu.lab.matrix.controllers.AppController.app_name;
@@ -122,7 +123,7 @@ public class HeadControlApp extends SimpleScreenApp{
 	
 	@Override
 	public void onOpen(Bundle bundle) {
-		if(DEBUG){
+		if(Framework3DMatrixActivity.isDisplayConnected()){
 			stopped = false;
 			(curThread = new Thread(getHeadTransform){
 				@Override

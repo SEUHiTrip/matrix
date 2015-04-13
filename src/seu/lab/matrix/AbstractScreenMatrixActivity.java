@@ -18,6 +18,7 @@ import android.os.Handler;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.Window;
 
 public abstract class AbstractScreenMatrixActivity extends CardboardActivity{
 	
@@ -146,6 +147,7 @@ public abstract class AbstractScreenMatrixActivity extends CardboardActivity{
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+    	    	
     	super.onCreate(savedInstanceState);
 		instance = this; 
     }

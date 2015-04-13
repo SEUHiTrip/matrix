@@ -122,7 +122,7 @@ public class VideoApp extends AbstractScreenApp {
 		scene.onHideCurtain();
 		scene.onHideScreen(runnable);
 		scene.onAppClosed();
-		scene.onSwitchMode(new ConnectionMode(1));
+//		scene.onSwitchMode(new ConnectionMode(1));
 		
 	}
 

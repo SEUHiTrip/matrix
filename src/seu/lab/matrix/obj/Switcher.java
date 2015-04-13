@@ -14,7 +14,7 @@ public abstract class Switcher {
 	public Switcher(World world, String texture){
 		this.texture = texture;
 
-		object3d = Primitives.getPlane(1, 0.3f);
+		object3d = Primitives.getPlane(1, 0.25f);
 		object3d.translate(-2, 0, 3f);
 		object3d.calcTextureWrapSpherical();
 		object3d.strip();

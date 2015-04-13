@@ -64,7 +64,7 @@ public class MainActivity extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				Framework3DMatrixActivity.NEED_IDISPLAY = true;
+//				Framework3DMatrixActivity.NEED_IDISPLAY = true;
 				Intent intent = new Intent(getApplicationContext(),
 						SceneActivity.class);
 				intent.putExtra("mode", new IDisplayConnection.ConnectionMode(
@@ -77,7 +77,7 @@ public class MainActivity extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				Framework3DMatrixActivity.NEED_IDISPLAY = false;
+//				Framework3DMatrixActivity.NEED_IDISPLAY = false;
 
 				Intent intent = new Intent(getApplicationContext(),
 						SceneActivity.class);

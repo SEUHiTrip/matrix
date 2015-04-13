@@ -15,6 +15,7 @@ import seu.lab.dolphin.client.DolphinException;
 import seu.lab.dolphin.client.IDolphinStateCallback;
 import seu.lab.dolphin.client.IGestureListener;
 import seu.lab.matrix.controllers.AppController;
+import seu.lab.matrix.controllers.Confg;
 import seu.lab.matrix.controllers.FilesController;
 import seu.lab.matrix.controllers.FolderController;
 import seu.lab.matrix.controllers.VideoController;
@@ -36,6 +37,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.Vibrator;
 import android.util.Log;
+import android.view.Window;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
@@ -69,14 +71,14 @@ public abstract class Framework3DMatrixActivity extends
 
 	public static Activity master = null;
 	public static final String TAG = "Framework3DMatrixActivity";
-	public static boolean NEED_IDISPLAY = false;
-	public static boolean NEED_RED = false;
-	public static boolean NEED_DOLPHIN = true;
+	public final static boolean NEED_IDISPLAY = false;
+	public final static boolean NEED_RED = false;
+	public final static boolean NEED_DOLPHIN = false;
 
 	public final static boolean NEED_ADJUST = Build.MODEL.equals("SCH-I545");
 	public final static boolean NEED_WORKSPACE = true;
 	public final static boolean NEED_SCENE = true;
-	public static boolean NEED_SKYBOX = NEED_SCENE;
+	public final static boolean NEED_SKYBOX = NEED_SCENE;
 	
 	public final static boolean NEED_USB = false;
 
@@ -260,12 +262,16 @@ public abstract class Framework3DMatrixActivity extends
 		}
 	};
 
-	protected boolean mIDisplayConnected;
+	protected static boolean mIDisplayConnected = false;
 	protected OnRemoteChangeListener remoteListener;
 	protected IGestureListener gestureListener;
 	protected CardboardView cardboardView;
 	protected Vibrator mVibrator;
 
+	public static boolean isDisplayConnected() {
+		return mIDisplayConnected;
+	}
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -273,7 +279,7 @@ public abstract class Framework3DMatrixActivity extends
 		if(NEED_USB){
 			serverItem = ServerItem.CreateUsbItem(this);
 		}else {
-			serverItem = ServerItem.CreateServerItem("default", "192.168.1.109", 53432, ServerType.WINDOWS, DeviceType.DESKTOP);
+			serverItem = ServerItem.CreateServerItem("default", Confg.IP, 53432, ServerType.WINDOWS, DeviceType.DESKTOP);
 		}
 		iDisplayConnection = new IDisplayConnection(this);
 		mQueue = Volley.newRequestQueue(getApplicationContext());
@@ -299,8 +305,10 @@ public abstract class Framework3DMatrixActivity extends
 		setContentView(R.layout.common_ui);
 		cardboardView = (CardboardView) findViewById(R.id.cardboard_view);
 		cardboardView.setRenderer(this);
+		cardboardView.setVRModeEnabled(true);
+		
 		setCardboardView(cardboardView);
-
+		
 		mOverlayView = (CardboardOverlayView) findViewById(R.id.overlay);
 		mOverlayView.show3DToast("Project Matrix\nInitializing");
 
@@ -405,11 +413,12 @@ public abstract class Framework3DMatrixActivity extends
 	protected void startIDisplay(ConnectionMode mode) {
 		currentMode = mode;
 		if (!mIDisplayConnected){
-			new Thread(){
-				public void run() {
-					IDisplayConnection.connectToServer(serverItem, currentMode);
-				};
-			}.start();
+			try {
+				IDisplayConnection.connectToServer(serverItem, currentMode);
+			} catch (Exception e) {
+				e.printStackTrace();
+				Log.e(TAG, e.toString());
+			}
 		}
 	}
 

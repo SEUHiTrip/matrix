@@ -19,8 +19,6 @@ public class SimpleScreenApp extends AbstractScreenApp{
 
 	private app_name aName;
 	
-	final static boolean DEBUG = true || !Framework3DMatrixActivity.NEED_IDISPLAY;
-
 	public SimpleScreenApp(app_name aName, List<Animatable> animatables,
 			SceneCallback callback, Camera camera, Object3D ball1) {
 		super(animatables, callback, camera, ball1);
@@ -30,7 +28,7 @@ public class SimpleScreenApp extends AbstractScreenApp{
 	@Override
 	public void onOpen(Bundle bundle) {
 		
-		if(DEBUG){
+		if(Framework3DMatrixActivity.isDisplayConnected()){
 			super.onOpen(bundle);
 			return;
 		}

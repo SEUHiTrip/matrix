@@ -109,6 +109,9 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 	final static int WORKSPACE = 4;
 
 	final static int HORSE = 0;
+
+	private static final double SWITCH_GAP = 0.4;
+	
 	private boolean IS_ADJUST_INIT = true;
 
 	AbstractApp[] apps = new AbstractApp[11 + 1 + 1 + 1 + 1];
@@ -490,14 +493,6 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 		switchers = new Switcher[4];
 		initSwitchers();
-		Object3D object3d;
-		for (int i = 0; i < switchers.length; i++) {
-			switchers[i].updateStatus();
-			object3d = switchers[i].object3d;
-			object3d.translate(cam.getPosition()
-					.calcAdd(new SimpleVector(-2, 0.7 * (i - 1.5), 3))
-					.calcSub(object3d.getTransformedCenter()));
-		}
 
 		if (NEED_SCENE) {
 			islands = new Object3D[4];
@@ -688,6 +683,17 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 			mPickGroupSwitchers[i].group = new Object3D[] { switchers[i].object3d };
 		}
 	}
+	
+	void setSwitcherPos(){
+		Object3D object3d;
+		for (int i = 0; i < switchers.length; i++) {
+			switchers[i].updateStatus();
+			object3d = switchers[i].object3d;
+			object3d.translate(cam.getPosition()
+					.calcAdd(new SimpleVector(-2, SWITCH_GAP * (i - 1.5), 3))
+					.calcSub(object3d.getTransformedCenter()));
+		}
+	}
 
 	float tmp;
 
@@ -834,13 +840,20 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 		}
 
 		if (NEED_SCENE) {
+			Log.e(TAG, "NEED_SCENE:"+NEED_SCENE);
+
 			switchIsland(TREASURE);
 		}
 
-		if (NEED_IDISPLAY)
+		if (NEED_IDISPLAY){
+			Log.e(TAG, "NEED_IDISPLAY:"+NEED_IDISPLAY);
 			startIDisplay(currentMode);
-		if (NEED_RED)
+		}
+		if (NEED_RED){
+			Log.e(TAG, "NEED_RED:"+NEED_RED);
 			startRed();
+		}
+		
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
 			if (NEED_DOLPHIN)
 				startDolphin();
@@ -952,12 +965,24 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 				ws.mCurrentApp.onPick();
 			}
 
-			if (SceneHelper.isLookingDir(cam, ball1, switcherDir) > 0.95) {
+			if (mWsIdx != TREASURE && SceneHelper.isLookingDir(cam, ball1, switcherDir) > 0.92) {
 
 				switch (switcherState) {
 				case 0:
 					switcherState = 1;
 
+					SimpleVector camPos = cam.getPosition();
+					Object3D object3d;
+					for (int i = 0; i < switchers.length; i++) {
+						switchers[i].updateStatus();
+						object3d = switchers[i].object3d;
+						object3d.translate(camPos.calcAdd(
+								new SimpleVector(-2, SWITCH_GAP * (i - 1.5), 3)).calcSub(
+								object3d.getTransformedCenter()));
+						mPickGroupSwitchers[i].oriPos = new SimpleVector[] { object3d
+								.getTransformedCenter() };
+					}
+					
 					for (int i = 0; i < switchers.length; i++) {
 						switchers[i].updateStatus();
 						switchers[i].object3d.setVisibility(true);
@@ -1010,12 +1035,15 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 		for (int i = 0; i < mPickGroupSwitchers.length; i++) {
 			group = mPickGroupSwitchers[i];
 			if (SceneHelper.isLookingAt(cam, ball1,
-					group.group[0].getTransformedCenter()) > 0.995) {
+					group.group[0].getTransformedCenter()) > 0.997) {
 				onActivateTilesGroup(group);
 
 				if (actionFired[DOUBLE_TAP]) {
 					switchers[i].toggleStatus();
 					actionFired[DOUBLE_TAP] = false;
+				}else if (actionFired[TOGGLE_FULLSCREEN]) {
+					switchers[i].toggleStatus();
+					actionFired[TOGGLE_FULLSCREEN] = false;
 				}
 
 			} else {
@@ -1234,17 +1262,6 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 			camPos = cam.getPosition();
 		} else {
 			camPos = mCamViewspots[idx].getTransformedCenter();
-		}
-
-		Object3D object3d;
-		for (int i = 0; i < switchers.length; i++) {
-			switchers[i].updateStatus();
-			object3d = switchers[i].object3d;
-			object3d.translate(camPos.calcAdd(
-					new SimpleVector(-2, 0.7 * (i - 1.5), 3)).calcSub(
-					object3d.getTransformedCenter()));
-			mPickGroupSwitchers[i].oriPos = new SimpleVector[] { object3d
-					.getTransformedCenter() };
 		}
 
 		if (idx == WORKSPACE)
