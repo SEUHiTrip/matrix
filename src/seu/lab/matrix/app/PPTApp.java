@@ -10,7 +10,7 @@ import android.os.Bundle;
 import com.threed.jpct.Camera;
 import com.threed.jpct.Object3D;
 
-public class PPTApp extends SimpleScreenApp{
+public class PPTApp extends MouseControlApp{
 
 	public PPTApp(List<Animatable> animatables,
 			SceneCallback callback, Camera camera, Object3D ball1) {

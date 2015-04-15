@@ -13,7 +13,6 @@ import com.android.volley.toolbox.JsonObjectRequest;
 public class VideoController {
 	private static String TAG="FolderController";
 	private static String type="Video";
-	private static String rootUrl=Confg.WEB_API+type+"/";
 	
 	RequestQueue mQueue;
 	
@@ -23,7 +22,7 @@ public class VideoController {
 	
 	public void play(int screen,String video_name, ErrorListener errorListener, Listener<JSONObject> listener) throws JSONException {
 		
-		String url=rootUrl+"play?screen="+screen+"&video_name="+video_name;
+		String url=Confg.WEB_API+type+"/"+"play?screen="+screen+"&video_name="+video_name;
 		
 		Log.d(TAG, "req : " + url);
 
@@ -34,7 +33,7 @@ public class VideoController {
 		
 		//video_name="c:\\Users\\qf\\Desktop\\LynnTemp\\bigHero.mkv";
 		
-		String url=rootUrl+"continue_pause?screen="+screen;
+		String url=Confg.WEB_API+type+"/"+"continue_pause?screen="+screen;
 		
 		Log.d(TAG, "req : " + url);
 
@@ -56,7 +55,7 @@ public class VideoController {
 	}
 
 	public void close(int screen) throws JSONException {		
-		String url=rootUrl+"close?screen="+screen;
+		String url=Confg.WEB_API+type+"/"+"close?screen="+screen;
 		
 		Log.d(TAG, "req : " + url);
 
@@ -78,7 +77,7 @@ public class VideoController {
 	}
 	
 	public void forward(int screen) throws JSONException {		
-		String url=rootUrl+"forward?screen="+screen;
+		String url=Confg.WEB_API+type+"/"+"forward?screen="+screen;
 		
 		Log.d(TAG, "req : " + url);
 
@@ -101,7 +100,7 @@ public class VideoController {
 	
 	public void backward(int screen) throws JSONException {
 
-		String url=rootUrl+"backward?screen="+screen;
+		String url=Confg.WEB_API+type+"/"+"backward?screen="+screen;
 		
 		Log.d(TAG, "req : " + url);
 

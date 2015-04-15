@@ -3,6 +3,7 @@ package seu.lab.matrix.app;
 import java.util.List;
 
 import org.json.JSONException;
+import org.opencv.core.Point;
 
 import seu.lab.matrix.animation.Animatable;
 
@@ -49,6 +50,30 @@ public class FileOpenApp extends AbstractScreenApp{
 	public void onClose(Runnable runnable) {
 		// TODO Auto-generated method stub
 		super.onClose(runnable);
+	}
+
+	@Override
+	public void onMove(Point p) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onClick() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onPress(Point p) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onRaise(Point p) {
+		// TODO Auto-generated method stub
+		
 	}
 	
 }

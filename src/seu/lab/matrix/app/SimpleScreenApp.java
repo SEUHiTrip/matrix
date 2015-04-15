@@ -3,6 +3,7 @@ package seu.lab.matrix.app;
 import java.util.List;
 
 import org.json.JSONException;
+import org.opencv.core.Point;
 
 import seu.lab.matrix.Framework3DMatrixActivity;
 import seu.lab.matrix.animation.Animatable;
@@ -28,7 +29,7 @@ public class SimpleScreenApp extends AbstractScreenApp{
 	@Override
 	public void onOpen(Bundle bundle) {
 		
-		if(Framework3DMatrixActivity.isDisplayConnected()){
+		if(!Framework3DMatrixActivity.isDisplayConnected()){
 			super.onOpen(bundle);
 			return;
 		}
@@ -45,24 +46,54 @@ public class SimpleScreenApp extends AbstractScreenApp{
 	
 	@Override
 	public void onShown() {
-		try {
-			windowController.setMouse(scene.getScreenIdx());
-		} catch (JSONException e) {
-			Log.e(TAG, e.toString());
+		if(Framework3DMatrixActivity.isDisplayConnected()){
+			try {
+				windowController.setMouse(scene.getScreenIdx());
+			} catch (JSONException e) {
+				Log.e(TAG, e.toString());
+			}
 		}
+
 		super.onShown();
 	}
 	
 	@Override
 	public void onClose(Runnable runnable) {
-		try {
-			appController.close(scene.getScreenIdx(),
-					closeErrorListener,
-					closeListener);
-		} catch (JSONException e) {
-			Log.e(TAG, e.toString());
+		if(Framework3DMatrixActivity.isDisplayConnected()){
+			try {
+				appController.close(scene.getScreenIdx(),
+						closeErrorListener,
+						closeListener);
+			} catch (JSONException e) {
+				Log.e(TAG, e.toString());
+			}
 		}
+
 		super.onClose(runnable);
+	}
+
+	@Override
+	public void onMove(Point p) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onClick() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onPress(Point p) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onRaise(Point p) {
+		// TODO Auto-generated method stub
+		
 	}
 	
 }

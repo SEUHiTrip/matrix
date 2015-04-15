@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.opencv.core.Point;
+
 import android.os.Bundle;
 import android.util.Log;
 
@@ -30,6 +32,10 @@ public class FileApp extends AbstractApp {
 			Camera camera, Object3D ball1, World world) {
 		super(animatables, callback, camera, ball1);
 		this.world = world;
+	}
+
+	enum Minetype {
+		JPG, PDF, PPT, EXECL, VIDEO, WORD, FOLDER_CLOUD, FOLDER, FOLDER_HOME, WEBPAGE, CODE
 	}
 
 	PickGroup[] mPickGroupFiles = new PickGroup[3];
@@ -99,8 +105,12 @@ public class FileApp extends AbstractApp {
 		}
 		Object3D tmp;
 		tmp = clickableDesks.get("f_trash");
+		tmp.setTexture("sw_dolphin_on");
 		mPickGroupDesks[0].group[0] = tmp;
 
+		tmp = clickableDesks.get("f_desk");
+		tmp.setTexture("sw_brown");
+		
 		tmp = clickableDesks.get("f_i_open");
 		mPickGroupDesks[1].group[0] = tmp;
 
@@ -132,13 +142,26 @@ public class FileApp extends AbstractApp {
 		files = clickableFiles.values().toArray(files);
 
 		for (int i = 0; i < 9; i++) {
-			files1[i] = mPickGroupFiles[1].group[0].cloneObject();
-			files1[i].setTexture("dummy");
+			
+			if(i < 6 || i > 8){
+				files1[i] = mPickGroupFiles[1].group[0].cloneObject();
+			}else {
+				files1[i] = mPickGroupFiles[0].group[0].cloneObject();
+			}
+			
+			files1[i].rotateZ(-0.4f);
+			files1[i].setTexture("minetype_" + i);
 			mPickGroupFiles1[i].group[0] = files1[i];
 			mPickGroupFiles1[i].oriPos[0] = getFilePos(i, 0);
 			world.addObject(files1[i]);
 
-			files2[i] = mPickGroupFiles[1].group[0].cloneObject();
+			if(i < 6 || i > 8){
+				files2[i] = mPickGroupFiles[1].group[0].cloneObject();
+			}else {
+				files2[i] = mPickGroupFiles[0].group[0].cloneObject();
+			}
+			files2[i].rotateZ(-0.4f);
+
 			mPickGroupFiles2[i].group[0] = files2[i];
 			mPickGroupFiles2[i].oriPos[0] = getFilePos(i, 0);
 			world.addObject(files2[i]);
@@ -266,7 +289,7 @@ public class FileApp extends AbstractApp {
 		// TODO
 		// pick file
 		// 1,2,3,4
-		// 
+		//
 		// -1,1,-1,1
 		// -1,-1,1,1
 		if (mPickState == 0) {
@@ -276,31 +299,32 @@ public class FileApp extends AbstractApp {
 			for (int i = 0; i < files.length; i++) {
 				if (SceneHelper.isLookingAt(cam, ball1,
 						files[i].getTransformedCenter()) > 0.99) {
-					
+
 					mPickState = 1;
-					
+
 					PickGroup group = null;
 					SimpleVector tmp;
 					for (int j = 1; j < mPickGroupDesks.length; j++) {
 						group = mPickGroupDesks[j];
 						tmp = getFilePos(i, 0);
 						group.group[0].translate(tmp);
-						group.oriPos[0] = tmp.calcAdd(new SimpleVector(1, (j%2*2-1)*0.2, (j/2*2-1)*0.2));
+						group.oriPos[0] = tmp.calcAdd(new SimpleVector(1,
+								(j % 2 * 2 - 1) * 0.2, (j / 2 * 2 - 1) * 0.2));
 					}
-					
+
 					break;
 				}
 			}
 		} else {
 			PickGroup group = null;
-			SimpleVector tmp = new SimpleVector(0,0,-1000);
+			SimpleVector tmp = new SimpleVector(0, 0, -1000);
 			for (int j = 1; j < mPickGroupDesks.length; j++) {
 				group = mPickGroupDesks[j];
 
 				group.group[0].translate(tmp);
 				group.oriPos[0] = null;
 			}
-			
+
 		}
 
 		// show the icons
@@ -359,10 +383,42 @@ public class FileApp extends AbstractApp {
 		slideList(slideLeft, pre, cur, 4, false, true);
 	}
 
+	void goDownFolder(int idx) {
+
+	}
+
+	void goHomeFolder() {
+
+	}
+
 	@Override
 	public boolean onToggleFullscreen() {
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	@Override
+	public void onMove(Point p) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void onClick() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void onPress(Point p) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void onRaise(Point p) {
+		// TODO Auto-generated method stub
+
 	}
 
 }

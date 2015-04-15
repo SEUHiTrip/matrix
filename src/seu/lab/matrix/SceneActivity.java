@@ -111,7 +111,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 	final static int HORSE = 0;
 
 	private static final double SWITCH_GAP = 0.4;
-	
+
 	private boolean IS_ADJUST_INIT = true;
 
 	AbstractApp[] apps = new AbstractApp[11 + 1 + 1 + 1 + 1];
@@ -164,7 +164,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 	protected Object3D[] mWorkspaceObjects = null;
 	protected Object3D[] mSceneObjects = null;
 
-	private static float BALL_DISTANCE = 2f;
+	private static float BALL_DISTANCE = 1.225f;
 
 	private int mFrameCounter = 0;
 	private long startTime = 0;
@@ -228,6 +228,8 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 	int headDir = 0;
 
+	int switcherState = 0;
+
 	SimpleOnGestureListener mGestureListener = new SimpleOnGestureListener() {
 
 		public boolean onDoubleTap(MotionEvent e) {
@@ -272,6 +274,14 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 			point.x = x;
 			point.y = y;
+			
+			if(!canCamRotate){
+				if(mCamViewIndex == TREASURE){
+					workspaces[headDir].mCurrentApp.onMove(new Point(x,y));
+				}else {
+					ws.mCurrentApp.onMove(new Point(x,y));
+				}
+			}
 
 			return false;
 		}
@@ -302,30 +312,55 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 		@Override
 		public void onMove(Point p) {
-			// Log.e(TAG, "remote : onMove x:" + p.x + " y: " + p.y);
+			
+			p.y *= 1.3;
+			if(p.y > 1){
+				p.y = 1;
+			}else if (p.y < -1) {
+				p.y = -1;
+			}
+			
+//			Log.e(TAG, "remote : onMove x:" + p.x + " y: " + p.y);
+
 			point = p;
 			lastBallUpdate = System.currentTimeMillis();
+			
+			if(!canCamRotate){
+				if(mCamViewIndex == TREASURE){
+					workspaces[headDir].mCurrentApp.onMove(p);
+				}else {
+					ws.mCurrentApp.onMove(p);
+				}
+			}
+			
 		}
 
 		@Override
 		public void onClick() {
 			Log.e(TAG, "remote : onClick");
 			actionFired[DOUBLE_TAP] = true;
-			// if (test) {
-			// test = false;
-			// ball1.setAdditionalColor(new RGBColor(0, 100, 0));
-			// } else {
-			// test = true;
-			// ball1.setAdditionalColor(new RGBColor(0, 0, 100));
-			// }
+			
+			if(!canCamRotate){
+				if(mCamViewIndex == TREASURE){
+					workspaces[headDir].mCurrentApp.onClick();
+				}else {
+					ws.mCurrentApp.onClick();
+				}
+			}
 		}
 
 		@Override
 		public void onPress(Point p) {
 			Log.e(TAG, "remote : onPress");
 			dragStartPoint = p;
-			ball1.setAdditionalColor(new RGBColor(0, 100, 0));
-
+			ball1.setTexture("sw_dolphin_on");
+			if(!canCamRotate){
+				if(mCamViewIndex == TREASURE){
+					workspaces[headDir].mCurrentApp.onPress(p);
+				}else {
+					ws.mCurrentApp.onPress(p);
+				}
+			}
 		}
 
 		@Override
@@ -352,8 +387,14 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 				actionFired[UP] = true;
 			}
 
-			ball1.setAdditionalColor(new RGBColor(0, 0, 100));
-
+			ball1.setTexture("sw_white");
+			if(!canCamRotate){
+				if(mCamViewIndex == TREASURE){
+					workspaces[headDir].mCurrentApp.onRaise(p);
+				}else {
+					ws.mCurrentApp.onRaise(p);
+				}
+			}
 		}
 	};
 
@@ -483,10 +524,10 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 		treasureLight.setIntensity(0, 0, 0);
 		treasureLight.setPosition(new SimpleVector(0, 0, 5));
 
-		ball1 = Primitives.getSphere(0.05f);
+		ball1 = Primitives.getSphere(0.01f);
 		ball1.translate(0, 5, 0);
 		ball1.calcTextureWrapSpherical();
-		ball1.setAdditionalColor(new RGBColor(100, 0, 0));
+		ball1.setTexture("sw_white");
 		ball1.strip();
 		ball1.build();
 		world.addObject(ball1);
@@ -683,8 +724,8 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 			mPickGroupSwitchers[i].group = new Object3D[] { switchers[i].object3d };
 		}
 	}
-	
-	void setSwitcherPos(){
+
+	void setSwitcherPos() {
 		Object3D object3d;
 		for (int i = 0; i < switchers.length; i++) {
 			switchers[i].updateStatus();
@@ -698,6 +739,8 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 	float tmp;
 
 	private double fix;
+
+	private float ball1scale = 2f;
 
 	@Override
 	public void onNewFrame(HeadTransform headTransform) {
@@ -840,20 +883,20 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 		}
 
 		if (NEED_SCENE) {
-			Log.e(TAG, "NEED_SCENE:"+NEED_SCENE);
+			Log.e(TAG, "NEED_SCENE:" + NEED_SCENE);
 
 			switchIsland(TREASURE);
 		}
 
-		if (NEED_IDISPLAY){
-			Log.e(TAG, "NEED_IDISPLAY:"+NEED_IDISPLAY);
+		if (NEED_IDISPLAY) {
+			Log.e(TAG, "NEED_IDISPLAY:" + NEED_IDISPLAY);
 			startIDisplay(currentMode);
 		}
-		if (NEED_RED){
-			Log.e(TAG, "NEED_RED:"+NEED_RED);
+		if (NEED_RED) {
+			Log.e(TAG, "NEED_RED:" + NEED_RED);
 			startRed();
 		}
-		
+
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
 			if (NEED_DOLPHIN)
 				startDolphin();
@@ -909,41 +952,73 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 		}
 	}
 
+	double tmp1,tmp2;
+	static final double SCREEN_WIDTH = 0.8;
+	
 	private void updateGestureBall() {
 
-		SimpleVector camDir = new SimpleVector();
-		cam.getDirection(camDir);
+		if (canCamRotate) {
+			SimpleVector camDir = new SimpleVector();
+			cam.getDirection(camDir);
 
-		camDir.x = camDir.x * BALL_DISTANCE;
-		camDir.y = camDir.y * BALL_DISTANCE;
-		camDir.z = camDir.z * BALL_DISTANCE;
+			camDir.x = camDir.x * BALL_DISTANCE;
+			camDir.y = camDir.y * BALL_DISTANCE;
+			camDir.z = camDir.z * BALL_DISTANCE;
 
-		SimpleVector originInballView = new SimpleVector(camDir);
-		originInballView.x = -originInballView.x;
-		originInballView.y = -originInballView.y;
-		originInballView.z = -originInballView.z;
+			SimpleVector originInballView = new SimpleVector(camDir);
+			originInballView.x = -originInballView.x;
+			originInballView.y = -originInballView.y;
+			originInballView.z = -originInballView.z;
 
-		ball1.clearTranslation();
-		ball1.clearRotation();
+			ball1.clearTranslation();
+			ball1.clearRotation();
 
-		ball1.translate(cam.getPosition());
-		ball1.translate(camDir);
+			ball1.translate(cam.getPosition());
+			ball1.translate(camDir);
 
-		ball1.setRotationPivot(originInballView);
+			ball1.setRotationPivot(originInballView);
 
-		if (System.currentTimeMillis() - lastBallUpdate > 5000) {
-			ball1.setTransparency(0);
-			ball1.rotateAxis(cam.getUpVector(), 0f);
-			ball1.rotateAxis(cam.getSideVector(), 0f);
+			if (System.currentTimeMillis() - lastBallUpdate > 5000) {
+				ball1.setTransparency(0);
+				ball1.rotateAxis(cam.getUpVector(), 0f);
+				ball1.rotateAxis(cam.getSideVector(), 0f);
+			} else {
+				ball1.setTransparency(100);
+				ball1.rotateAxis(cam.getUpVector(), (float) (0.5f * point.x));
+				ball1.rotateAxis(cam.getSideVector(), (float) (0.5f * point.y));
+			}
 		} else {
+			ball1.clearTranslation();
+			ball1.clearRotation();
 			ball1.setTransparency(100);
-			ball1.rotateAxis(cam.getUpVector(), (float) (0.5f * point.x));
-			ball1.rotateAxis(cam.getSideVector(), (float) (0.5f * point.y));
+
+			if (mCamViewIndex == TREASURE) {
+				
+				tmp1 = Math.sin(Math.PI / 4 * (1 + headDir));
+				tmp2 = Math.cos(Math.PI / 4 * (1 + headDir));
+				
+				ball1.translate(screens[headDir].getTransformedCenter());
+				ball1.translate(
+						(float) (0.1f * tmp1) + (float) (SCREEN_WIDTH * point.x * -tmp2),
+						(float) (0.1f * tmp2) + (float) (SCREEN_WIDTH * point.x * tmp1),
+						(float) -(SCREEN_WIDTH * point.y));
+
+//				Log.e(TAG, "screens:" + screens[headDir].getTransformedCenter());
+
+			} else {
+				ball1.translate(screens[mWsIdx].getTransformedCenter());
+				ball1.translate(0.06f, (float) (SCREEN_WIDTH * point.x),
+						(float) -(SCREEN_WIDTH * point.y));
+
+//				Log.e(TAG, "screens:" + screens[mWsIdx].getTransformedCenter());
+
+			}
+
+//			Log.e(TAG, "ball1:" + ball1.getTransformedCenter());
+
 		}
 
 	}
-
-	int switcherState = 0;
 
 	private void pickAction() {
 		// pick obj
@@ -965,7 +1040,8 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 				ws.mCurrentApp.onPick();
 			}
 
-			if (mWsIdx != TREASURE && SceneHelper.isLookingDir(cam, ball1, switcherDir) > 0.92) {
+			if (mWsIdx != TREASURE
+					&& SceneHelper.isLookingDir(cam, ball1, switcherDir) > 0.92) {
 
 				switch (switcherState) {
 				case 0:
@@ -976,13 +1052,15 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 					for (int i = 0; i < switchers.length; i++) {
 						switchers[i].updateStatus();
 						object3d = switchers[i].object3d;
-						object3d.translate(camPos.calcAdd(
-								new SimpleVector(-2, SWITCH_GAP * (i - 1.5), 3)).calcSub(
-								object3d.getTransformedCenter()));
+						object3d.translate(camPos
+								.calcAdd(
+										new SimpleVector(-2, SWITCH_GAP
+												* (i - 1.5), 3)).calcSub(
+										object3d.getTransformedCenter()));
 						mPickGroupSwitchers[i].oriPos = new SimpleVector[] { object3d
 								.getTransformedCenter() };
 					}
-					
+
 					for (int i = 0; i < switchers.length; i++) {
 						switchers[i].updateStatus();
 						switchers[i].object3d.setVisibility(true);
@@ -1041,7 +1119,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 				if (actionFired[DOUBLE_TAP]) {
 					switchers[i].toggleStatus();
 					actionFired[DOUBLE_TAP] = false;
-				}else if (actionFired[TOGGLE_FULLSCREEN]) {
+				} else if (actionFired[TOGGLE_FULLSCREEN]) {
 					switchers[i].toggleStatus();
 					actionFired[TOGGLE_FULLSCREEN] = false;
 				}
@@ -1173,12 +1251,14 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 			canCamRotate = canCamRotate ? false : true;
 
 			if (!canCamRotate) {
+
 				adjust();
 
 				show3DToastOnlyRight("噢，对了，我们在宝藏岛还有一点小彩蛋\n在这样的视角下\n是不是感觉自己仿佛造物主一般\n好的，现在我们开始和团队讨论吧");
 
 				for (int i = 0; i < screens.length; i++) {
 					screens[i].setVisibility(true);
+
 					// screens[i]
 					// .translate(new SimpleVector(6+Math.abs(i-1)*0.6, 1.8 * (i
 					// - 1), 1.45)
@@ -1192,6 +1272,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 									.getTransformedCenter()), null));
 				}
 			} else {
+
 				adjust();
 
 				for (int i = 0; i < screens.length; i++) {
@@ -1212,26 +1293,22 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 					}
 				}
 			}
-			for (int i = 0; i < screens.length; i++) {
-				Log.e(TAG,
-						"toggleFullscreen " + i + " "
-								+ screens[i].getVisibility());
-			}
-			return;
-		}
 
-		if (mCamViewIndex != TREASURE && screens[mWsIdx].getVisibility()) {
+		} else if (screens[mWsIdx].getVisibility()) {
 			canCamRotate = canCamRotate ? false : true;
 			Log.e(TAG, "ready to toggleFullscreen");
 
 			if (!canCamRotate) {
+
+				adjust();
+				
 				cam.setOrientation(forward, up);
 				cam.rotateZ(halfPI + 0.025f);
-
 				mAnimatables.add(new TranslationAnimation("",
 						new Object3D[] { screens[mWsIdx] }, new SimpleVector(
 								0.85, 0, -0.1), null));
 			} else {
+
 				adjust();
 
 				mAnimatables.add(new TranslationAnimation("",
@@ -1252,7 +1329,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 	}
 
 	private void adjust() {
-		if (NEED_ADJUST)
+		//if (NEED_ADJUST)
 			rotateAngle = mHeadAngles[1] + 0.025;
 	}
 
@@ -1625,6 +1702,14 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 		super.onCreate(savedInstanceState);
 		mGestureDetector = new GestureDetector(this, mGestureListener);
 	}
+	
+	@Override
+	protected void onStop() {
+		for (int i = 0; i < workspaces.length; i++) {
+			workspaces[i].mCurrentApp.onClose(null);
+		}
+		super.onStop();
+	}
 
 	void adjustEyeCam(Eye eye) {
 		SceneHelper.getEulerAngles(eye.getEyeView(), mAngles, 0);
@@ -1688,12 +1773,12 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 		fb.clear(back);
 
-		if (eye.getType() == Eye.Type.LEFT) {
-			if (ball1.getTransparency() == 0)
-				ball1.setVisibility(false);
-		} else {
-			ball1.setVisibility(true);
-		}
+		// if (eye.getType() == Eye.Type.LEFT) {
+		// if (ball1.getTransparency() == 0)
+		// ball1.setVisibility(false);
+		// } else {
+		ball1.setVisibility(true);
+		// }
 
 		adjustEyeCam(eye);
 
@@ -1873,10 +1958,14 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 		for (Object3D object3d : cur) {
 			object3d.clearTranslation();
 			object3d.translate(-5, 0, 0);
+			if(!display){
+				object3d.setVisibility(true);
+			}
 		}
 		mAnimatables.add(new TranslationAnimation("", cur, new SimpleVector(5,
 				0, 0), null));
-		mAnimatables.add(new DisplayAnimation(cur, "", false));
+		if(display)
+			mAnimatables.add(new DisplayAnimation(cur, "", false));
 	}
 
 	@Override
@@ -1888,18 +1977,21 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 		Log.e(TAG, "onCallScreen");
 
-		onCallObj(new Object3D[] { screens[mWsIdx] }, true);
+		onCallObj(new Object3D[] { screens[mWsIdx] }, false);
 	}
 
 	@Override
 	public void onHideScreen(final Runnable runnable) {
+		if(mWsIdx == TREASURE)
+			return;
+		
 		if (!screens[mWsIdx].getVisibility())
 			return;
 
 		Log.e(TAG, "onHideScreen");
 		Object3D[] cur = new Object3D[] { screens[mWsIdx] };
 
-		onHideObj(cur, true, runnable);
+		onHideObj(cur, false, runnable);
 	}
 
 	@Override
@@ -2017,6 +2109,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 	@Override
 	public int getScreenIdx() {
+		if(mCamViewIndex == TREASURE)return headDir;
 		return mWsIdx;
 	}
 

@@ -16,7 +16,7 @@ import com.android.volley.Response.Listener;
 import com.threed.jpct.Camera;
 import com.threed.jpct.Object3D;
 
-public class AbstractScreenApp extends AbstractApp{
+public abstract class AbstractScreenApp extends AbstractApp{
 	
 	class DefaulteErrorListener implements ErrorListener{
 		@Override

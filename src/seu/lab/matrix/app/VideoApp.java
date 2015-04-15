@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.opencv.core.Point;
 
 import seu.lab.matrix.SceneHelper;
 import seu.lab.matrix.animation.Animatable;
@@ -372,5 +373,29 @@ public class VideoApp extends AbstractScreenApp {
 		mAnimatables.add(new SeqAnimation(mAnimatables, mVideoListTiles));
 
 		mVideoPageIdx = (mVideoPageIdx) + 1 % 2;
+	}
+
+	@Override
+	public void onMove(Point p) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onClick() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onPress(Point p) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onRaise(Point p) {
+		// TODO Auto-generated method stub
+		
 	}
 }

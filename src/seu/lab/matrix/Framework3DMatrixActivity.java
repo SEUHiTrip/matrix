@@ -77,7 +77,7 @@ public abstract class Framework3DMatrixActivity extends
 
 	public final static boolean NEED_ADJUST = Build.MODEL.equals("SCH-I545");
 	public final static boolean NEED_WORKSPACE = true;
-	public final static boolean NEED_SCENE = true;
+	public final static boolean NEED_SCENE = false;
 	public final static boolean NEED_SKYBOX = NEED_SCENE;
 	
 	public final static boolean NEED_USB = false;
@@ -958,6 +958,16 @@ public abstract class Framework3DMatrixActivity extends
 				BitmapHelper.convert(getResources().getDrawable(
 						R.drawable.sw_display2_off)), 64, 64),90));
 		tm.addTexture("sw_display2_off", sw_display2_off);
+		
+		Texture sw_w = new Texture(SceneHelper.RotateBitmap(BitmapHelper.rescale(
+				BitmapHelper.convert(getResources().getDrawable(
+						R.drawable.sw_white)), 64, 64),90));
+		tm.addTexture("sw_white", sw_w);
+		
+		Texture sw_b = new Texture(SceneHelper.RotateBitmap(BitmapHelper.rescale(
+				BitmapHelper.convert(getResources().getDrawable(
+						R.drawable.sw_brown)), 64, 64),90));
+		tm.addTexture("sw_brown", sw_b);
 	}
 
 	protected void loadSkyboxTexture(TextureManager tm) {
@@ -1022,6 +1032,14 @@ public abstract class Framework3DMatrixActivity extends
 					.rescale(BitmapHelper.convert(drawable), 512, 512), 90f));
 			texture.removeAlpha();
 			tm.addTexture("l_m" + c[i], texture);
+		}
+		
+		for (int i = 0; i <= 10; i++) {
+			drawable = new BitmapDrawable(am.open("minetype/target-" + i + ".png"));
+			texture = new Texture(BitmapHelper
+					.rescale(BitmapHelper.convert(drawable), 256, 256));
+			texture.removeAlpha();
+			tm.addTexture("minetype_" + i, texture);
 		}
 	}
 

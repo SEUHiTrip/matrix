@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.opencv.core.Point;
+
 import seu.lab.matrix.SceneHelper;
 import seu.lab.matrix.animation.Animatable;
 import seu.lab.matrix.animation.DisplayAnimation;
@@ -394,6 +396,30 @@ public class PicApp extends AbstractApp {
 	public boolean onToggleFullscreen() {
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	@Override
+	public void onMove(Point p) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onClick() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onPress(Point p) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onRaise(Point p) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

@@ -17,7 +17,6 @@ import com.android.volley.toolbox.JsonObjectRequest;
 public class AppController {
 	private static String TAG = "AppController";
 	private static String type = "App";
-	private static String rootUrl = Confg.WEB_API + type + "/";
 
 	public static enum app_name {
 		game_minecraft, game_car, office_word, office_ppt, office_excel, internet, skype, pic, video, file, cam, drone
@@ -32,7 +31,7 @@ public class AppController {
 	public void open(int screen, app_name an, ErrorListener errorListener,
 			Listener<JSONObject> listener) throws JSONException {
 
-		String url = rootUrl + "open?app_name=" + an + "&screen=" + screen;
+		String url = Confg.WEB_API+type+"/" + "open?app_name=" + an + "&screen=" + screen;
 
 		Log.d(TAG, "req : " + url);
 
@@ -49,7 +48,7 @@ public class AppController {
 
 	public void close(int screen, ErrorListener errorListener,
 			Listener<JSONObject> listener) throws JSONException {
-		String url = rootUrl + "close?screen=" + screen;
+		String url = Confg.WEB_API+type+"/" + "close?screen=" + screen;
 
 		Log.d(TAG, "req : " + url);
 

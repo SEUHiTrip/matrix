@@ -17,7 +17,6 @@ import com.google.gson.Gson;
 public class FolderController {
 	private static String TAG="FolderController";
 	private static String type="Folder";
-	private static String rootUrl=Confg.WEB_API+type+"/";
 	private static Gson gson = new Gson();
 
 	
@@ -38,7 +37,7 @@ public class FolderController {
 	public void get() throws JSONException {
 		
 		
-		String url=rootUrl+"get";
+		String url=Confg.WEB_API+type+"/"+"get";
 		
 		Log.d(TAG, "req : " + url);
 		
@@ -81,7 +80,7 @@ public class FolderController {
 	public void get(String folderPath) throws JSONException {
 		
 		
-		String url=rootUrl+"get?pwd="+folderPath;
+		String url=Confg.WEB_API+type+"/"+"get?pwd="+folderPath;
 		
 		Log.d(TAG, "req : " + url);
 		
@@ -129,7 +128,7 @@ public class FolderController {
 		jo.put("parent", parent);
 		jo.put("name", name);
 		
-		String url=rootUrl+"create";
+		String url=Confg.WEB_API+type+"/"+"create";
 		
 		Log.d(TAG, "req : " + url);
 		
@@ -168,7 +167,7 @@ public class FolderController {
 		jo.put("ori", ori);
 		jo.put("dest", dest);
 		
-		String url=rootUrl+"copy";
+		String url=Confg.WEB_API+type+"/"+"copy";
 		
 		Log.d(TAG, "req : " + url);
 		
@@ -209,7 +208,7 @@ public class FolderController {
 		jo.put("ori", ori);
 		jo.put("dest", dest);
 		
-		String url=rootUrl+"cut";
+		String url=Confg.WEB_API+type+"/"+"cut";
 		
 		Log.d(TAG, "req : " + url);
 		
@@ -246,7 +245,7 @@ public class FolderController {
 	public void delete(String folderPath) throws JSONException {
 		
 		
-		String url=rootUrl+"delete?target="+folderPath;
+		String url=Confg.WEB_API+type+"/"+"delete?target="+folderPath;
 		
 		Log.d(TAG, "req : " + url);
 		

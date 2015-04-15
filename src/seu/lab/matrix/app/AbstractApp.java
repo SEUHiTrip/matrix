@@ -13,6 +13,7 @@ import seu.lab.matrix.controllers.FilesController;
 import seu.lab.matrix.controllers.FolderController;
 import seu.lab.matrix.controllers.VideoController;
 import seu.lab.matrix.controllers.WindowController;
+import seu.lab.matrix.red.RemoteManager.OnRemoteChangeListener;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -21,7 +22,7 @@ import com.threed.jpct.Camera;
 import com.threed.jpct.Object3D;
 import com.threed.jpct.SimpleVector;
 
-public abstract class AbstractApp {
+public abstract class AbstractApp implements OnRemoteChangeListener{
 
 	public static String TAG = "AbstractApp";
 	public static boolean OFFINE = true;

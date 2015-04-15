@@ -15,7 +15,6 @@ import com.google.gson.Gson;
 public class FilesController {
 	private static String TAG="FilesController";
 	private static String type="Files";
-	private static String rootUrl=Confg.WEB_API+type+"/";
 	private static Gson gson = new Gson();
 	
 	public class Files{
@@ -39,7 +38,7 @@ public class FilesController {
 		jo.put("name", name);
 		jo.put("file_type", file_type);
 		
-		String url=rootUrl+"create";
+		String url=Confg.WEB_API+type+"/"+"create";
 		
 		Log.d(TAG, "req : " + url);
 		
@@ -79,7 +78,7 @@ public class FilesController {
 		jo.put("ori", ori);
 		jo.put("dest", dest);
 		
-		String url=rootUrl+"copy";
+		String url=Confg.WEB_API+type+"/"+"copy";
 		
 		Log.d(TAG, "req : " + url);
 		
@@ -120,7 +119,7 @@ public class FilesController {
 		jo.put("ori", ori);
 		jo.put("dest", dest);
 		
-		String url=rootUrl+"cut";
+		String url=Confg.WEB_API+type+"/"+"cut";
 		
 		Log.d(TAG, "req : " + url);
 		
@@ -154,7 +153,7 @@ public class FilesController {
 	
 	public void open(int screen,String file_name, ErrorListener errorListener, Listener<JSONObject> listener) throws JSONException {
 		
-		String url=rootUrl+"open?screen="+screen+"&file_name="+file_name;
+		String url=Confg.WEB_API+type+"/"+"open?screen="+screen+"&file_name="+file_name;
 		
 		Log.d(TAG, "req : " + url);
 
@@ -164,7 +163,7 @@ public class FilesController {
 	public void close(int screen,String file_name) throws JSONException {
 		
 		
-		String url=rootUrl+"close?screen="+screen+"&file_name="+file_name;
+		String url=Confg.WEB_API+type+"/"+"close?screen="+screen+"&file_name="+file_name;
 		
 		Log.d(TAG, "req : " + url);
 		

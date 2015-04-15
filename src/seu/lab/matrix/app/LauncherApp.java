@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.opencv.core.Point;
+
 import android.os.Bundle;
 import android.util.Log;
 
@@ -222,6 +224,30 @@ public class LauncherApp extends AbstractApp{
 	public boolean onToggleFullscreen() {
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	@Override
+	public void onMove(Point p) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onClick() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onPress(Point p) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onRaise(Point p) {
+		// TODO Auto-generated method stub
+		
 	}
 	
 }

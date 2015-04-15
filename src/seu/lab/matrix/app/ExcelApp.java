@@ -8,7 +8,7 @@ import seu.lab.matrix.controllers.AppController.app_name;
 import com.threed.jpct.Camera;
 import com.threed.jpct.Object3D;
 
-public class ExcelApp extends SimpleScreenApp{
+public class ExcelApp extends MouseControlApp{
 
 	public ExcelApp(List<Animatable> animatables,
 			SceneCallback callback, Camera camera, Object3D ball1) {

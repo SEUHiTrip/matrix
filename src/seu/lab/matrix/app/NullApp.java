@@ -2,6 +2,8 @@ package seu.lab.matrix.app;
 
 import java.util.List;
 
+import org.opencv.core.Point;
+
 import seu.lab.matrix.animation.Animatable;
 
 import android.os.Bundle;
@@ -115,6 +117,30 @@ public class NullApp extends AbstractApp{
 	public boolean onToggleFullscreen() {
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	@Override
+	public void onMove(Point p) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onClick() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onPress(Point p) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onRaise(Point p) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

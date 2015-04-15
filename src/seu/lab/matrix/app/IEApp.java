@@ -10,7 +10,7 @@ import android.os.Bundle;
 import com.threed.jpct.Camera;
 import com.threed.jpct.Object3D;
 
-public class IEApp extends SimpleScreenApp{
+public class IEApp extends MouseControlApp{
 
 	public IEApp(List<Animatable> animatables,
 			SceneCallback callback, Camera camera, Object3D ball1) {

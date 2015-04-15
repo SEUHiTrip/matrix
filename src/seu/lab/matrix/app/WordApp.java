@@ -8,7 +8,7 @@ import seu.lab.matrix.controllers.AppController.app_name;
 import com.threed.jpct.Camera;
 import com.threed.jpct.Object3D;
 
-public class WordApp extends SimpleScreenApp{
+public class WordApp extends MouseControlApp{
 
 	public WordApp(List<Animatable> animatables,
 			SceneCallback callback, Camera camera, Object3D ball1) {

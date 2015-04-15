@@ -33,7 +33,6 @@ public class HeadControlApp extends SimpleScreenApp{
 	private OutputStream outStream;
 	private Socket socket;
 	private int PORT;
-	private final String IP = Confg.IP;
 	boolean stopped = false;
 	boolean canPlay = false;
 
@@ -52,7 +51,7 @@ public class HeadControlApp extends SimpleScreenApp{
 			Log.d("Connection", "Connection ready to connect");
 			
 			try {
-				socket = new Socket(IP, PORT);
+				socket = new Socket(Confg.IP, PORT);
 				outStream = socket.getOutputStream();
 				Log.d("Connection", "Connection ok");
 			} catch (Exception e) {
@@ -110,7 +109,7 @@ public class HeadControlApp extends SimpleScreenApp{
 		defaultListener = new DefaultListener(){
 			@Override
 			protected void onErr() {
-				// TODO Auto-generated method stub
+				stopped = true;
 				super.onErr();
 			}
 			@Override
@@ -197,4 +196,5 @@ public class HeadControlApp extends SimpleScreenApp{
 
 		return true;
 	}
+	
 }
