@@ -11,11 +11,18 @@ public class PickGroup {
 	
 	public SimpleVector[] oriPos;
 	
-	public Animatable animation;
+	public Animatable[] animations;
 	
 	public PickGroup(int count){
 		group = new Object3D[count];
 		oriPos = new SimpleVector[count];
 	}
 
+	public void active(){
+		
+	}
+	
+	public void deactive(){
+		
+	}
 }

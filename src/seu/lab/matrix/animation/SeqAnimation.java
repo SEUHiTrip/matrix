@@ -7,7 +7,7 @@ public class SeqAnimation implements Animatable{
 	int frames;
 	int index = -1;
 
-	final static int WAIT_FRAMES = 5;
+	final static int WAIT_FRAMES = 7;
 	List<Animatable> mAnimatables;
 	Animatable[] queue;
 	

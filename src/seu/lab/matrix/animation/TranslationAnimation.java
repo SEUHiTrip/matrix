@@ -51,7 +51,7 @@ public class TranslationAnimation extends BaseVectorAnimation{
 //		}
 		
 		if (group != null) {
-			group.animation = null;
+			group.animations = null;
 		}
 	}
 
@@ -62,7 +62,7 @@ public class TranslationAnimation extends BaseVectorAnimation{
 			onAnimateSuccess();
 		} else {
 			if (group != null) {
-				group.animation = null;
+				group.animations = null;
 			}
 		}
 	}

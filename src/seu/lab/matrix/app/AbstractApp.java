@@ -52,13 +52,63 @@ public abstract class AbstractApp implements OnRemoteChangeListener{
 			group = pickGroups[i];
 			if (SceneHelper.isLookingAt(cam, ball1,
 					group.group[0].getTransformedCenter()) > 0.995) {
-				scene.onActivateTilesGroup(group);
+				scene.onActivateTilesGroup(group, false);
 			} else {
-				scene.onDeactivateTilesGroup(group);
+				scene.onDeactivateTilesGroup(group, false);
 			}
 		}
 	}
 
+	protected void pickList(PickGroup[] pickGroups, int start, int end, boolean rotate, boolean[] pickable) {
+		PickGroup group = null;
+		for (int i = start; i < end; i++) {
+			if(!pickable[i]) continue;
+			group = pickGroups[i];
+			if (SceneHelper.isLookingAt(cam, ball1,
+					group.group[0].getTransformedCenter()) > 0.995) {
+				scene.onActivateTilesGroup(group, rotate);
+			} else {
+				scene.onDeactivateTilesGroup(group, rotate);
+			}
+		}
+	}
+	
+	protected void slideList(boolean slideLeft, Object3D[] pre, Object3D[] cur,
+			int strip, boolean needScale, boolean needDisplayAnimation, final Runnable runnable) {
+
+		SimpleVector moveDir;
+		SimpleVector presetDir;
+
+		if (slideLeft) {
+			moveDir = new SimpleVector(0, -strip, 0);
+			presetDir = new SimpleVector(0, strip, 0);
+		} else {
+			moveDir = new SimpleVector(0, strip, 0);
+			presetDir = new SimpleVector(0, -strip, 0);
+		}
+
+		for (Object3D object3d : cur) {
+			object3d.translate(presetDir);
+		}
+
+		mAnimatables.add(new TranslationAnimation("", pre, moveDir, null){
+			@Override
+			public void onAnimateSuccess() {
+				if(runnable != null)runnable.run();
+				super.onAnimateSuccess();
+			}
+		});
+		mAnimatables.add(new TranslationAnimation("", cur, moveDir, null));
+
+		if (needDisplayAnimation) {
+			mAnimatables.add(new DisplayAnimation(pre, "", true));
+			mAnimatables.add(new DisplayAnimation(cur, "", false));
+		}
+
+		if (needScale)
+			mAnimatables.add(new ScaleAnimation(pre, "", 1f));
+	}
+	
 	protected void slideList(boolean slideLeft, Object3D[] pre, Object3D[] cur,
 			int strip, boolean needScale, boolean needDisplayAnimation) {
 

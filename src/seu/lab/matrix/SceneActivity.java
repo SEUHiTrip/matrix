@@ -20,6 +20,7 @@ import seu.lab.matrix.animation.DisplayAnimation;
 import seu.lab.matrix.animation.LiveTileAnimation;
 import seu.lab.matrix.animation.PeopleAnimation;
 import seu.lab.matrix.animation.PickGroup;
+import seu.lab.matrix.animation.RotateAnimation;
 import seu.lab.matrix.animation.ScaleAnimation;
 import seu.lab.matrix.animation.SeqAnimation;
 import seu.lab.matrix.animation.TranslationAnimation;
@@ -128,7 +129,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 		@Override
 		public void run() {
 			try {
-				sleep(1000);
+				sleep(500);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -274,12 +275,12 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 			point.x = x;
 			point.y = y;
-			
-			if(!canCamRotate){
-				if(mCamViewIndex == TREASURE){
-					workspaces[headDir].mCurrentApp.onMove(new Point(x,y));
-				}else {
-					ws.mCurrentApp.onMove(new Point(x,y));
+
+			if (!canCamRotate) {
+				if (mCamViewIndex == TREASURE) {
+					workspaces[headDir].mCurrentApp.onMove(new Point(x, y));
+				} else {
+					ws.mCurrentApp.onMove(new Point(x, y));
 				}
 			}
 
@@ -312,38 +313,38 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 		@Override
 		public void onMove(Point p) {
-			
+
 			p.y *= 1.3;
-			if(p.y > 1){
+			if (p.y > 1) {
 				p.y = 1;
-			}else if (p.y < -1) {
+			} else if (p.y < -1) {
 				p.y = -1;
 			}
-			
-//			Log.e(TAG, "remote : onMove x:" + p.x + " y: " + p.y);
+
+			// Log.e(TAG, "remote : onMove x:" + p.x + " y: " + p.y);
 
 			point = p;
 			lastBallUpdate = System.currentTimeMillis();
-			
-			if(!canCamRotate){
-				if(mCamViewIndex == TREASURE){
+
+			if (!canCamRotate || ws.mCurrentAppType == AppType.FILE) {
+				if (mCamViewIndex == TREASURE) {
 					workspaces[headDir].mCurrentApp.onMove(p);
-				}else {
+				} else {
 					ws.mCurrentApp.onMove(p);
 				}
 			}
-			
+
 		}
 
 		@Override
 		public void onClick() {
 			Log.e(TAG, "remote : onClick");
 			actionFired[DOUBLE_TAP] = true;
-			
-			if(!canCamRotate){
-				if(mCamViewIndex == TREASURE){
+
+			if (!canCamRotate || ws.mCurrentAppType == AppType.FILE) {
+				if (mCamViewIndex == TREASURE) {
 					workspaces[headDir].mCurrentApp.onClick();
-				}else {
+				} else {
 					ws.mCurrentApp.onClick();
 				}
 			}
@@ -354,10 +355,10 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 			Log.e(TAG, "remote : onPress");
 			dragStartPoint = p;
 			ball1.setTexture("sw_dolphin_on");
-			if(!canCamRotate){
-				if(mCamViewIndex == TREASURE){
+			if (!canCamRotate || ws.mCurrentAppType == AppType.FILE) {
+				if (mCamViewIndex == TREASURE) {
 					workspaces[headDir].mCurrentApp.onPress(p);
-				}else {
+				} else {
 					ws.mCurrentApp.onPress(p);
 				}
 			}
@@ -388,10 +389,10 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 			}
 
 			ball1.setTexture("sw_white");
-			if(!canCamRotate){
-				if(mCamViewIndex == TREASURE){
+			if (!canCamRotate || ws.mCurrentAppType == AppType.FILE) {
+				if (mCamViewIndex == TREASURE) {
 					workspaces[headDir].mCurrentApp.onRaise(p);
-				}else {
+				} else {
 					ws.mCurrentApp.onRaise(p);
 				}
 			}
@@ -952,9 +953,9 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 		}
 	}
 
-	double tmp1,tmp2;
+	double tmp1, tmp2;
 	static final double SCREEN_WIDTH = 0.8;
-	
+
 	private void updateGestureBall() {
 
 		if (canCamRotate) {
@@ -993,28 +994,31 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 			ball1.setTransparency(100);
 
 			if (mCamViewIndex == TREASURE) {
-				
+
 				tmp1 = Math.sin(Math.PI / 4 * (1 + headDir));
 				tmp2 = Math.cos(Math.PI / 4 * (1 + headDir));
-				
+
 				ball1.translate(screens[headDir].getTransformedCenter());
-				ball1.translate(
-						(float) (0.1f * tmp1) + (float) (SCREEN_WIDTH * point.x * -tmp2),
-						(float) (0.1f * tmp2) + (float) (SCREEN_WIDTH * point.x * tmp1),
+				ball1.translate((float) (0.1f * tmp1)
+						+ (float) (SCREEN_WIDTH * point.x * -tmp2),
+						(float) (0.1f * tmp2)
+								+ (float) (SCREEN_WIDTH * point.x * tmp1),
 						(float) -(SCREEN_WIDTH * point.y));
 
-//				Log.e(TAG, "screens:" + screens[headDir].getTransformedCenter());
+				// Log.e(TAG, "screens:" +
+				// screens[headDir].getTransformedCenter());
 
 			} else {
 				ball1.translate(screens[mWsIdx].getTransformedCenter());
 				ball1.translate(0.06f, (float) (SCREEN_WIDTH * point.x),
 						(float) -(SCREEN_WIDTH * point.y));
 
-//				Log.e(TAG, "screens:" + screens[mWsIdx].getTransformedCenter());
+				// Log.e(TAG, "screens:" +
+				// screens[mWsIdx].getTransformedCenter());
 
 			}
 
-//			Log.e(TAG, "ball1:" + ball1.getTransformedCenter());
+			// Log.e(TAG, "ball1:" + ball1.getTransformedCenter());
 
 		}
 
@@ -1114,7 +1118,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 			group = mPickGroupSwitchers[i];
 			if (SceneHelper.isLookingAt(cam, ball1,
 					group.group[0].getTransformedCenter()) > 0.997) {
-				onActivateTilesGroup(group);
+				onActivateTilesGroup(group, false);
 
 				if (actionFired[DOUBLE_TAP]) {
 					switchers[i].toggleStatus();
@@ -1125,7 +1129,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 				}
 
 			} else {
-				onDeactivateTilesGroup(group);
+				onDeactivateTilesGroup(group, false);
 			}
 		}
 	}
@@ -1193,7 +1197,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 			actionFired[ACT] = !apps[AppType.LAUNCHER.ordinal()].onDoubleTap();
 
-		} else if (SceneHelper.isLookingDir(cam, ball1, scrDir) > 0.8) {
+		} else if (SceneHelper.isLookingDir(cam, ball1, scrDir) > 0.4) {
 
 			if (ACT != TOGGLE_FULLSCREEN) {
 				pickScr();
@@ -1301,7 +1305,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 			if (!canCamRotate) {
 
 				adjust();
-				
+
 				cam.setOrientation(forward, up);
 				cam.rotateZ(halfPI + 0.025f);
 				mAnimatables.add(new TranslationAnimation("",
@@ -1329,8 +1333,8 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 	}
 
 	private void adjust() {
-		//if (NEED_ADJUST)
-			rotateAngle = mHeadAngles[1] + 0.025;
+		// if (NEED_ADJUST)
+		rotateAngle = mHeadAngles[1] + 0.025;
 	}
 
 	private void switchIsland(final int idx) {
@@ -1442,7 +1446,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 			group = mPickGroupIcons[i];
 			if (SceneHelper.isLookingAt(cam, ball1,
 					group.group[0].getTransformedCenter()) > 0.995) {
-				onActivateTilesGroup(group);
+				onActivateTilesGroup(group, false);
 
 				if (actionFired[DOUBLE_TAP]) {
 					if (i == 0) {
@@ -1457,7 +1461,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 				}
 
 			} else {
-				onDeactivateTilesGroup(group);
+				onDeactivateTilesGroup(group, false);
 			}
 		}
 	}
@@ -1702,7 +1706,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 		super.onCreate(savedInstanceState);
 		mGestureDetector = new GestureDetector(this, mGestureListener);
 	}
-	
+
 	@Override
 	protected void onStop() {
 		for (int i = 0; i < workspaces.length; i++) {
@@ -1958,13 +1962,13 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 		for (Object3D object3d : cur) {
 			object3d.clearTranslation();
 			object3d.translate(-5, 0, 0);
-			if(!display){
+			if (!display) {
 				object3d.setVisibility(true);
 			}
 		}
 		mAnimatables.add(new TranslationAnimation("", cur, new SimpleVector(5,
 				0, 0), null));
-		if(display)
+		if (display)
 			mAnimatables.add(new DisplayAnimation(cur, "", false));
 	}
 
@@ -1982,11 +1986,24 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 	@Override
 	public void onHideScreen(final Runnable runnable) {
-		if(mWsIdx == TREASURE)
+		if (mWsIdx == TREASURE)
 			return;
-		
-		if (!screens[mWsIdx].getVisibility())
+
+		if (!screens[mWsIdx].getVisibility()){
+			if(runnable != null)
+				new Thread(runnable){
+				public void run() {
+					try {
+						sleep(1000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					super.run();
+				};
+				}.start();
 			return;
+		}
 
 		Log.e(TAG, "onHideScreen");
 		Object3D[] cur = new Object3D[] { screens[mWsIdx] };
@@ -2027,11 +2044,13 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 		peopleAnimation.stop();
 	}
 
-	public void onActivateTilesGroup(PickGroup group) {
+	public void onActivateTilesGroup(PickGroup group, boolean rotate) {
+		
 		SimpleVector trans = new SimpleVector();
 		SimpleVector ori;
 
 		if (group.oriPos[0] == null) {
+			Log.e(TAG, "oriPos[0] == null");
 			ori = group.group[0].getTransformedCenter();
 		} else {
 			ori = group.oriPos[0];
@@ -2039,40 +2058,73 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 		if (group.state == 0) {
 			group.state = 1;
+			group.active();
 
-			if (group.animation == null) {
+			if (group.animations == null) {
 				Log.e(TAG, "trans 0 -> 1 with null");
 
 				trans = cam.getPosition().calcSub(ori).normalize();
-				group.animation = new TranslationAnimation("", group.group,
-						new SimpleVector(trans), group);
-				mAnimatables.add(group.animation);
+				
+				if(rotate){
+					trans.x *= 1.5;
+					trans.y *= 1.5;
+					trans.z *= 1.5;
+
+					group.animations = new Animatable[] { new TranslationAnimation(
+							"", group.group, new SimpleVector(trans), group),
+							new RotateAnimation("", Math.PI, group)
+					};
+				}else {
+					group.animations = new Animatable[] { new TranslationAnimation(
+							"", group.group, new SimpleVector(trans), group) };
+				}
+				
+				for (int i = 0; i < group.animations.length; i++) {
+					mAnimatables.add(group.animations[i]);
+				}
+				
 			} else {
 				Log.e(TAG, "trans 0 -> 1 with animation");
 
-				group.animation.stop();
-
+				Animatable[] as = group.animations;
+				for (int i = 0; i < as.length; i++) {
+					as[i].stop();
+				}
+				
 				trans = cam.getPosition().calcSub(ori).normalize();
-
+				
 				SimpleVector hasTrns = new SimpleVector();
 				group.group[0].getTranslation(hasTrns);
 
-				group.animation = new TranslationAnimation("", group.group,
-						trans.calcSub(hasTrns), group);
-				mAnimatables.add(group.animation);
-			}
+				if(rotate){
+					trans.x *= 1.5;
+					trans.y *= 1.5;
+					trans.z *= 1.5;
+					group.animations = new Animatable[]{
+							 new TranslationAnimation("", group.group,
+										trans.calcSub(hasTrns), group),
+							new RotateAnimation("", Math.PI, group)
+					};
+				}else {
+					group.animations = new Animatable[]{
+							 new TranslationAnimation("", group.group,
+										trans.calcSub(hasTrns), group)
+					};
+				}
 
-		} else {
+				for (int i = 0; i < group.animations.length; i++) {
+					mAnimatables.add(group.animations[i]);
+				}
+			}
 
 		}
 	}
+	SimpleVector trns;
 
-	public void onDeactivateTilesGroup(PickGroup group) {
-
-		SimpleVector trns;
+	public void onDeactivateTilesGroup(PickGroup group, boolean rotate) {
 
 		if (group.oriPos[0] == null) {
-			trns = new SimpleVector().calcSub(group.group[0].getTranslation());
+			trns = new SimpleVector(0,0,0).calcSub(group.group[0].getTranslation());
 		} else {
 			trns = group.oriPos[0].calcSub(group.group[0]
 					.getTransformedCenter());
@@ -2082,21 +2134,57 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 		} else {
 			group.state = 0;
+			group.deactive();
 
-			if (group.animation == null) {
+			if (group.animations == null) {
 				Log.e(TAG, "trans 1 -> 0 with null");
 
-				group.animation = new TranslationAnimation("", group.group,
-						trns, group);
-				mAnimatables.add(group.animation);
+				if(rotate){
+					group.animations = new Animatable[] { new TranslationAnimation(
+							"", group.group, trns, group){
+						@Override
+						public void onAnimateSuccess() {
+							object3ds[0].translate(group.oriPos[0].calcSub(object3ds[0].getTransformedCenter()));
+							super.onAnimateSuccess();
+						}
+					},
+							new RotateAnimation("", Math.PI, group)
+					};
+				}else {
+					group.animations = new Animatable[] { new TranslationAnimation(
+							"", group.group, trns, group) };
+				}
+				
+				for (int i = 0; i < group.animations.length; i++) {
+					mAnimatables.add(group.animations[i]);
+				}
+
 			} else {
-				Log.e(TAG, "trans 1 -> 0 with animation");
+				Log.e(TAG, "trans 1 -> 0 with animation null?");
+				Animatable[] as = group.animations;
+				for (int i = 0; i < as.length; i++) {
+					as[i].stop();
+				}
 
-				group.animation.stop();
+				if(rotate){
+					group.animations = new Animatable[] { new TranslationAnimation(
+							"", group.group, trns, group){
+						@Override
+						public void onAnimateSuccess() {
+							object3ds[0].translate(group.oriPos[0].calcSub(object3ds[0].getTransformedCenter()));
+							super.onAnimateSuccess();
+						}
+					},
+							new RotateAnimation("", Math.PI, group)
+					};
+				}else {
+					group.animations = new Animatable[] { new TranslationAnimation(
+							"", group.group, trns, group) };
+				}
 
-				group.animation = new TranslationAnimation("", group.group,
-						trns, group);
-				mAnimatables.add(group.animation);
+				for (int i = 0; i < group.animations.length; i++) {
+					mAnimatables.add(group.animations[i]);
+				}
 
 			}
 		}
@@ -2109,7 +2197,8 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 	@Override
 	public int getScreenIdx() {
-		if(mCamViewIndex == TREASURE)return headDir;
+		if (mCamViewIndex == TREASURE)
+			return headDir;
 		return mWsIdx;
 	}
 
@@ -2194,6 +2283,11 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 	@Override
 	public void onStopRed() {
 		stopRed();
+	}
+
+	@Override
+	public void onGrabObj(Object3D obj, float distance) {
+		obj.translate(ball1.getTransformedCenter().calcSub(obj.getTransformedCenter()));
 	}
 
 }

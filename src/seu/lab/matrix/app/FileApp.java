@@ -1,11 +1,13 @@
 package seu.lab.matrix.app;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import org.opencv.core.Point;
 
+import android.R.id;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -25,8 +27,21 @@ public class FileApp extends AbstractApp {
 
 	private World world;
 
+	final static String[] fileUrl = new String[] {
+	// "c:\\sample.jpg",
+	// "c:\\sample.pdf",
+	"c:\\sample.pptx",
+	// "c:\\sample.xlsx",
+	// "c:\\sample.mkv",
+	// "c:\\sample.docx",
+	// "c:\\sample.html",
+	// "c:\\sample",
+	};
+
 	public int mFilePageIdx = 0;
 	public int mPickState = 0;
+
+	SimpleVector trashPos;
 
 	public FileApp(List<Animatable> animatables, SceneCallback callback,
 			Camera camera, Object3D ball1, World world) {
@@ -35,7 +50,7 @@ public class FileApp extends AbstractApp {
 	}
 
 	enum Minetype {
-		JPG, PDF, PPT, EXECL, VIDEO, WORD, FOLDER_CLOUD, FOLDER, FOLDER_HOME, WEBPAGE, CODE
+		JPG, PDF, PPT, EXECL, VIDEO, WORD, WEBPAGE, CODE, FOLDER_CLOUD
 	}
 
 	PickGroup[] mPickGroupFiles = new PickGroup[3];
@@ -49,8 +64,20 @@ public class FileApp extends AbstractApp {
 	protected Object3D[] files1 = null;
 	protected Object3D[] files2 = null;
 
+	List<Integer> trashs = new LinkedList<Integer>();
+
 	private Map<String, Object3D> clickableFiles = new HashMap<String, Object3D>();
 	private Map<String, Object3D> clickableDesks = new HashMap<String, Object3D>();
+
+	private boolean pickable = true;
+	private boolean[] filepickable = new boolean[9];
+
+	private boolean isGrabingingFile = false;
+
+	private Object3D mGrabbingFile;
+	private int mGrabbingFileIdx;
+
+	private long lastGrabTime;
 
 	SimpleVector getFilePos(int i, int x) {
 		SimpleVector target = new SimpleVector();
@@ -68,7 +95,15 @@ public class FileApp extends AbstractApp {
 		}
 	}
 
+	void resetFilePickable() {
+		for (int i = 0; i < filepickable.length; i++) {
+			filepickable[i] = true;
+		}
+	}
+
 	void file() {
+
+		resetFilePickable();
 
 		startFrom(desks, 5);
 		startFrom(files1, 5);
@@ -90,6 +125,28 @@ public class FileApp extends AbstractApp {
 		}
 	}
 
+	class FilePickGroup extends PickGroup {
+
+		public String oriTex;
+		public String activeTex;
+
+		public FilePickGroup(int count, String oriTex, String activeTex) {
+			super(count);
+			this.oriTex = oriTex;
+			this.activeTex = activeTex;
+		}
+
+		@Override
+		public void active() {
+			group[0].setTexture(activeTex);
+		}
+
+		@Override
+		public void deactive() {
+			group[0].setTexture(oriTex);
+		}
+	}
+
 	private void postInitFile() {
 		for (int i = 0; i < mPickGroupFiles.length; i++) {
 			mPickGroupFiles[i] = new PickGroup(1);
@@ -98,19 +155,22 @@ public class FileApp extends AbstractApp {
 			mPickGroupDesks[i] = new PickGroup(1);
 		}
 		for (int i = 0; i < mPickGroupFiles1.length; i++) {
-			mPickGroupFiles1[i] = new PickGroup(1);
+			mPickGroupFiles1[i] = new FilePickGroup(1, "minetype_" + i, "info_"
+					+ i);
 		}
 		for (int i = 0; i < mPickGroupFiles2.length; i++) {
-			mPickGroupFiles2[i] = new PickGroup(1);
+			mPickGroupFiles2[i] = new FilePickGroup(1, "minetype_" + i, "info_"
+					+ i);
 		}
 		Object3D tmp;
 		tmp = clickableDesks.get("f_trash");
 		tmp.setTexture("sw_dolphin_on");
+		trashPos = tmp.getTransformedCenter();
 		mPickGroupDesks[0].group[0] = tmp;
 
 		tmp = clickableDesks.get("f_desk");
 		tmp.setTexture("sw_brown");
-		
+
 		tmp = clickableDesks.get("f_i_open");
 		mPickGroupDesks[1].group[0] = tmp;
 
@@ -142,25 +202,26 @@ public class FileApp extends AbstractApp {
 		files = clickableFiles.values().toArray(files);
 
 		for (int i = 0; i < 9; i++) {
-			
-			if(i < 6 || i > 8){
+
+			if (i != 8) {
 				files1[i] = mPickGroupFiles[1].group[0].cloneObject();
-			}else {
+			} else {
 				files1[i] = mPickGroupFiles[0].group[0].cloneObject();
 			}
-			
+
 			files1[i].rotateZ(-0.4f);
 			files1[i].setTexture("minetype_" + i);
 			mPickGroupFiles1[i].group[0] = files1[i];
 			mPickGroupFiles1[i].oriPos[0] = getFilePos(i, 0);
 			world.addObject(files1[i]);
 
-			if(i < 6 || i > 8){
+			if (i != 8) {
 				files2[i] = mPickGroupFiles[1].group[0].cloneObject();
-			}else {
+			} else {
 				files2[i] = mPickGroupFiles[0].group[0].cloneObject();
 			}
 			files2[i].rotateZ(-0.4f);
+			files1[i].setTexture("minetype_" + i);
 
 			mPickGroupFiles2[i].group[0] = files2[i];
 			mPickGroupFiles2[i].oriPos[0] = getFilePos(i, 0);
@@ -213,11 +274,15 @@ public class FileApp extends AbstractApp {
 	@Override
 	public void onPick() {
 		// TODO
+		if (!pickable)
+			return;
 		pickList(mPickGroupDesks, 1, mPickGroupDesks.length);
 		if (mFilePageIdx == 0) {
-			pickList(mPickGroupFiles1, 0, mPickGroupFiles1.length);
+			pickList(mPickGroupFiles1, 0, mPickGroupFiles1.length, true,
+					filepickable);
 		} else {
-			pickList(mPickGroupFiles2, 0, mPickGroupFiles2.length);
+			pickList(mPickGroupFiles2, 0, mPickGroupFiles2.length, true,
+					filepickable);
 		}
 	}
 
@@ -245,7 +310,6 @@ public class FileApp extends AbstractApp {
 
 	@Override
 	public void onShown() {
-		// toggleDesk(true);
 		file();
 	}
 
@@ -256,31 +320,41 @@ public class FileApp extends AbstractApp {
 
 	@Override
 	public void onLeft() {
-		// TODO scroll file left
-		slideFile(true);
-	}
+		if (System.currentTimeMillis() - lastGrabTime < 100)
+			return;
 
-	@Override
-	public void onRight() {
-		// TODO scroll file right
+		// scroll file left
 		slideFile(false);
 	}
 
 	@Override
-	public void onUp() {
-		// TODO go to home folder
+	public void onRight() {
+		if (System.currentTimeMillis() - lastGrabTime < 100)
+			return;
 
+		// scroll file right
+		slideFile(true);
+	}
+
+	@Override
+	public void onUp() {
+		if (System.currentTimeMillis() - lastGrabTime < 100)
+			return;
+
+		// go to up level
+		goUpFolder(8);
 	}
 
 	@Override
 	public void onDown() {
-		// TODO go to up level
-
+		if (System.currentTimeMillis() - lastGrabTime < 100)
+			return;
+		// go to home folder
+		goHomeFolder();
 	}
 
 	@Override
 	public void onLongPress() {
-		// TODO Auto-generated method stub
 
 	}
 
@@ -292,6 +366,14 @@ public class FileApp extends AbstractApp {
 		//
 		// -1,1,-1,1
 		// -1,-1,1,1
+		
+		// is looking at the trash, restore
+		Log.e(TAG, "restore==? "+SceneHelper.isLookingAt(cam, ball1, trashPos));
+		if (SceneHelper.isLookingAt(cam, ball1, trashPos) > 0.98) {
+			restore();
+		}
+		
+		
 		if (mPickState == 0) {
 
 			Object3D[] files = mFilePageIdx == 0 ? files1 : files2;
@@ -315,6 +397,8 @@ public class FileApp extends AbstractApp {
 					break;
 				}
 			}
+
+
 		} else {
 			PickGroup group = null;
 			SimpleVector tmp = new SimpleVector(0, 0, -1000);
@@ -329,15 +413,23 @@ public class FileApp extends AbstractApp {
 
 		// show the icons
 		// pick icons and do the action
+		
 
-		// drag the files
 		return false;
 	}
 
 	@Override
 	public void onSingleTap() {
-		// TODO Auto-generated method stub
+		// for test
+		//goDownFolder(8);
+//		openFileOnScene(fileUrl[0]);
+		Log.e(TAG, "restore? "+SceneHelper.isLookingAt(cam, ball1, trashPos));
 
+		if(trashs.isEmpty())
+			deleteFile(0);
+		else {
+			restore();
+		}
 	}
 
 	@Override
@@ -352,20 +444,22 @@ public class FileApp extends AbstractApp {
 				SceneHelper.to1DArr(new Object3D[][] { desks, files1, files2 }),
 				false, runnable);
 		scene.onAppClosed();
-
-		scene.onSwitchMode(new ConnectionMode(1));
 	}
 
 	void openFileOnScene(String file) {
+		// can open office
 
 		Bundle bundle = new Bundle();
 		bundle.putString("file", file);
 
-		scene.onOpenApp(AppType.FILE_OPEN.ordinal(), bundle);
+		scene.onOpenApp(AppType.FILE_OPEN.ordinal() - 1, bundle);
 	}
 
 	void slideFile(boolean slideLeft) {
 		mFilePageIdx = (mFilePageIdx + 1) % 2;
+
+		resetFilePickable();
+		trashs.clear();
 
 		resetFilePosition(files1, 0);
 		resetFilePosition(files2, 0);
@@ -380,45 +474,272 @@ public class FileApp extends AbstractApp {
 			cur = files2;
 		}
 
-		slideList(slideLeft, pre, cur, 4, false, true);
+		pickable = false;
+		slideList(slideLeft, pre, cur, 4, false, true, new Runnable() {
+
+			@Override
+			public void run() {
+				pickable = true;
+			}
+		});
 	}
 
-	void goDownFolder(int idx) {
+	void goUpFolder(final int idx) {
 
+		// all files fly to idx in order
+		Object3D[] files = mFilePageIdx == 0 ? files1 : files2;
+		final Object3D[] f = new Object3D[files.length - 1];
+		for (int i = 0; i < f.length; i++) {
+			f[i] = files[i];
+		}
+
+		pickable = false;
+
+		Animatable[] as = new Animatable[f.length];
+
+		for (int i = 0; i < as.length; i++) {
+
+			if (i == as.length - 1) {
+				as[i] = new TranslationAnimation(
+						"",
+						new Object3D[] { f[i] },
+						getFilePos(idx, 0).calcSub(f[i].getTransformedCenter()),
+						null) {
+					@Override
+					public void onAnimateSuccess() {
+						// all files except idx step forward
+
+						for (int j = 0; j < f.length; j++) {
+							f[j].translate(getFilePos(j, 0).calcAdd(
+									new SimpleVector(-10, 0, 0)).calcSub(
+									f[j].getTransformedCenter()));
+						}
+
+						mAnimatables.add(new TranslationAnimation("", f,
+								new SimpleVector(10, 0, 0), null) {
+							@Override
+							public void onAnimateSuccess() {
+								pickable = true;
+								super.onAnimateSuccess();
+							}
+						});
+
+						super.onAnimateSuccess();
+					}
+				};
+			} else {
+				as[i] = new TranslationAnimation(
+						"",
+						new Object3D[] { f[i] },
+						getFilePos(idx, 0).calcSub(f[i].getTransformedCenter()),
+						null);
+			}
+		}
+
+		mAnimatables.add(new SeqAnimation(mAnimatables, as));
+
+	}
+
+	void goDownFolder(final int idx) {
+
+		// all files except idx step back
+		Object3D[] files = mFilePageIdx == 0 ? files1 : files2;
+		final Object3D[] f = new Object3D[files.length - 1];
+		for (int i = 0; i < f.length; i++) {
+			f[i] = files[i];
+		}
+
+		pickable = false;
+		mAnimatables.add(new TranslationAnimation("", f, new SimpleVector(-10,
+				0, 0), null) {
+			@Override
+			public void onAnimateSuccess() {
+				super.onAnimateSuccess();
+				// all files fly from idx to it pos in order
+
+				Animatable[] as = new Animatable[f.length];
+
+				for (int i = 0; i < as.length; i++) {
+					f[i].translate(getFilePos(idx, 0).calcSub(
+							f[i].getTransformedCenter()));
+					as[i] = new TranslationAnimation("",
+							new Object3D[] { f[i] }, getFilePos(i, 0).calcSub(
+									f[i].getTransformedCenter()), null);
+				}
+				mAnimatables.add(new SeqAnimation(mAnimatables, as) {
+					@Override
+					public void onAnimateSuccess() {
+						pickable = true;
+						super.onAnimateSuccess();
+					}
+				});
+			}
+		});
 	}
 
 	void goHomeFolder() {
+		// all files step back
+		final Object3D[] files = mFilePageIdx == 0 ? files1 : files2;
 
+		// files slide from bottom to table
+		pickable = false;
+		mAnimatables.add(new TranslationAnimation("", files, new SimpleVector(
+				-10, 0, 0), null) {
+			@Override
+			public void onAnimateSuccess() {
+				super.onAnimateSuccess();
+
+				Animatable[] as = new Animatable[9];
+
+				for (int i = 0; i < as.length; i++) {
+					files[i].translate(getFilePos(i, 0).calcAdd(
+							new SimpleVector(0, 0, -5).calcSub(files[i]
+									.getTransformedCenter())));
+					as[i] = new TranslationAnimation("",
+							new Object3D[] { files[i] }, new SimpleVector(0, 0,
+									5), null);
+				}
+				mAnimatables.add(new SeqAnimation(mAnimatables, as) {
+					@Override
+					public void onAnimateSuccess() {
+						pickable = true;
+						super.onAnimateSuccess();
+					}
+				});
+			}
+		});
+
+	}
+
+	void deleteFile(final int idx) {
+		// delete the [idx] file
+		if(!filepickable[idx])return;
+		
+		filepickable[idx] = false;
+		final Object3D[] f = new Object3D[] { mFilePageIdx == 0 ? files1[idx]
+				: files2[idx] };
+		// fly to the trash and stay in the trash
+
+		// step forward
+		pickable = false;
+		mAnimatables.add(new TranslationAnimation("", f, new SimpleVector(0.5, 0,
+				0), null) {
+			@Override
+			public void onAnimateSuccess() {
+				// to the trash
+				trashs.add(idx);
+				deleteFile(f);
+				super.onAnimateSuccess();
+			}
+		});
+	}
+
+	void deleteFile(Object3D[] f) {
+		mAnimatables.add(new TranslationAnimation("", f, trashPos.calcSub(f[0]
+				.getTransformedCenter().calcAdd(new SimpleVector(0, 0.5, 0))),
+				null) {
+			@Override
+			public void onAnimateSuccess() {
+				pickable = true;
+				super.onAnimateSuccess();
+			}
+
+		});
 	}
 
 	@Override
 	public boolean onToggleFullscreen() {
-		// TODO Auto-generated method stub
+		// openFileOnScene(fileUrl[0]);
 		return false;
 	}
 
 	@Override
 	public void onMove(Point p) {
-		// TODO Auto-generated method stub
-
+		// if file if picked, rotate it with ball
+		if (isGrabingingFile) {
+			scene.onGrabObj(mGrabbingFile, 0.5f);
+		}
 	}
 
 	@Override
 	public void onClick() {
-		// TODO Auto-generated method stub
-
-	}
+	} // on double tapped
 
 	@Override
 	public void onPress(Point p) {
-		// TODO Auto-generated method stub
+		// if is looking at a file, pick it and rotate with ball
 
+		final Object3D[] files = mFilePageIdx == 0 ? files1 : files2;
+
+		for (int i = 0; i < files.length; i++) {
+			if (filepickable[i]
+					&& SceneHelper.isLookingAt(cam, ball1,
+							files[i].getTransformedCenter()) > 0.99) {
+				mGrabbingFileIdx = i;
+				mGrabbingFile = files[i];
+				pickable = false;
+				isGrabingingFile = true;
+				break;
+			}
+		}
+	}
+
+	void restore() {
+		Log.e(TAG, "restore");
+		
+		final Object3D[] files = mFilePageIdx == 0 ? files1 : files2;
+
+		pickable = false;
+		for (Integer ii : trashs) {
+			filepickable[ii] = true;
+			mAnimatables.add(new TranslationAnimation("",
+					new Object3D[] { files[ii] }, getFilePos(ii, 0).calcSub(
+							files[ii].getTransformedCenter()), null) {
+				@Override
+				public void onAnimateSuccess() {
+					pickable = true;
+					super.onAnimateSuccess();
+				}
+			});
+		}
+		trashs.clear();
 	}
 
 	@Override
 	public void onRaise(Point p) {
-		// TODO Auto-generated method stub
+		// if is picking a file, translate it to the ori,
+
+		if (!isGrabingingFile)
+			return;
+
+		pickable = true;
+		isGrabingingFile = false;
+		lastGrabTime = System.currentTimeMillis();
+
+		// if is the trash dir, delete it
+		// else back to ori
+		if (SceneHelper.isLookingAt(cam, ball1, trashPos) > 0.98) {
+			filepickable[mGrabbingFileIdx] = false;
+			pickable = false;
+			trashs.add(mGrabbingFileIdx);
+			deleteFile(new Object3D[] { mGrabbingFile });
+		} else {
+			pickable = false;
+//			mGrabbingFile.clearRotation();
+//			mGrabbingFile.clearTranslation();
+
+			mAnimatables.add(new TranslationAnimation("",
+					new Object3D[] { mGrabbingFile }, getFilePos(
+							mGrabbingFileIdx, 0).calcSub(
+							mGrabbingFile.getTransformedCenter()), null){
+				@Override
+				public void onAnimateSuccess() {
+					pickable = true;
+					
+					super.onAnimateSuccess();
+				}
+			});
+		}
 
 	}
-
 }

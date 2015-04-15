@@ -63,7 +63,7 @@ public class LiveTileAnimation extends BaseValueAnimation{
 	@Override
 	public void onAnimateSuccess() {
 		if(group != null)
-			group.animation = null;
+			group.animations = null;
 	}
 
 	@Override

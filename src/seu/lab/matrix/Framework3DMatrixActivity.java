@@ -1034,12 +1034,20 @@ public abstract class Framework3DMatrixActivity extends
 			tm.addTexture("l_m" + c[i], texture);
 		}
 		
-		for (int i = 0; i <= 10; i++) {
+		for (int i = 0; i <= 8; i++) {
 			drawable = new BitmapDrawable(am.open("minetype/target-" + i + ".png"));
 			texture = new Texture(BitmapHelper
 					.rescale(BitmapHelper.convert(drawable), 256, 256));
 			texture.removeAlpha();
 			tm.addTexture("minetype_" + i, texture);
+		}
+		
+		for (int i = 0; i <= 8; i++) {
+			drawable = new BitmapDrawable(am.open("minetype/info-" + i + ".png"));
+			texture = new Texture(BitmapHelper
+					.rescale(BitmapHelper.convert(drawable), 256, 256));
+			texture.removeAlpha();
+			tm.addTexture("info_" + i, texture);
 		}
 	}
 

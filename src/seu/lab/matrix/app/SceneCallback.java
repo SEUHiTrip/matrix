@@ -20,8 +20,8 @@ public interface SceneCallback {
 	void onHideCurtain();
 	void onHideObj(Object3D[] cur, boolean displayAnimation, final Runnable runnable);
 	void onOpenApp(final int idx, Bundle bundle);
-	void onActivateTilesGroup(PickGroup group);
-	void onDeactivateTilesGroup(PickGroup group);
+	void onActivateTilesGroup(PickGroup group, boolean rotate);
+	void onDeactivateTilesGroup(PickGroup group, boolean rotate);
 	int getScreenIdx();
 	boolean isLookingAtScreen();
 	void onSwitchMode(ConnectionMode mode);
@@ -31,4 +31,5 @@ public interface SceneCallback {
 	void onStopDolphin();
 	void onStartRed();
 	void onStopRed();
+	void onGrabObj(Object3D obj, float distance);
 }
