@@ -79,6 +79,8 @@ public class FileApp extends AbstractApp {
 
 	private long lastGrabTime;
 
+	private int mCurFileIdx;
+
 	SimpleVector getFilePos(int i, int x) {
 		SimpleVector target = new SimpleVector();
 		cam.getPosition(target);
@@ -96,6 +98,7 @@ public class FileApp extends AbstractApp {
 	}
 
 	void resetFilePickable() {
+		trashs.clear();
 		for (int i = 0; i < filepickable.length; i++) {
 			filepickable[i] = true;
 		}
@@ -105,20 +108,23 @@ public class FileApp extends AbstractApp {
 
 		resetFilePickable();
 
-		startFrom(desks, 5);
-		startFrom(files1, 5);
+		startFrom(desks, 0, desks.length, 5);
+		startFrom(files1, 0, files1.length, 5);
 		resetFilePosition(files1, 5);
 		// startFrom(files2, 5);
 		// resetFilePosition(files2, 5);
 
+		for (int i = 1; i < mPickGroupDesks.length; i++) {
+			mPickGroupDesks[i].group[0].setVisibility(false);
+		}
+		
 		mAnimatables.add(new TranslationAnimation("", SceneHelper
 				.to1DArr(new Object3D[][] { desks, files1 }), new SimpleVector(
 				5, 0, 0), null));
-
 	}
 
-	void startFrom(Object3D[] object3ds, int distance) {
-		for (int i = 0; i < object3ds.length; i++) {
+	void startFrom(Object3D[] object3ds, int s, int e, int distance) {
+		for (int i = s; i < e; i++) {
 			object3ds[i].clearTranslation();
 			object3ds[i].translate(-distance, 0, 0);
 			object3ds[i].setVisibility(true);
@@ -172,15 +178,19 @@ public class FileApp extends AbstractApp {
 		tmp.setTexture("sw_brown");
 
 		tmp = clickableDesks.get("f_i_open");
+		tmp.setVisibility(false);
 		mPickGroupDesks[1].group[0] = tmp;
 
 		tmp = clickableDesks.get("f_i_copy");
+		tmp.setVisibility(false);
 		mPickGroupDesks[2].group[0] = tmp;
 
 		tmp = clickableDesks.get("f_i_cut");
+		tmp.setVisibility(false);
 		mPickGroupDesks[3].group[0] = tmp;
 
 		tmp = clickableDesks.get("f_i_delete");
+		tmp.setVisibility(false);
 		mPickGroupDesks[4].group[0] = tmp;
 
 		tmp = clickableFiles.get("f_book_b");
@@ -276,7 +286,22 @@ public class FileApp extends AbstractApp {
 		// TODO
 		if (!pickable)
 			return;
-		pickList(mPickGroupDesks, 1, mPickGroupDesks.length);
+
+		// pickList(mPickGroupDesks, 1, mPickGroupDesks.length);
+
+		boolean hasPick = false;
+		for (int i = 0; i < mPickGroupDesks.length; i++) {
+			if(!mPickGroupDesks[i].group[0].getVisibility())break;
+			if (!hasPick && SceneHelper.isLookingAt(cam, ball1,
+					mPickGroupDesks[i].group[0].getTransformedCenter()) > 0.997) {
+				mPickGroupDesks[i].group[0].setScale(1.5f);
+				hasPick = true;
+			} else {
+				mPickGroupDesks[i].group[0].setScale(1f);
+			}
+		}
+
+		if(hasPick)return;
 		if (mFilePageIdx == 0) {
 			pickList(mPickGroupFiles1, 0, mPickGroupFiles1.length, true,
 					filepickable);
@@ -360,21 +385,17 @@ public class FileApp extends AbstractApp {
 
 	@Override
 	public boolean onDoubleTap() {
-		// TODO
-		// pick file
 		// 1,2,3,4
 		//
 		// -1,1,-1,1
 		// -1,-1,1,1
-		
+
 		// is looking at the trash, restore
-		Log.e(TAG, "restore==? "+SceneHelper.isLookingAt(cam, ball1, trashPos));
+		Log.e(TAG,
+				"restore==? " + SceneHelper.isLookingAt(cam, ball1, trashPos));
 		if (SceneHelper.isLookingAt(cam, ball1, trashPos) > 0.98) {
 			restore();
-		}
-		
-		
-		if (mPickState == 0) {
+		} else if (mPickState == 0) {
 
 			Object3D[] files = mFilePageIdx == 0 ? files1 : files2;
 
@@ -383,53 +404,99 @@ public class FileApp extends AbstractApp {
 						files[i].getTransformedCenter()) > 0.99) {
 
 					mPickState = 1;
-
+					mCurFileIdx = i;
 					PickGroup group = null;
 					SimpleVector tmp;
 					for (int j = 1; j < mPickGroupDesks.length; j++) {
 						group = mPickGroupDesks[j];
-						tmp = getFilePos(i, 0);
+
+						SimpleVector target = files[i].getTransformedCenter();
+						SimpleVector origin = group.group[0]
+								.getTransformedCenter();
+						tmp = new SimpleVector(target.x - origin.x, target.y
+								- origin.y, target.z - origin.z);
+						float x = tmp.x + 0.2f;
+						float y = tmp.y - 0.3f;
+						float z = tmp.z - 0.5f + j * 0.2f;
+						tmp.set(x, y, z);
 						group.group[0].translate(tmp);
-						group.oriPos[0] = tmp.calcAdd(new SimpleVector(1,
-								(j % 2 * 2 - 1) * 0.2, (j / 2 * 2 - 1) * 0.2));
+						group.group[0].setVisibility(true);
+						Log.e("tag",
+								i + "    j:" + j + "   "
+										+ group.group[0].getTransformedCenter());
 					}
+					Log.e("tag",
+							"Double tap! " + i + "    "
+									+ files[i].getTransformedCenter());
+
+					// for (int j = 1; j < mPickGroupDesks.length; j++) {
+					// group = mPickGroupDesks[j];
+					// tmp = getFilePos(i, 0);
+					// group.group[0].translate(tmp);
+					// group.oriPos[0] = tmp.calcAdd(new SimpleVector(1,
+					// (j % 2 * 2 - 1) * 0.2, (j / 2 * 2 - 1) * 0.2));
+					// }
 
 					break;
 				}
 			}
 
-
 		} else {
 			PickGroup group = null;
-			SimpleVector tmp = new SimpleVector(0, 0, -1000);
+//			SimpleVector tmp = new SimpleVector(0, 0, -1000);
+
+			// show the icons
+			// pick icons and do the action
+
 			for (int j = 1; j < mPickGroupDesks.length; j++) {
+				if (SceneHelper.isLookingAt(cam, ball1,
+						mPickGroupDesks[j].group[0].getTransformedCenter()) > 0.997) {
+					doFileActions(j, mCurFileIdx);
+				}
 				group = mPickGroupDesks[j];
+				group.group[0].setVisibility(false);
 
-				group.group[0].translate(tmp);
-				group.oriPos[0] = null;
+//				group.group[0].translate(tmp);
+//				group.oriPos[0] = null;
 			}
-
+			mPickState = 0;
 		}
 
-		// show the icons
-		// pick icons and do the action
-		
-
 		return false;
+	}
+
+	void doFileActions(int aidx, int fidx) {
+		Log.e(TAG, "doFileActions: " + aidx + " f:" + fidx);
+		switch (aidx) {
+		case 1:
+			if(fidx == 8){
+				goDownFolder(8);
+			}else {
+				openFileOnScene(fileUrl[0]);
+			}
+			break;
+		case 2:
+			// copy
+			break;
+		case 3:
+			// cut
+			break;
+		case 4:
+			deleteFile(fidx);
+			break;
+		default:
+			break;
+		}
 	}
 
 	@Override
 	public void onSingleTap() {
 		// for test
-		//goDownFolder(8);
-//		openFileOnScene(fileUrl[0]);
-		Log.e(TAG, "restore? "+SceneHelper.isLookingAt(cam, ball1, trashPos));
+		// goDownFolder(8);
+		// openFileOnScene(fileUrl[0]);
 
-		if(trashs.isEmpty())
-			deleteFile(0);
-		else {
-			restore();
-		}
+//		deleteFile(trashidx++);
+
 	}
 
 	@Override
@@ -485,6 +552,7 @@ public class FileApp extends AbstractApp {
 	}
 
 	void goUpFolder(final int idx) {
+		resetFilePickable();
 
 		// all files fly to idx in order
 		Object3D[] files = mFilePageIdx == 0 ? files1 : files2;
@@ -542,6 +610,8 @@ public class FileApp extends AbstractApp {
 
 	void goDownFolder(final int idx) {
 
+		resetFilePickable();
+		
 		// all files except idx step back
 		Object3D[] files = mFilePageIdx == 0 ? files1 : files2;
 		final Object3D[] f = new Object3D[files.length - 1];
@@ -578,6 +648,8 @@ public class FileApp extends AbstractApp {
 	}
 
 	void goHomeFolder() {
+		resetFilePickable();
+
 		// all files step back
 		final Object3D[] files = mFilePageIdx == 0 ? files1 : files2;
 
@@ -613,8 +685,9 @@ public class FileApp extends AbstractApp {
 
 	void deleteFile(final int idx) {
 		// delete the [idx] file
-		if(!filepickable[idx])return;
-		
+		if (!filepickable[idx])
+			return;
+
 		filepickable[idx] = false;
 		final Object3D[] f = new Object3D[] { mFilePageIdx == 0 ? files1[idx]
 				: files2[idx] };
@@ -622,22 +695,22 @@ public class FileApp extends AbstractApp {
 
 		// step forward
 		pickable = false;
-		mAnimatables.add(new TranslationAnimation("", f, new SimpleVector(0.5, 0,
-				0), null) {
+		mAnimatables.add(new TranslationAnimation("", f, new SimpleVector(0.5,
+				0, 0), null) {
 			@Override
 			public void onAnimateSuccess() {
 				// to the trash
 				trashs.add(idx);
-				deleteFile(f);
+				deleteFile(f, idx);
 				super.onAnimateSuccess();
 			}
 		});
 	}
 
-	void deleteFile(Object3D[] f) {
+	void deleteFile(Object3D[] f, int idx) {
 		mAnimatables.add(new TranslationAnimation("", f, trashPos.calcSub(f[0]
-				.getTransformedCenter().calcAdd(new SimpleVector(0, 0.5, 0))),
-				null) {
+				.getTransformedCenter().calcAdd(
+						new SimpleVector(0, 0.5 + 0.075 * idx, 0))), null) {
 			@Override
 			public void onAnimateSuccess() {
 				pickable = true;
@@ -686,7 +759,7 @@ public class FileApp extends AbstractApp {
 
 	void restore() {
 		Log.e(TAG, "restore");
-		
+
 		final Object3D[] files = mFilePageIdx == 0 ? files1 : files2;
 
 		pickable = false;
@@ -722,20 +795,20 @@ public class FileApp extends AbstractApp {
 			filepickable[mGrabbingFileIdx] = false;
 			pickable = false;
 			trashs.add(mGrabbingFileIdx);
-			deleteFile(new Object3D[] { mGrabbingFile });
+			deleteFile(new Object3D[] { mGrabbingFile }, mGrabbingFileIdx);
 		} else {
 			pickable = false;
-//			mGrabbingFile.clearRotation();
-//			mGrabbingFile.clearTranslation();
+			// mGrabbingFile.clearRotation();
+			// mGrabbingFile.clearTranslation();
 
 			mAnimatables.add(new TranslationAnimation("",
 					new Object3D[] { mGrabbingFile }, getFilePos(
 							mGrabbingFileIdx, 0).calcSub(
-							mGrabbingFile.getTransformedCenter()), null){
+							mGrabbingFile.getTransformedCenter()), null) {
 				@Override
 				public void onAnimateSuccess() {
 					pickable = true;
-					
+
 					super.onAnimateSuccess();
 				}
 			});
