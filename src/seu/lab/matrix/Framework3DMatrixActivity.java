@@ -77,7 +77,7 @@ public abstract class Framework3DMatrixActivity extends
 
 	public final static boolean NEED_ADJUST = Build.MODEL.equals("SCH-I545");
 	public final static boolean NEED_WORKSPACE = true;
-	public final static boolean NEED_SCENE = false;
+	public final static boolean NEED_SCENE = true;
 	public final static boolean NEED_SKYBOX = NEED_SCENE;
 	
 	public final static boolean NEED_USB = false;

@@ -7,11 +7,9 @@ import java.util.Map;
 
 import org.opencv.core.Point;
 
-import android.R.id;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.idisplay.VirtualScreenDisplay.IDisplayConnection.ConnectionMode;
 import com.threed.jpct.Camera;
 import com.threed.jpct.Object3D;
 import com.threed.jpct.SimpleVector;
@@ -97,6 +95,12 @@ public class FileApp extends AbstractApp {
 		}
 	}
 
+	void resetOriPosition(PickGroup[] pickGroups, int x) {
+		for (int i = 0; i < pickGroups.length; i++) {
+			pickGroups[i].oriPos[0] = getFilePos(i, x);
+		}
+	}
+
 	void resetFilePickable() {
 		trashs.clear();
 		for (int i = 0; i < filepickable.length; i++) {
@@ -111,16 +115,25 @@ public class FileApp extends AbstractApp {
 		startFrom(desks, 0, desks.length, 5);
 		startFrom(files1, 0, files1.length, 5);
 		resetFilePosition(files1, 5);
+		resetOriPosition(mPickGroupFiles1, 0);
+		resetOriPosition(mPickGroupFiles2, 0);
+
 		// startFrom(files2, 5);
 		// resetFilePosition(files2, 5);
 
 		for (int i = 1; i < mPickGroupDesks.length; i++) {
 			mPickGroupDesks[i].group[0].setVisibility(false);
 		}
-		
+
 		mAnimatables.add(new TranslationAnimation("", SceneHelper
 				.to1DArr(new Object3D[][] { desks, files1 }), new SimpleVector(
-				5, 0, 0), null));
+				5, 0, 0), null){
+			@Override
+			public void onAnimateSuccess() {
+				trashPos = mPickGroupDesks[0].group[0].getTransformedCenter();
+				super.onAnimateSuccess();
+			}
+		});
 	}
 
 	void startFrom(Object3D[] object3ds, int s, int e, int distance) {
@@ -222,7 +235,7 @@ public class FileApp extends AbstractApp {
 			files1[i].rotateZ(-0.4f);
 			files1[i].setTexture("minetype_" + i);
 			mPickGroupFiles1[i].group[0] = files1[i];
-			mPickGroupFiles1[i].oriPos[0] = getFilePos(i, 0);
+//			mPickGroupFiles1[i].oriPos[0] = getFilePos(i, 0);
 			world.addObject(files1[i]);
 
 			if (i != 8) {
@@ -234,7 +247,7 @@ public class FileApp extends AbstractApp {
 			files1[i].setTexture("minetype_" + i);
 
 			mPickGroupFiles2[i].group[0] = files2[i];
-			mPickGroupFiles2[i].oriPos[0] = getFilePos(i, 0);
+//			mPickGroupFiles2[i].oriPos[0] = getFilePos(i, 0);
 			world.addObject(files2[i]);
 		}
 
@@ -291,9 +304,11 @@ public class FileApp extends AbstractApp {
 
 		boolean hasPick = false;
 		for (int i = 0; i < mPickGroupDesks.length; i++) {
-			if(!mPickGroupDesks[i].group[0].getVisibility())break;
-			if (!hasPick && SceneHelper.isLookingAt(cam, ball1,
-					mPickGroupDesks[i].group[0].getTransformedCenter()) > 0.997) {
+			if (!mPickGroupDesks[i].group[0].getVisibility())
+				break;
+			if (!hasPick
+					&& SceneHelper.isLookingAt(cam, ball1,
+							mPickGroupDesks[i].group[0].getTransformedCenter()) > 0.997) {
 				mPickGroupDesks[i].group[0].setScale(1.5f);
 				hasPick = true;
 			} else {
@@ -301,7 +316,8 @@ public class FileApp extends AbstractApp {
 			}
 		}
 
-		if(hasPick)return;
+		if (hasPick)
+			return;
 		if (mFilePageIdx == 0) {
 			pickList(mPickGroupFiles1, 0, mPickGroupFiles1.length, true,
 					filepickable);
@@ -443,7 +459,7 @@ public class FileApp extends AbstractApp {
 
 		} else {
 			PickGroup group = null;
-//			SimpleVector tmp = new SimpleVector(0, 0, -1000);
+			// SimpleVector tmp = new SimpleVector(0, 0, -1000);
 
 			// show the icons
 			// pick icons and do the action
@@ -456,8 +472,8 @@ public class FileApp extends AbstractApp {
 				group = mPickGroupDesks[j];
 				group.group[0].setVisibility(false);
 
-//				group.group[0].translate(tmp);
-//				group.oriPos[0] = null;
+				// group.group[0].translate(tmp);
+				// group.oriPos[0] = null;
 			}
 			mPickState = 0;
 		}
@@ -469,9 +485,9 @@ public class FileApp extends AbstractApp {
 		Log.e(TAG, "doFileActions: " + aidx + " f:" + fidx);
 		switch (aidx) {
 		case 1:
-			if(fidx == 8){
+			if (fidx == 8) {
 				goDownFolder(8);
-			}else {
+			} else {
 				openFileOnScene(fileUrl[0]);
 			}
 			break;
@@ -495,7 +511,7 @@ public class FileApp extends AbstractApp {
 		// goDownFolder(8);
 		// openFileOnScene(fileUrl[0]);
 
-//		deleteFile(trashidx++);
+		// deleteFile(trashidx++);
 
 	}
 
@@ -530,7 +546,9 @@ public class FileApp extends AbstractApp {
 
 		resetFilePosition(files1, 0);
 		resetFilePosition(files2, 0);
-
+		resetOriPosition(mPickGroupFiles1, 0);
+		resetOriPosition(mPickGroupFiles2, 0);
+		
 		Object3D[] pre, cur;
 
 		if (mFilePageIdx == 0) {
@@ -611,7 +629,7 @@ public class FileApp extends AbstractApp {
 	void goDownFolder(final int idx) {
 
 		resetFilePickable();
-		
+
 		// all files except idx step back
 		Object3D[] files = mFilePageIdx == 0 ? files1 : files2;
 		final Object3D[] f = new Object3D[files.length - 1];

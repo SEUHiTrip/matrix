@@ -2050,7 +2050,6 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 		SimpleVector ori;
 
 		if (group.oriPos[0] == null) {
-			Log.e(TAG, "oriPos[0] == null");
 			ori = group.group[0].getTransformedCenter();
 		} else {
 			ori = group.oriPos[0];
