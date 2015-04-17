@@ -116,6 +116,8 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 	private boolean IS_ADJUST_INIT = true;
 
 	AbstractApp[] apps = new AbstractApp[11 + 1 + 1 + 1 + 1];
+	
+	private long lastAppOpen;
 
 	class AppLaunchThead extends Thread {
 		private AppType appType;
@@ -136,6 +138,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 			Log.e(TAG, "thread run");
 
+			lastAppOpen = System.currentTimeMillis();
 			ws.mState = 2;
 			ws.mCurrentAppType = appType;
 			ws.mCurrentApp = apps[appType.ordinal()];
@@ -741,8 +744,6 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 	private double fix;
 
-	private float ball1scale = 2f;
-
 	@Override
 	public void onNewFrame(HeadTransform headTransform) {
 		headTransform.getEulerAngles(mHeadAngles, 0);
@@ -768,9 +769,9 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 		}
 
 		if (IS_ADJUST_INIT && NEED_ADJUST) {
-			if (System.currentTimeMillis() - startTime > 10 * 1000) {
+			if (System.currentTimeMillis() - startTime > 7 * 1000) {
 				IS_ADJUST_INIT = false;
-				rotateSpeed = (mHeadAngles[1] - initAngle) / (10f * 1000f);
+				rotateSpeed = (mHeadAngles[1] - initAngle) / (7f * 1000f);
 				adjust();
 				show3DToast("rotate speed is " + rotateSpeed);
 			}
@@ -1467,8 +1468,10 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 	}
 
 	public void openApp(final int idx, final Bundle bundle) {
+		if(System.currentTimeMillis() - lastAppOpen < 2000)return;
+		
 		Log.e(TAG, ws.mState + " ==> going to open " + AppType.valueOf(idx + 1));
-
+		
 		// prevent from opening app while waiting
 		if (ws.mState == 1)
 			return;

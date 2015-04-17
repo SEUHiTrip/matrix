@@ -8,6 +8,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.opencv.core.Point;
 
+import seu.lab.matrix.Framework3DMatrixActivity;
 import seu.lab.matrix.SceneHelper;
 import seu.lab.matrix.animation.Animatable;
 import seu.lab.matrix.animation.LiveTileAnimation;
@@ -32,9 +33,8 @@ public class VideoApp extends AbstractScreenApp {
 	final static int VIDEO_COUNT_PER_PAGE = 4;
 
 	boolean isVideoPlaying = false;
-	private String videoName=null;
-	
-	
+	private String videoName = null;
+
 	public int mVideoPageIdx;
 	final static String[] videoUrl = new String[] { "c:\\bigHero.mkv",
 
@@ -104,12 +104,12 @@ public class VideoApp extends AbstractScreenApp {
 
 	@Override
 	public void onClose(Runnable runnable) {
-		
+
 		scene.onScript("我们不能仅仅通过它进行娱乐\n既然屏幕大小不会受到限制\n当然数量也不会受到限制了\n所以我们可以自由的扩充自己的工作区\n与团队进行更好的协作");
-		
-//		scene.onStopRed();
-//		scene.onStartDolphin();
-		
+
+		// scene.onStopRed();
+		// scene.onStartDolphin();
+
 		if (isVideoPlaying) {
 			try {
 				videoController.close(scene.getScreenIdx());
@@ -123,8 +123,8 @@ public class VideoApp extends AbstractScreenApp {
 		scene.onHideCurtain();
 		scene.onHideScreen(runnable);
 		scene.onAppClosed();
-//		scene.onSwitchMode(new ConnectionMode(1));
-		
+		// scene.onSwitchMode(new ConnectionMode(1));
+
 	}
 
 	@Override
@@ -233,9 +233,12 @@ public class VideoApp extends AbstractScreenApp {
 		onShown();
 		scene.onCallCurtain("b_v3ideo");
 		scene.onAppReady();
-		
-		scene.onStopDolphin();
-		scene.onStartRed();
+
+		if (Framework3DMatrixActivity.isDisplayConnected()
+				&& Framework3DMatrixActivity.IS_PRESENTING) {
+			scene.onStopDolphin();
+			scene.onStartRed();
+		}
 	}
 
 	private void openVideo(int i) {
@@ -276,21 +279,20 @@ public class VideoApp extends AbstractScreenApp {
 			}
 		}.start();
 
-		String[] temp=videoUrl[0].split("\\\\");
-		videoName=temp[temp.length-1];
-		
-		if(videoName==null)
-			SceneHelper.drawText("w_opt", new String[] { "hello pic", "line2" });
+		String[] temp = videoUrl[0].split("\\\\");
+		videoName = temp[temp.length - 1];
+
+		if (videoName == null)
+			SceneHelper
+					.drawText("w_opt", new String[] { "hello pic", "line2" });
 		else {
-			VideoInfo videoInfo=new VideoInfo(videoName,"");
-			SceneHelper.drawText("w_opt", new String[] { videoInfo.name, 
-					 "Width: "+ videoInfo.width,
-					 "Height: "+ videoInfo.height,
-					 "Framerate: "+ videoInfo.framerate,
-					 "Length: "+ videoInfo.length,
-					 "Size: "+ videoInfo.size});
+			VideoInfo videoInfo = new VideoInfo(videoName, "");
+			SceneHelper.drawText("w_opt", new String[] { videoInfo.name,
+					"Width: " + videoInfo.width, "Height: " + videoInfo.height,
+					"Framerate: " + videoInfo.framerate,
+					"Length: " + videoInfo.length, "Size: " + videoInfo.size });
 		}
-		
+
 		isVideoPlaying = false;
 
 	}
@@ -378,24 +380,24 @@ public class VideoApp extends AbstractScreenApp {
 	@Override
 	public void onMove(Point p) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void onClick() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void onPress(Point p) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void onRaise(Point p) {
 		// TODO Auto-generated method stub
-		
+
 	}
 }

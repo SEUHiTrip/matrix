@@ -124,18 +124,18 @@ public class HeadControlApp extends SimpleScreenApp{
 	public void onOpen(Bundle bundle) {
 		if(Framework3DMatrixActivity.isDisplayConnected()){
 			stopped = false;
-			(curThread = new Thread(getHeadTransform){
-				@Override
-				public void run() {
-					try {
-						sleep(2000);
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					super.run();
-				}
-			}).start();
+//			(curThread = new Thread(getHeadTransform){
+//				@Override
+//				public void run() {
+//					try {
+//						sleep(2000);
+//					} catch (InterruptedException e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					}
+//					super.run();
+//				}
+//			}).start();
 		}
 		canPlay = true;
 

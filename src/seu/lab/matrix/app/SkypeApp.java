@@ -24,6 +24,4 @@ public class SkypeApp extends MouseControlApp{
 		super.onOpen(bundle);
 	}
 	
-	
-	
 }

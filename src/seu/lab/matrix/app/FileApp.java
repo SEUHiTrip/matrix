@@ -10,11 +10,13 @@ import org.opencv.core.Point;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.idisplay.VirtualScreenDisplay.IDisplayConnection.ConnectionMode;
 import com.threed.jpct.Camera;
 import com.threed.jpct.Object3D;
 import com.threed.jpct.SimpleVector;
 import com.threed.jpct.World;
 
+import seu.lab.matrix.Framework3DMatrixActivity;
 import seu.lab.matrix.SceneHelper;
 import seu.lab.matrix.animation.Animatable;
 import seu.lab.matrix.animation.PickGroup;
@@ -127,7 +129,7 @@ public class FileApp extends AbstractApp {
 
 		mAnimatables.add(new TranslationAnimation("", SceneHelper
 				.to1DArr(new Object3D[][] { desks, files1 }), new SimpleVector(
-				5, 0, 0), null){
+				5, 0, 0), null) {
 			@Override
 			public void onAnimateSuccess() {
 				trashPos = mPickGroupDesks[0].group[0].getTransformedCenter();
@@ -235,7 +237,7 @@ public class FileApp extends AbstractApp {
 			files1[i].rotateZ(-0.4f);
 			files1[i].setTexture("minetype_" + i);
 			mPickGroupFiles1[i].group[0] = files1[i];
-//			mPickGroupFiles1[i].oriPos[0] = getFilePos(i, 0);
+			// mPickGroupFiles1[i].oriPos[0] = getFilePos(i, 0);
 			world.addObject(files1[i]);
 
 			if (i != 8) {
@@ -247,7 +249,7 @@ public class FileApp extends AbstractApp {
 			files1[i].setTexture("minetype_" + i);
 
 			mPickGroupFiles2[i].group[0] = files2[i];
-//			mPickGroupFiles2[i].oriPos[0] = getFilePos(i, 0);
+			// mPickGroupFiles2[i].oriPos[0] = getFilePos(i, 0);
 			world.addObject(files2[i]);
 		}
 
@@ -388,10 +390,7 @@ public class FileApp extends AbstractApp {
 
 	@Override
 	public void onDown() {
-		if (System.currentTimeMillis() - lastGrabTime < 100)
-			return;
-		// go to home folder
-		goHomeFolder();
+
 	}
 
 	@Override
@@ -519,6 +518,9 @@ public class FileApp extends AbstractApp {
 	public void onOpen(Bundle bundle) {
 		onShown();
 		scene.onAppReady();
+		if (Framework3DMatrixActivity.IS_PRESENTING
+				&& Framework3DMatrixActivity.isDisplayConnected())
+			scene.onSwitchMode(new ConnectionMode(1));
 	}
 
 	@Override
@@ -548,7 +550,7 @@ public class FileApp extends AbstractApp {
 		resetFilePosition(files2, 0);
 		resetOriPosition(mPickGroupFiles1, 0);
 		resetOriPosition(mPickGroupFiles2, 0);
-		
+
 		Object3D[] pre, cur;
 
 		if (mFilePageIdx == 0) {
@@ -740,8 +742,11 @@ public class FileApp extends AbstractApp {
 
 	@Override
 	public boolean onToggleFullscreen() {
-		// openFileOnScene(fileUrl[0]);
-		return false;
+		if (System.currentTimeMillis() - lastGrabTime < 100)
+			return false;
+		// go to home folder
+		goHomeFolder();
+		return true;
 	}
 
 	@Override

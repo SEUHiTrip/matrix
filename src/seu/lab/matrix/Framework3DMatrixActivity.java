@@ -75,6 +75,8 @@ public abstract class Framework3DMatrixActivity extends
 	public final static boolean NEED_RED = false;
 	public final static boolean NEED_DOLPHIN = false;
 
+	public final static boolean IS_PRESENTING = true;
+	
 	public final static boolean NEED_ADJUST = Build.MODEL.equals("SCH-I545");
 	public final static boolean NEED_WORKSPACE = true;
 	public final static boolean NEED_SCENE = true;
