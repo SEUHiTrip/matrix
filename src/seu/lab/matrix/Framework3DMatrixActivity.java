@@ -75,7 +75,7 @@ public abstract class Framework3DMatrixActivity extends
 	public final static boolean NEED_RED = false;
 	public final static boolean NEED_DOLPHIN = false;
 
-	public final static boolean IS_PRESENTING = true;
+	public static boolean IS_PRESENTING = true;
 	
 	public final static boolean NEED_ADJUST = Build.MODEL.equals("SCH-I545");
 	public final static boolean NEED_WORKSPACE = true;
@@ -413,8 +413,11 @@ public abstract class Framework3DMatrixActivity extends
 	}
 
 	protected void startIDisplay(ConnectionMode mode) {
+		Log.e(TAG, "startIDisplay for mode "+mode.height);
 		currentMode = mode;
 		if (!mIDisplayConnected){
+			Log.e(TAG, "startIDisplay mIDisplayConnected = false");
+
 			try {
 				IDisplayConnection.connectToServer(serverItem, currentMode);
 			} catch (Exception e) {

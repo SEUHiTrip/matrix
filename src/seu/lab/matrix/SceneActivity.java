@@ -2211,14 +2211,14 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 
 	@Override
 	public void onIDisplayDenyed() {
-		show3DToastOnlyRight("onIDisplayDenyed");
+		show3DToast("onIDisplayDenyed");
 
 		super.onIDisplayDenyed();
 	}
 
 	@Override
 	public void OnIDisplayUnexpectedError() {
-		show3DToastOnlyRight("OnIDisplayUnexpectedError");
+		show3DToast("OnIDisplayUnexpectedError");
 
 		super.OnIDisplayUnexpectedError();
 	}
@@ -2239,9 +2239,8 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 	}
 
 	@Override
-	public void onSwitchMode(ConnectionMode mode) {
-		currentMode = mode;
-		if (NEED_IDISPLAY) {
+	public void onSwitchMode(final ConnectionMode mode) {
+		if (isDisplayConnected()) {
 			stopIDisplay();
 			new Thread() {
 				public void run() {
@@ -2251,9 +2250,11 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-					startIDisplay(currentMode);
+					startIDisplay(mode);
 				};
 			}.start();
+		}else {
+			startIDisplay(mode);
 		}
 	}
 

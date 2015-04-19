@@ -24,10 +24,13 @@ import com.idisplay.VirtualScreenDisplay.IDisplayConnection.ConnectionType;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -38,20 +41,26 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
 	public static final String TAG = "MainActivity";
+	public static String Server = "MERCURY_D383AA";
 
 	static final String ipReg = "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]).){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$";
+	
+	TextView mServerName;
+
+	private WifiManager wm;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		getActionBar().hide();
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
-
+		wm = (WifiManager) getSystemService(Context.WIFI_SERVICE);
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.activity_main);
@@ -59,12 +68,12 @@ public class MainActivity extends Activity {
 		Button onlineButton = (Button) findViewById(R.id.scene_online_btn);
 		Button offlineButton = (Button) findViewById(R.id.scene_offline_btn);
 		Button ipButton = (Button) findViewById(R.id.ip_btn);
-
+		mServerName = (TextView) findViewById(R.id.server_name);
 		onlineButton.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
-//				Framework3DMatrixActivity.NEED_IDISPLAY = true;
+				Framework3DMatrixActivity.IS_PRESENTING = true;
 				Intent intent = new Intent(getApplicationContext(),
 						SceneActivity.class);
 				intent.putExtra("mode", new IDisplayConnection.ConnectionMode(
@@ -77,7 +86,7 @@ public class MainActivity extends Activity {
 
 			@Override
 			public void onClick(View v) {
-//				Framework3DMatrixActivity.NEED_IDISPLAY = false;
+				Framework3DMatrixActivity.IS_PRESENTING = false;
 
 				Intent intent = new Intent(getApplicationContext(),
 						SceneActivity.class);
@@ -91,6 +100,7 @@ public class MainActivity extends Activity {
 
 			@Override
 			public void onClick(View arg0) {
+				refreshWifi();
 				final EditText editText = new EditText(MainActivity.this);
 				new AlertDialog.Builder(MainActivity.this)
 						.setTitle("Server IP for "+Build.MODEL)
@@ -117,4 +127,28 @@ public class MainActivity extends Activity {
 
 	}
 
+	@Override
+	protected void onResume() {
+
+		refreshWifi();
+		
+		super.onResume();
+	}
+
+	private void refreshWifi() {
+		WifiInfo info = wm.getConnectionInfo();
+		
+		if(wm.getWifiState() == WifiManager.WIFI_STATE_ENABLED){
+			if(info.getSSID().contains(Server))
+				mServerName.setText(info.getSSID());
+			else {
+				mServerName.setText("wrong server");
+			}
+			
+		}else {
+			mServerName.setText("WIFI is not enabled");
+			wm.setWifiEnabled(true);
+		}
+	}
+	
 }

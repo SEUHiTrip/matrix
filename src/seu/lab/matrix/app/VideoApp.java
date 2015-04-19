@@ -238,6 +238,7 @@ public class VideoApp extends AbstractScreenApp {
 				&& Framework3DMatrixActivity.IS_PRESENTING) {
 			scene.onStopDolphin();
 			scene.onStartRed();
+						
 		}
 	}
 

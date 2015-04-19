@@ -519,8 +519,11 @@ public class FileApp extends AbstractApp {
 		onShown();
 		scene.onAppReady();
 		if (Framework3DMatrixActivity.IS_PRESENTING
-				&& Framework3DMatrixActivity.isDisplayConnected())
+				&& Framework3DMatrixActivity.isDisplayConnected()){
+			scene.onStopDolphin();
+			scene.onStartRed();
 			scene.onSwitchMode(new ConnectionMode(1));
+		}
 	}
 
 	@Override
