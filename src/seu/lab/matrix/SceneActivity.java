@@ -391,7 +391,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 				actionFired[UP] = true;
 			}
 
-			ball1.setTexture("sw_white");
+			ball1.setTexture("sw_red");
 			if (!canCamRotate || ws.mCurrentAppType == AppType.FILE) {
 				if (mCamViewIndex == TREASURE) {
 					workspaces[headDir].mCurrentApp.onRaise(p);
@@ -531,7 +531,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 		ball1 = Primitives.getSphere(0.01f);
 		ball1.translate(0, 5, 0);
 		ball1.calcTextureWrapSpherical();
-		ball1.setTexture("sw_white");
+		ball1.setTexture("sw_red");
 		ball1.strip();
 		ball1.build();
 		world.addObject(ball1);
@@ -981,7 +981,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 			ball1.setRotationPivot(originInballView);
 
 			if (System.currentTimeMillis() - lastBallUpdate > 5000) {
-				ball1.setTransparency(0);
+				ball1.setTransparency(10);
 				ball1.rotateAxis(cam.getUpVector(), 0f);
 				ball1.rotateAxis(cam.getSideVector(), 0f);
 			} else {
@@ -1178,7 +1178,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 			case BACK:
 
 				if (isLookingAtScreen() && mCamViewIndex != TREASURE
-						&& NEED_SCENE) {
+						&& NEED_SCENE && canCamRotate) {
 					switchIsland(TREASURE);
 				}
 
@@ -1187,7 +1187,7 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 				break;
 			}
 
-			mVibrator.vibrate(50);
+			mVibrator.vibrate(100);
 			// consume action
 			actionFired[i] = false;
 		}
@@ -1339,6 +1339,8 @@ public class SceneActivity extends Framework3DMatrixActivity implements
 	}
 
 	private void switchIsland(final int idx) {
+		if(!canCamRotate)return;
+		
 		SimpleVector camPos;
 		if (idx == WORKSPACE) {
 			camPos = cam.getPosition();

@@ -973,6 +973,11 @@ public abstract class Framework3DMatrixActivity extends
 				BitmapHelper.convert(getResources().getDrawable(
 						R.drawable.sw_brown)), 64, 64),90));
 		tm.addTexture("sw_brown", sw_b);
+		
+		Texture sw_r = new Texture(SceneHelper.RotateBitmap(BitmapHelper.rescale(
+				BitmapHelper.convert(getResources().getDrawable(
+						R.drawable.sw_red)), 64, 64),90));
+		tm.addTexture("sw_red", sw_r);
 	}
 
 	protected void loadSkyboxTexture(TextureManager tm) {
